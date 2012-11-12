@@ -4,6 +4,8 @@ function Game(renderer, canvas) {
     // ------------------------------------------------------------------------
     this.projector = new THREE.Projector();
     this.renderer = renderer;
+    this.renderer.shadowMapEnabled = true;
+    this.renderer.shadowMapSoft = true;
     this.canvas = canvas;
     this.scene = null;
     this.camera = null;
@@ -79,16 +81,27 @@ function Game(renderer, canvas) {
         );
 
         // Setup a light that will move with the player
-        this.lights[0] = new THREE.DirectionalLight(0xffffff, 1);
+        this.lights[0] = new THREE.SpotLight(0xffffff, 10, 100);
         this.lights[0].position.set(
             this.player.position.x,
             this.player.position.y,
             this.player.position.z);
+        //console.log(this.lights[0].distance);
+        //console.log(this.lights[0].angle);
 
         this.lights[0].target.position.set(
             this.player.position.x + input.viewRay.direction.x,
             this.player.position.y + input.viewRay.direction.y,
             this.player.position.z + input.viewRay.direction.z);
+        this.lights[0].castShadow = true;
+        this.lights[0].shadowCameraNear = 0;
+        this.lights[0].shadowCameraFar = 5;
+        //this.lights[0].shadowCameraLeft = -10;
+        //this.lights[0].shadowCameraTop = 10;
+        //this.lights[0].shadowCameraBottom = -10;
+        this.lights[0].shadowCameraVisible = true;
+        console.log(this.lights[0].shadowCameraVisible);
+
 
         this.scene.add(this.lights[0]);
 
@@ -176,7 +189,7 @@ function updateMovement(game, input) {
         0, 1000                                           // near, far
     );
 
-    // Update the player's light
+    //Update the player's light
     game.lights[0].position.set(
         game.player.position.x,
         game.player.position.y,

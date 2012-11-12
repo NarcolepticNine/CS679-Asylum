@@ -127,7 +127,7 @@ function Level(game) {
 
     // Generate floor geometry 
     var PLANE_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE),
-        FLOOR_MATERIAL = new THREE.MeshLambertMaterial({ map: FLOOR_TEXTURE });
+        FLOOR_MATERIAL = new THREE.MeshPhongMaterial({ map: FLOOR_TEXTURE });
 
     this.generateFloorGeometry = function (x, y) {
         var mesh = new THREE.Mesh(PLANE_GEOMETRY, FLOOR_MATERIAL);
@@ -139,7 +139,7 @@ function Level(game) {
     };
 
     // Generate ceiling geometry
-    var CEIL_MATERIAL = new THREE.MeshLambertMaterial({ map: CEIL_TEXTURE });
+    var CEIL_MATERIAL = new THREE.MeshPhongMaterial({ map: CEIL_TEXTURE });
     this.generateCeilingGeometry = function (x, y) {
         var mesh = new THREE.Mesh(PLANE_GEOMETRY, CEIL_MATERIAL);
         mesh.rotation.x = Math.PI / 2;
@@ -152,7 +152,7 @@ function Level(game) {
     // Generate wall geometry
     // --------------------------------
     var NORMAL_MATERIAL = new THREE.MeshNormalMaterial(),
-        WALL_FULL_MATERIAL = new THREE.MeshLambertMaterial({ map: WALL_TEXTURE }),
+        WALL_FULL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE }),
     // Geometry -----
         WALL_FULL_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, 2 * CELL_SIZE, CELL_SIZE,
             1, 1, 1, NORMAL_MATERIAL,
