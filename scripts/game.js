@@ -4,8 +4,6 @@ function Game(renderer, canvas) {
     // ------------------------------------------------------------------------
     this.projector = new THREE.Projector();
     this.renderer = renderer;
-    this.renderer.shadowMapEnabled = true;
-    this.renderer.shadowMapSoft = true;
     this.canvas = canvas;
     this.scene = null;
     this.camera = null;
