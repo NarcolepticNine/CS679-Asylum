@@ -5,7 +5,7 @@ var CELL_TYPES = {
 },
     MAP_CELL_SIZE = 10,
     CELL_SIZE = 32,
-    NUM_CELLS = new THREE.Vector2(25, 25);
+    NUM_CELLS = new THREE.Vector2(40, 40);
 
 // ----------------------------------------------------------------------------
 // Level 
@@ -41,19 +41,33 @@ function Level(game) {
     FLOOR_TEXTURE.wrapT = THREE.RepeatWrapping;
 
 
-    // Populates grid with rooms
+    // Populates grid with rooms; parse Map Array from map.js
     // -------------------------------------------------------
     this.populateGrid = function () {
-        for (var y = 0; y < NUM_CELLS.y; ++y) {
-            for (var x = 0; x < NUM_CELLS.x; ++x) {
-                if (x === 0 || y === 0 || x === NUM_CELLS.x - 1 || y === NUM_CELLS.y - 1) {
-                    this.grid[y][x] = new Cell(x, y, CELL_TYPES.wall);
-                }
-                else {
-                    this.grid[y][x] = new Cell(x, y, CELL_TYPES.empty);
-                }
-            }
-        }
+    
+    	//eventually pull more than just map[0] 
+    
+    	//break apart map[i] into rows on \n 
+    	var rows = Map[0].split("\n"); 
+    	
+    	//for each character in each row, check character, and set grid to 
+    	// that cell type. 
+    	for( var i = 0; i < rows.length; i++ ){
+    		for( var j = 0; j < rows[i].length; j++ ) {
+    			switch( rows[i].charAt(j) ){
+    				case 'w':
+    					this.grid[i][j] = new Cell( j, i, CELL_TYPES.wall ); 
+    					break;
+    				case 's':
+    					this.grid[i][j] = new Cell( j, i, CELL_TYPES.empty);
+    					this.addStartPosition( j, i ); 
+    					break;
+    				case ' ':
+    					this.grid[i][j] = new Cell( j, i, CELL_TYPES.empty); 
+    					break; 
+    			}
+    		}
+    	}
     };
 
     // Generate a 2d array of NUM_CELLS.x by NUM_CELLS.y cells
@@ -88,7 +102,7 @@ function Level(game) {
     // Create features in the map
     // --------------------------------
     this.generateFeatures = function () {
-        this.addStartPosition();
+        //this.addStartPosition();
     };
 
     // Creates new geometry based on grid layout
@@ -172,16 +186,8 @@ function Level(game) {
 
     // Add randomized starting location for player
     // -------------------------------------------
-    this.addStartPosition = function () {
-        var x, y;
-        while (true) {
-            x = randInt(1, NUM_CELLS.x - 1);
-            y = randInt(1, NUM_CELLS.y - 1);
-            if (this.grid[y][x].type === CELL_TYPES.empty) {
-                this.startPos = new THREE.Vector2(x * CELL_SIZE, y * CELL_SIZE);
-                break;
-            }
-        }
+    this.addStartPosition = function ( x, y) {
+        this.startPos = new THREE.Vector2(x * CELL_SIZE, y * CELL_SIZE);
     };
 
     // Generate minimap using a 2d canvas
