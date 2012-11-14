@@ -18,7 +18,7 @@ function Game(renderer, canvas) {
     this.mapCanvas = document.createElement("canvas");
     this.mapCanvas.id = "minimap";
     this.mapCanvas.width = MAP_CELL_SIZE * NUM_CELLS.x;
-    this.mapCanvas.height = MAP_CELL_SIZE * NUM_CELLS.y;
+    this.mapCanvas.height = MAP_CELL_SIZE * NUM_CELLS.z;
     this.mapCanvas.style.position = "absolute";
     this.mapCanvas.style.bottom = 0;
     this.mapCanvas.style.right = 0;
@@ -61,7 +61,7 @@ function Game(renderer, canvas) {
             new THREE.MeshBasicMaterial({ color: 0x00ff00 })
         );
         this.player.position.set(
-            this.level.startPos.x, 8.5, this.level.startPos.y);
+            this.level.startPos.x, this.level.startPos.y + 8.5, this.level.startPos.z);
         this.scene.add(this.player);
 
         // Setup camera
@@ -94,16 +94,9 @@ function Game(renderer, canvas) {
         this.lights[0].castShadow = true;
         this.lights[0].shadowCameraNear = 0;
         this.lights[0].shadowCameraFar = 5;
-        //this.lights[0].shadowCameraLeft = -10;
-        //this.lights[0].shadowCameraTop = 10;
-        //this.lights[0].shadowCameraBottom = -10;
         this.lights[0].shadowCameraVisible = true;
-        console.log(this.lights[0].shadowCameraVisible);
-
-
         this.scene.add(this.lights[0]);
 
-        //console.log("# Objects: " + game.objects.length);
         console.log("Game initialized.");
     };
 

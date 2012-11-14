@@ -1,11 +1,26 @@
 var CELL_TYPES = {
-    nothing: ".",
-    empty: " ",
-    wall: "*",
+    nothing: ' ',
+    floor: 'f',
+    ceil: 'c',
+    wall: 'w',
+    start: 's'
 },
     MAP_CELL_SIZE = 10,
     CELL_SIZE = 32,
-    NUM_CELLS = new THREE.Vector2(40, 40);
+    rows,
+    NUM_CELLS = new THREE.Vector3(0, 0, 0);
+
+NUM_CELLS.y = numFloors;
+for (y = 0; y < numFloors; ++y) {
+    //break apart map[i] into rows on \n 
+    rows = Map[y].split("\n");
+    NUM_CELLS.z = NUM_CELLS.z > rows.length ? NUM_CELLS.z : rows.length;
+    for (z = 0; z < NUM_CELLS.z; ++z) {
+        NUM_CELLS.x = NUM_CELLS.x > rows[z].length ? NUM_CELLS.x : rows[z].length;
+    }
+}
+
+
 
 // ----------------------------------------------------------------------------
 // Level 
@@ -16,18 +31,14 @@ function Level(game) {
     // ------------------------------------------------------------------------
     this.grid = null;
     this.geometry = {
-        floors: [],
-        ceils: []
+        floor: [],
+        ceil: [],
+        wall: []
     };
     this.mapCanvas = null;
     this.mapContext = null;
     this.mapColors = {};
-    this.startPos = new THREE.Vector2();
-
-    // Static geometry groups ------------------------
-    // Normal walls
-    this.wallGroup = new THREE.Object3D();
-    this.wallGeometry = new THREE.Geometry();
+    this.startPos = new THREE.Vector3();
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -40,46 +51,54 @@ function Level(game) {
     FLOOR_TEXTURE.wrapS = THREE.RepeatWrapping;
     FLOOR_TEXTURE.wrapT = THREE.RepeatWrapping;
 
-
-    // Populates grid with rooms; parse Map Array from map.js
+    // Populates grid; parse Map Array from map.js
     // -------------------------------------------------------
     this.populateGrid = function () {
-    
-    	//eventually pull more than just map[0] 
-    
-    	//break apart map[i] into rows on \n 
-    	var rows = Map[0].split("\n"); 
-    	
-    	//for each character in each row, check character, and set grid to 
-    	// that cell type. 
-    	for( var i = 0; i < rows.length; i++ ){
-    		for( var j = 0; j < rows[i].length; j++ ) {
-    			switch( rows[i].charAt(j) ){
-    				case 'w':
-    					this.grid[i][j] = new Cell( j, i, CELL_TYPES.wall ); 
-    					break;
-    				case 's':
-    					this.grid[i][j] = new Cell( j, i, CELL_TYPES.empty);
-    					this.addStartPosition( j, i ); 
-    					break;
-    				case ' ':
-    					this.grid[i][j] = new Cell( j, i, CELL_TYPES.empty); 
-    					break; 
-    			}
-    		}
-    	}
+
+        //eventually pull more than just map[0] 
+
+        //for each character in each row, check character, and set grid to 
+        // that cell type. 
+        for (var y = 0; y < numFloors; y++) {
+            //break apart map[i] into rows on \n
+            rows = Map[y].split("\n");
+            for (var z = 0; z < rows.length; z++) {
+                for (var x = 0; x < rows[z].length; x++) {
+                    switch (rows[z].charAt(x)) {
+                        case CELL_TYPES.wall:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.wall);
+                            break;
+                        case CELL_TYPES.start:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.start);
+                            this.addStartPosition(x, y, z);
+                            break;
+                        case CELL_TYPES.floor:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.floor);
+                            break;
+                        case CELL_TYPES.ceil:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.ceil);
+                            break;
+                        case CELL_TYPES.nothing:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.nothing);
+                            break;
+                    }
+                }
+            }
+        }
     };
 
-    // Generate a 2d array of NUM_CELLS.x by NUM_CELLS.y cells
+    // Generate a 3d array of NUM_CELLS.x by NUM_CELLS.y by NUM_CELLS.z cells
     // -------------------------------------------------------
     this.generateGridCells = function () {
-        var x, y;
-
+        var x, y, z;
         this.grid = new Array(NUM_CELLS.y);
         for (y = 0; y < NUM_CELLS.y; ++y) {
-            this.grid[y] = new Array(NUM_CELLS.x);
-            for (x = 0; x < NUM_CELLS.x; ++x) {
-                this.grid[y][x] = new Cell(x, y, CELL_TYPES.nothing);
+            this.grid[y] = new Array(NUM_CELLS.z);
+            for (z = 0; z < NUM_CELLS.z; ++z) {
+                this.grid[y][z] = new Array(NUM_CELLS.x);
+                for (x = 0; x < NUM_CELLS.x; ++x) {
+                    this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.nothing);
+                }
             }
         }
     };
@@ -88,106 +107,91 @@ function Level(game) {
     // Print the grid layout in ascii format to the console
     // ----------------------------------------------------
     this.debugPrint = function () {
-        var x, y, str = "";
+        var x, y, z, str = "";
         // Print entire grid layout
         for (y = 0; y < NUM_CELLS.y; ++y) {
-            for (x = 0; x < NUM_CELLS.x; ++x) {
-                str += this.grid[y][x].type;
+            str += "Floor " + y + "\n";
+            for (z = 0; z < NUM_CELLS.z; ++z) {
+                for (x = 0; x < NUM_CELLS.x; ++x) {
+                    str += this.grid[y][z][x].type;
+                }
+                str += "\n";
             }
             str += "\n";
         }
         console.log(str);
     };
 
-    // Create features in the map
-    // --------------------------------
-    this.generateFeatures = function () {
-        //this.addStartPosition();
-    };
-
     // Creates new geometry based on grid layout
     // -----------------------------------------
     this.generateGeometry = function () {
-        var x, y, xx, yy, cell;
+        var x, y, z, xx, yy, zz, cell;
 
         for (y = 0; y < NUM_CELLS.y; ++y) {
-            for (x = 0; x < NUM_CELLS.x; ++x) {
-                cell = this.grid[y][x];
-                xx = x * CELL_SIZE;
-                yy = y * CELL_SIZE;
-
-                // Generate geometry according to cell type
-                if (cell.type === CELL_TYPES.nothing) {
-                    continue;
-                } else if (cell.type === CELL_TYPES.empty) {
-                    this.generateFloorGeometry(xx, yy);
-                    this.generateCeilingGeometry(xx, yy);
-                } else if (cell.type === CELL_TYPES.wall) {
-                    this.generateWallGeometry(xx, yy);
+            for (z = 0; z < NUM_CELLS.z; ++z) {
+                for (x = 0; x < NUM_CELLS.x; ++x) {
+                    cell = this.grid[y][z][x];
+                    xx = x * CELL_SIZE;
+                    yy = y * CELL_SIZE;
+                    zz = z * CELL_SIZE;
+                    // Generate geometry according to cell type
+                    if (cell.type === CELL_TYPES.nothing) {
+                        continue;
+                    } else if (cell.type === CELL_TYPES.start || cell.type === CELL_TYPES.floor) {
+                        this.generateFloorGeometry(xx, yy, zz);
+                    } else if (cell.type === CELL_TYPES.ceil) {
+                        this.generateCeilingGeometry(xx, yy, zz);
+                    } else if (cell.type === CELL_TYPES.wall) {
+                        this.generateWallGeometry(xx, yy, zz);
+                    }
                 }
             }
         }
-        var wallMaterial = WALL_FULL_MATERIAL;
-
-        // Create merged geometry groups
-        this.wallGroup = new THREE.Mesh(this.wallGeometry, wallMaterial);
-
-        // Add merged geometry groups to game object array
-        game.objects.push(this.wallGroup);
-
-        // Add merged geometry groups to scene
-        game.scene.add(this.wallGroup);
     };
 
     // Generate floor geometry 
     var PLANE_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE),
         FLOOR_MATERIAL = new THREE.MeshPhongMaterial({ map: FLOOR_TEXTURE });
 
-    this.generateFloorGeometry = function (x, y) {
+    this.generateFloorGeometry = function (x, y, z) {
         var mesh = new THREE.Mesh(PLANE_GEOMETRY, FLOOR_MATERIAL);
         mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(x, 0, y);
+        mesh.position.set(x, y, z);
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.floors.push(mesh);
+        this.geometry.floor.push(mesh);
     };
 
     // Generate ceiling geometry
     var CEIL_MATERIAL = new THREE.MeshPhongMaterial({ map: CEIL_TEXTURE });
-    this.generateCeilingGeometry = function (x, y) {
+    this.generateCeilingGeometry = function (x, y, z) {
         var mesh = new THREE.Mesh(PLANE_GEOMETRY, CEIL_MATERIAL);
         mesh.rotation.x = Math.PI / 2;
-        mesh.position.set(x, 2 * CELL_SIZE, y);
+        mesh.position.set(x, y + CELL_SIZE, z);
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.ceils.push(mesh);
+        this.geometry.ceil.push(mesh);
     };
 
     // Generate wall geometry
     // --------------------------------
-    var NORMAL_MATERIAL = new THREE.MeshNormalMaterial(),
-        WALL_FULL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE }),
-    // Geometry -----
-        WALL_FULL_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, 2 * CELL_SIZE, CELL_SIZE,
-            1, 1, 1, NORMAL_MATERIAL,
-            { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),
-    // Mesh -----
-        WALL_MESH = new THREE.Mesh(WALL_FULL_GEOMETRY, NORMAL_MATERIAL);
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE),
+        WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
 
-    for (var face in WALL_FULL_GEOMETRY.faces) {
-        WALL_FULL_GEOMETRY.faces[face].materialIndex = 0;
+    this.generateWallGeometry = function (x, y, z) {
+        var mesh = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
+        mesh.position.set(x, y + CELL_SIZE / 2, z);
+        game.objects.push(mesh);
+        game.scene.add(mesh);
+        this.geometry.wall.push(mesh);
     }
 
-    this.generateWallGeometry = function (x, y) {
-        // Position geometry for the current cell and merge it with the rest 
-        WALL_MESH.position.set(x, CELL_SIZE, y);
-        THREE.GeometryUtils.merge(this.wallGeometry, WALL_MESH);
-    };
 
     // Add randomized starting location for player
     // -------------------------------------------
-    this.addStartPosition = function ( x, y) {
-        this.startPos = new THREE.Vector2(x * CELL_SIZE, y * CELL_SIZE);
+    this.addStartPosition = function (x, y, z) {
+        this.startPos = new THREE.Vector3(x * CELL_SIZE, y * CELL_SIZE, z * CELL_SIZE);
+
     };
 
     // Generate minimap using a 2d canvas
@@ -198,18 +202,22 @@ function Level(game) {
         mapContext = mapCanvas.getContext("2d");
         // Setup colors for each cell type
         this.mapColors.nothing = "#202020";
-        this.mapColors.empty = "#000000";
+        this.mapColors.floor = "#00004f";
+        this.mapColors.ceil = "#4f0000";
         this.mapColors.wall = "#c0c0c0";
     };
 
     // Update minimap
     // --------------------------------
     this.updateMinimap = function () {
-        var x, y, xx, yy, px, py, cell, color;
+        var x, z, xx, zz, px, pz, ry, cell, color;
 
         // Calculate the player's position on the minimap
         px = Math.floor(game.player.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-        py = Math.floor(game.player.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+        pz = Math.floor(game.player.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+
+        console.log(game.player.position.y);
+        ry = Math.floor(Math.floor(game.player.position.y) / CELL_SIZE);
 
         // Clear the map
         mapContext.save();
@@ -221,22 +229,23 @@ function Level(game) {
         mapContext.globalAlpha = 0.5;
 
         // Draw the map cells
-        for (y = 0; y < NUM_CELLS.y; ++y) {
+        for (z = 0; z < NUM_CELLS.z; ++z) {
             for (x = 0; x < NUM_CELLS.x; ++x) {
-                cell = this.grid[y][x];
+                cell = this.grid[ry][z][x];
                 xx = x * MAP_CELL_SIZE;
-                yy = y * MAP_CELL_SIZE;
+                zz = z * MAP_CELL_SIZE;
 
                 switch (cell.type) {
                     case CELL_TYPES.nothing: color = this.mapColors.nothing; break;
-                    case CELL_TYPES.empty: color = this.mapColors.empty; break;
+                    case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
+                    case CELL_TYPES.start: color = this.mapColors.floor; break;
+                    case CELL_TYPES.floor: color = this.mapColors.floor; break;
                     case CELL_TYPES.wall: color = this.mapColors.wall; break;
                 }
 
-                if (cell.type !== CELL_TYPES.nothing) {
-                    mapContext.fillStyle = color;
-                    mapContext.fillRect(xx, yy, MAP_CELL_SIZE, MAP_CELL_SIZE);
-                }
+                mapContext.fillStyle = color;
+                mapContext.fillRect(xx, zz, MAP_CELL_SIZE, MAP_CELL_SIZE);
+
             }
         }
 
@@ -244,7 +253,7 @@ function Level(game) {
         mapContext.beginPath();
         mapContext.strokeStyle = "#ff0000";
         mapContext.lineWidth = 3;
-        mapContext.arc(px, py, 3, 0, 2 * Math.PI, false);
+        mapContext.arc(px, pz, 3, 0, 2 * Math.PI, false);
         mapContext.stroke();
     };
 
@@ -261,11 +270,10 @@ function Level(game) {
         console.info("Generating level...");
         level.generateGridCells();
         level.populateGrid();
-        level.generateFeatures();
         level.generateMinimap();
         level.generateGeometry();
         console.info("Level generation completed.");
-        level.debugPrint("grid");
+        level.debugPrint();
     })(this);
 
 }
@@ -274,6 +282,9 @@ function Level(game) {
 // ----------------------------------------------------------------------------
 // Cell  
 // ----------------------------------------------------------------------------
-function Cell(x, y, type) {
+function Cell(x, y, z, type) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
     this.type = type;
 }
