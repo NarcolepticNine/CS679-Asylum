@@ -29,8 +29,8 @@ Map[0] =
 "wfffffffwffffw\n" +
 "wwwwwwwwwffffw\n" +
 "wfffffffwffffw\n" +
-"wfffsffffffffw\n" +
-"wtffffffwffffw\n" +
+"wfffsfffffkffw\n" +
+"wfffffffwffffw\n" +
 "wwwwwwwwwwwwww";
 
 Map[1] =
