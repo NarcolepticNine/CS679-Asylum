@@ -2,6 +2,7 @@ var CELL_TYPES = {
     nothing: ' ',
     floor: 'f',
     ceil: 'c',
+    stair: 't',
     wall: 'w',
     start: 's'
 },
@@ -33,7 +34,8 @@ function Level(game) {
     this.geometry = {
         floor: [],
         ceil: [],
-        wall: []
+        wall: [],
+        stair: []
     };
     this.mapCanvas = null;
     this.mapContext = null;
@@ -46,6 +48,7 @@ function Level(game) {
     FLOOR_TEXTURE = THREE.ImageUtils.loadTexture("images/floor.png"),
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/stone.png"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/brick.png"),
+    STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
     FLOOR_TEXTURE.wrapS = THREE.RepeatWrapping;
@@ -74,6 +77,9 @@ function Level(game) {
                             break;
                         case CELL_TYPES.floor:
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.floor);
+                            break;
+                        case CELL_TYPES.stair:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.stair);
                             break;
                         case CELL_TYPES.ceil:
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.ceil);
@@ -110,7 +116,7 @@ function Level(game) {
         var x, y, z, str = "";
         // Print entire grid layout
         for (y = 0; y < NUM_CELLS.y; ++y) {
-            str += "Floor " + y + "\n";
+            str += "Floor " + y + ":\n";
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 for (x = 0; x < NUM_CELLS.x; ++x) {
                     str += this.grid[y][z][x].type;
@@ -141,6 +147,9 @@ function Level(game) {
                         this.generateFloorGeometry(xx, yy, zz);
                     } else if (cell.type === CELL_TYPES.ceil) {
                         this.generateCeilingGeometry(xx, yy, zz);
+                    }
+                    else if (cell.type === CELL_TYPES.stair) {
+                        this.generateStairGeometry(xx, yy, zz);
                     } else if (cell.type === CELL_TYPES.wall) {
                         this.generateWallGeometry(xx, yy, zz);
                     }
@@ -157,6 +166,7 @@ function Level(game) {
         var mesh = new THREE.Mesh(PLANE_GEOMETRY, FLOOR_MATERIAL);
         mesh.rotation.x = -Math.PI / 2;
         mesh.position.set(x, y, z);
+        mesh.name = 'floor';
         game.objects.push(mesh);
         game.scene.add(mesh);
         this.geometry.floor.push(mesh);
@@ -168,9 +178,23 @@ function Level(game) {
         var mesh = new THREE.Mesh(PLANE_GEOMETRY, CEIL_MATERIAL);
         mesh.rotation.x = Math.PI / 2;
         mesh.position.set(x, y + CELL_SIZE, z);
+        mesh.name = 'ceiling';
         game.objects.push(mesh);
         game.scene.add(mesh);
         this.geometry.ceil.push(mesh);
+    };
+
+    // Generate stair geometry
+    var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(2) * CELL_SIZE);
+    var STAIR_MATERIAL = new THREE.MeshPhongMaterial({ map: STAIR_TEXTURE });
+    this.generateStairGeometry = function (x, y, z) {
+        var mesh = new THREE.Mesh(STAIR_GEOMETRY, STAIR_MATERIAL);
+        mesh.rotation.x = - Math.PI * 3 / 4;
+        mesh.position.set(x, y + CELL_SIZE / 2, z);
+        mesh.name = 'stair';
+        game.objects.push(mesh);
+        game.scene.add(mesh);
+        this.geometry.stair.push(mesh);
     };
 
     // Generate wall geometry
@@ -181,6 +205,7 @@ function Level(game) {
     this.generateWallGeometry = function (x, y, z) {
         var mesh = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
         mesh.position.set(x, y + CELL_SIZE / 2, z);
+        mesh.name = 'wall';
         game.objects.push(mesh);
         game.scene.add(mesh);
         this.geometry.wall.push(mesh);
@@ -204,6 +229,7 @@ function Level(game) {
         this.mapColors.nothing = "#202020";
         this.mapColors.floor = "#00004f";
         this.mapColors.ceil = "#4f0000";
+        this.mapColors.stair = "#ff7f00";
         this.mapColors.wall = "#c0c0c0";
     };
 
@@ -215,8 +241,6 @@ function Level(game) {
         // Calculate the player's position on the minimap
         px = Math.floor(game.player.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
         pz = Math.floor(game.player.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-
-        console.log(game.player.position.y);
         ry = Math.floor(Math.floor(game.player.position.y) / CELL_SIZE);
 
         // Clear the map
@@ -240,6 +264,7 @@ function Level(game) {
                     case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
                     case CELL_TYPES.start: color = this.mapColors.floor; break;
                     case CELL_TYPES.floor: color = this.mapColors.floor; break;
+                    case CELL_TYPES.stair: color = this.mapColors.stair; break;
                     case CELL_TYPES.wall: color = this.mapColors.wall; break;
                 }
 

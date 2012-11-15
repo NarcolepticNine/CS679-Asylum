@@ -30,7 +30,7 @@ Map[0] =
 "wwwwwwwwwffffw\n" +
 "wfffffffwffffw\n" +
 "wfffsffffffffw\n" +
-"wfffffffwffffw\n" +
+"wtffffffwffffw\n" +
 "wwwwwwwwwwwwww";
 
 Map[1] =
