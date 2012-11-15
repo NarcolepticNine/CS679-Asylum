@@ -5,6 +5,7 @@ var CELL_TYPES = {
     wall: 'w',
     start: 's',
     key: 'k',
+    warden: 'W',
 },
     MAP_CELL_SIZE = 10,
     CELL_SIZE = 32,
@@ -40,6 +41,7 @@ function Level(game) {
     this.mapContext = null;
     this.mapColors = {};
     this.startPos = new THREE.Vector3();
+    this.wardenPos = new THREE.Vector3(); 
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -82,6 +84,11 @@ function Level(game) {
                         case CELL_TYPES.ceil:
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.ceil);
                             break;
+                        case CELL_TYPES.warden:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.floor);
+                            this.addWardenPosition( x, y, z ); 
+                            break;
+
                         case CELL_TYPES.nothing:
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.nothing);
                             break;
@@ -212,12 +219,18 @@ function Level(game) {
     }
 
 
-    // Add randomized starting location for player
+    // Add starting location for player
     // -------------------------------------------
     this.addStartPosition = function (x, y, z) {
         this.startPos = new THREE.Vector3(x * CELL_SIZE, y * CELL_SIZE, z * CELL_SIZE);
 
     };
+
+    this.addWardenPosition = function (x, y, z) {
+        this.wardenPos = new THREE.Vector3(x * CELL_SIZE, y * CELL_SIZE, z * CELL_SIZE);
+
+    };
+
 
     // Generate minimap using a 2d canvas
     // ----------------------------------
@@ -241,7 +254,7 @@ function Level(game) {
         px = Math.floor(game.player.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
         pz = Math.floor(game.player.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
 
-        console.log(game.player.position.y);
+        //console.log(game.player.position.y);
         ry = Math.floor(Math.floor(game.player.position.y) / CELL_SIZE);
 
         // Clear the map

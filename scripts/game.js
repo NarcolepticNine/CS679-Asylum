@@ -47,7 +47,8 @@ function Game(renderer, canvas) {
         this.lights = [];
         this.level = null;
         this.player = null;
-
+		this.warden = null; 
+		
         // Setup scene
         this.scene = new THREE.Scene();
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
@@ -64,7 +65,16 @@ function Game(renderer, canvas) {
         this.player.position.set(
             this.level.startPos.x, this.level.startPos.y + 8.5, this.level.startPos.z);
         this.scene.add(this.player);
-
+		
+		// Initialize warden(s) 
+		
+		this.warden = new Warden(); 
+		this.warden.init( this.scene ); 
+		this.warden.mesh.position.set( 
+			this.level.wardenPos.x,
+			this.level.wardenPos.y + 8.5, 
+			this.level.startPos.z );
+		
         // Setup camera
         this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         this.camera.position.set(this.player.position.x, this.player.position.y, this.player.position.z);
@@ -108,6 +118,7 @@ function Game(renderer, canvas) {
             this.init(input);
         }
         this.level.update();
+        this.warden.update( this.player.position.x, this.player.position.z ); 
         updateMovement(this, input);
         handleCollisions(this, input);
     };

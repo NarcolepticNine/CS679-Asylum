@@ -29,7 +29,7 @@ Map[0] =
 "wfffffffwffffw\n" +
 "wwwwwwwwwffffw\n" +
 "wfffffffwffffw\n" +
-"wfffsfffffkffw\n" +
+"wfffsffWffkffw\n" +
 "wfffffffwffffw\n" +
 "wwwwwwwwwwwwww";
 
