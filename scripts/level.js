@@ -3,7 +3,8 @@ var CELL_TYPES = {
     floor: 'f',
     ceil: 'c',
     wall: 'w',
-    start: 's'
+    start: 's',
+    key: 'k',
 },
     MAP_CELL_SIZE = 10,
     CELL_SIZE = 32,
@@ -72,6 +73,9 @@ function Level(game) {
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.start);
                             this.addStartPosition(x, y, z);
                             break;
+                       case CELL_TYPES.key:
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.key);
+                            break;
                         case CELL_TYPES.floor:
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.floor);
                             break;
@@ -139,6 +143,9 @@ function Level(game) {
                         continue;
                     } else if (cell.type === CELL_TYPES.start || cell.type === CELL_TYPES.floor) {
                         this.generateFloorGeometry(xx, yy, zz);
+                    } else if (cell.type === CELL_TYPES.key) {
+                    	this.generateFloorGeometry(xx, yy, zz);
+                    	this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js');
                     } else if (cell.type === CELL_TYPES.ceil) {
                         this.generateCeilingGeometry(xx, yy, zz);
                     } else if (cell.type === CELL_TYPES.wall) {
@@ -161,6 +168,24 @@ function Level(game) {
         game.scene.add(mesh);
         this.geometry.floor.push(mesh);
     };
+    
+    // Generate Obj geometyr
+    this.generateObjGeometry = function (x, y, z, scale, obj) {
+    
+    	var loader = new THREE.JSONLoader();
+		var cbo = function( geometry ) { createGeo( geometry,  x, y, z, scale ) };
+
+		loader.load(obj, cbo);
+
+    };
+    
+    function createGeo( geometry, x, y, z, scale ) {
+		var objMesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+		objMesh.position.set( x, y, z );
+		objMesh.scale.set( scale, scale, scale );
+		game.objects.push(objMesh);
+		game.scene.add(objMesh);
+	}
 
     // Generate ceiling geometry
     var CEIL_MATERIAL = new THREE.MeshPhongMaterial({ map: CEIL_TEXTURE });
