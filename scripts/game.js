@@ -50,6 +50,7 @@ function Game(renderer, canvas) {
 
         // Setup scene
         this.scene = new THREE.Scene();
+        //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
         this.scene.add(new THREE.AmbientLight(0x010101));
 
         // Load the test level
