@@ -31,8 +31,8 @@ Map[0].push(
 "wfffffffwffffw\n" +
 "wwwwwwwwwffffw\n" +
 "wfffffffwffffw\n" +
-"wfffsffWffkffw\n" +
-"wftfffffwffffw\n" +
+"wftfsffWffkffw\n" +
+"wfffffffwffffw\n" +
 "wwwwwwwwwwwwww");
 
 Map[0].push(
@@ -60,8 +60,8 @@ Map[0].push(
 "..............\n" +
 "..............\n" +
 "..............\n" +
+"..e...........\n" +
 "..............\n" +
-"..w...........\n" +
 "..............");
 
 

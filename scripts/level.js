@@ -222,34 +222,105 @@ function Level(game) {
 
     // Generate stair geometry
     var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(2) * CELL_SIZE);
+
+    var TRIANGLE_GEOMETRY_L = new THREE.Geometry();
+    var v0 = new THREE.Vector3(CELL_SIZE / 2, -CELL_SIZE / 2, 0);   
+    var v1 = new THREE.Vector3(CELL_SIZE / 2, CELL_SIZE / 2, 0);   
+    var v2 = new THREE.Vector3(-CELL_SIZE / 2, -CELL_SIZE / 2, 0);
+    TRIANGLE_GEOMETRY_L.vertices.push(v0);
+    TRIANGLE_GEOMETRY_L.vertices.push(v1);
+    TRIANGLE_GEOMETRY_L.vertices.push(v2);
+    TRIANGLE_GEOMETRY_L.faces.push(new THREE.Face3(0, 1, 2, new THREE.Vector3( 0, 0, 1)));
+    TRIANGLE_GEOMETRY_L.faceVertexUvs[0].push([
+    new THREE.UV(0,0),
+    new THREE.UV(1,1),
+    new THREE.UV(1,0)
+    ]);
+
+    var TRIANGLE_GEOMETRY_R = new THREE.Geometry();
+    THREE.Geometry.call(TRIANGLE_GEOMETRY_R);
+    v0 = new THREE.Vector3(-CELL_SIZE / 2, -CELL_SIZE / 2, 0);   
+    v1 = new THREE.Vector3(CELL_SIZE / 2, -CELL_SIZE / 2, 0);
+    v2 = new THREE.Vector3(-CELL_SIZE / 2, CELL_SIZE / 2, 0);   
+    TRIANGLE_GEOMETRY_R.vertices.push(v0);
+    TRIANGLE_GEOMETRY_R.vertices.push(v1);
+    TRIANGLE_GEOMETRY_R.vertices.push(v2);
+    TRIANGLE_GEOMETRY_R.faces.push(new THREE.Face3(0, 1, 2, new THREE.Vector3( 0, 0, 1)));
+    TRIANGLE_GEOMETRY_R.faceVertexUvs[0].push([
+    new THREE.UV(1, 0),
+    new THREE.UV(0, 0),
+    new THREE.UV(0, 1)
+    ]);
+
+    var BACK_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE);
+
     var STAIR_MATERIAL = new THREE.MeshPhongMaterial({ map: STAIR_TEXTURE });
     this.generateStairGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(STAIR_GEOMETRY, STAIR_MATERIAL);
+        var mesh2 = new THREE.Mesh(TRIANGLE_GEOMETRY_L, STAIR_MATERIAL);
+        console.log(mesh);
+        console.log(mesh2);
+        var mesh3 = new THREE.Mesh(TRIANGLE_GEOMETRY_R, STAIR_MATERIAL);
+        mesh3.receiveShadow = true;
+        var mesh4 = new THREE.Mesh(BACK_GEOMETRY, STAIR_MATERIAL);
         switch (c) {
             case 's':
                 mesh.rotation.x = -Math.PI * 3 / 4;
-                mesh.rotation.z = Math.PI;                
+                mesh.rotation.z = Math.PI;
+                mesh2.rotation.y = -Math.PI  / 2;
+                mesh2.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh3.rotation.y = Math.PI / 2;
+                mesh3.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh4.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
                 break;
             case 'n':
-                mesh.rotation.x = -Math.PI / 4 ;
+                mesh.rotation.x = -Math.PI / 4;
+                mesh2.rotation.y = Math.PI / 2;
+                mesh2.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh3.rotation.y = -Math.PI / 2;
+                mesh3.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh4.rotation.y = Math.PI;
+                mesh4.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
                 break;
             case 'w':
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.rotation.y = Math.PI / 4;
                 mesh.rotation.z = Math.PI / 2;
+                mesh2.rotation.y = Math.PI;
+                mesh2.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                mesh3.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                mesh4.rotation.y = -Math.PI / 2;
+                mesh4.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
                 break;
             case 'e':
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.rotation.y = -Math.PI / 4;
                 mesh.rotation.z = -Math.PI / 2;
+                mesh2.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                mesh3.rotation.y = Math.PI;
+                mesh3.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                mesh4.rotation.y = Math.PI / 2;
+                mesh4.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
                 break;
         }
 
         mesh.position.set(x, y + CELL_SIZE / 2, z);
         mesh.name = 'stair';
+        mesh2.name = 'stair';
+        mesh3.name = 'stair';
+        mesh4.name = 'stair';
         game.objects.push(mesh);
         game.scene.add(mesh);
         this.geometry.stair.push(mesh);
+        game.objects.push(mesh2);
+        game.scene.add(mesh2);
+        this.geometry.stair.push(mesh2);
+        game.objects.push(mesh3);
+        game.scene.add(mesh3);
+        this.geometry.stair.push(mesh3);
+        game.objects.push(mesh4);
+        game.scene.add(mesh4);
+        this.geometry.stair.push(mesh4);
     };
 
     // Generate wall geometry
