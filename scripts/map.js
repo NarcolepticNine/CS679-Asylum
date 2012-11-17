@@ -3,8 +3,10 @@
  */
 
 var numFloors = 3;
+var maxDisp = 2;
 var Map = new Array(numFloors); 
-Map[0] =
+Map[0] = [];
+Map[0].push(
 "wwwwwwwwwwwwww\n" +
 "wffffffffffffw\n" +
 "wffffffffffffw\n" +
@@ -30,10 +32,45 @@ Map[0] =
 "wwwwwwwwwffffw\n" +
 "wfffffffwffffw\n" +
 "wfffsffWffkffw\n" +
-"wfffffffwffffw\n" +
-"wwwwwwwwwwwwww";
+"wftfffffwffffw\n" +
+"wwwwwwwwwwwwww");
 
-Map[1] =
+Map[0].push(
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"...............................\n" +
+"...............................\n" +
+"...............................\n" +
+"...............................\n" +
+"...............................\n" +
+"...............................\n" +
+"...............................\n" +
+"...............................\n" +
+"...............................\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..............\n" +
+"..w...........\n" +
+"..............");
+
+
+
+
+
+
+Map[1] = [];
+Map[1].push(
 "wwwwwwwwwwwwww\n" +
 "w            w\n" +
 "w            w\n" +
@@ -60,9 +97,10 @@ Map[1] =
 "w       w    w\n" +
 "w            w\n" +
 "w       w    w\n" +
-"wwwwwwwwwwwwww";
+"wwwwwwwwwwwwww");
 
-Map[2] =
+Map[2] = [];
+Map[2].push(
 "wwwwwwwwwwwwww\n" +
 "wccccccccccccw\n" +
 "wccccccccccccw\n" +
@@ -89,4 +127,4 @@ Map[2] =
 "wcccccccwccccw\n" +
 "wccccccccccccw\n" +
 "wcccccccwccccw\n" +
-"wwwwwwwwwwwwww";
+"wwwwwwwwwwwwww");

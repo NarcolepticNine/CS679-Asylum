@@ -7,6 +7,7 @@ var CELL_TYPES = {
     start: 's',
     key: 'k',
     warden: 'W',
+    stop: '.'
 },
     MAP_CELL_SIZE = 10,
     CELL_SIZE = 32,
@@ -14,12 +15,16 @@ var CELL_TYPES = {
     NUM_CELLS = new THREE.Vector3(0, 0, 0);
 
 NUM_CELLS.y = numFloors;
+rows = new Array(numFloors);
 for (y = 0; y < numFloors; ++y) {
-    //break apart map[i] into rows on \n 
-    rows = Map[y].split("\n");
-    NUM_CELLS.z = NUM_CELLS.z > rows.length ? NUM_CELLS.z : rows.length;
+    //break apart map[i] into rows on \n
+    rows[y] = new Array(Map[y].length);
+    for (var t = 0; t < Map[y].length; t++) {
+        rows[y][t] = Map[y][t].split("\n");
+    }
+    NUM_CELLS.z = NUM_CELLS.z > rows[0][0].length ? NUM_CELLS.z : rows[0][0].length;
     for (z = 0; z < NUM_CELLS.z; ++z) {
-        NUM_CELLS.x = NUM_CELLS.x > rows[z].length ? NUM_CELLS.x : rows[z].length;
+        NUM_CELLS.x = NUM_CELLS.x > rows[0][0][z].length ? NUM_CELLS.x : rows[0][0][z].length;
     }
 }
 
@@ -67,10 +72,9 @@ function Level(game) {
         // that cell type. 
         for (var y = 0; y < numFloors; y++) {
             //break apart map[i] into rows on \n
-            rows = Map[y].split("\n");
-            for (var z = 0; z < rows.length; z++) {
-                for (var x = 0; x < rows[z].length; x++) {
-                    switch (rows[z].charAt(x)) {
+            for (var z = 0; z < rows[y][0].length; z++) {
+                for (var x = 0; x < rows[y][0][z].length; x++) {
+                    switch (rows[y][0][z].charAt(x)) {
                         case CELL_TYPES.wall:
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.wall);
                             break;
@@ -85,7 +89,7 @@ function Level(game) {
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.floor);
                             break;
                         case CELL_TYPES.stair:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.stair);
+                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.stair + rows[y][1][z].charAt(x));
                             break;
                         case CELL_TYPES.ceil:
                             this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.ceil);
@@ -130,7 +134,7 @@ function Level(game) {
             str += "Floor " + y + ":\n";
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 for (x = 0; x < NUM_CELLS.x; ++x) {
-                    str += this.grid[y][z][x].type;
+                    str += this.grid[y][z][x].type.charAt(0);
                 }
                 str += "\n";
             }
@@ -152,18 +156,18 @@ function Level(game) {
                     yy = y * CELL_SIZE;
                     zz = z * CELL_SIZE;
                     // Generate geometry according to cell type
-                    if (cell.type === CELL_TYPES.nothing) {
+                    if (cell.type.charAt(0) === CELL_TYPES.nothing) {
                         continue;
-                    } else if (cell.type === CELL_TYPES.start || cell.type === CELL_TYPES.floor) {
+                    } else if (cell.type.charAt(0) === CELL_TYPES.start || cell.type.charAt(0) === CELL_TYPES.floor) {
                         this.generateFloorGeometry(xx, yy, zz);
-                    } else if (cell.type === CELL_TYPES.key) {
+                    } else if (cell.type.charAt(0) === CELL_TYPES.key) {
                     	this.generateFloorGeometry(xx, yy, zz);
                     	this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js');
-                    } else if (cell.type === CELL_TYPES.ceil) {
+                    } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                         this.generateCeilingGeometry(xx, yy, zz);
                     }
-                    else if (cell.type === CELL_TYPES.stair) {
-                        this.generateStairGeometry(xx, yy, zz);
+                    else if (cell.type.charAt(0) === CELL_TYPES.stair) {
+                        this.generateStairGeometry(xx, yy, zz, cell.type.charAt(1));
                     } else if (cell.type === CELL_TYPES.wall) {
                         this.generateWallGeometry(xx, yy, zz);
                     }
@@ -219,9 +223,28 @@ function Level(game) {
     // Generate stair geometry
     var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(2) * CELL_SIZE);
     var STAIR_MATERIAL = new THREE.MeshPhongMaterial({ map: STAIR_TEXTURE });
-    this.generateStairGeometry = function (x, y, z) {
+    this.generateStairGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(STAIR_GEOMETRY, STAIR_MATERIAL);
-        mesh.rotation.x = - Math.PI * 3 / 4;
+        switch (c) {
+            case 's':
+                mesh.rotation.x = -Math.PI * 3 / 4;
+                mesh.rotation.z = Math.PI;                
+                break;
+            case 'n':
+                mesh.rotation.x = -Math.PI / 4 ;
+                break;
+            case 'w':
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.rotation.y = Math.PI / 4;
+                mesh.rotation.z = Math.PI / 2;
+                break;
+            case 'e':
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.rotation.y = -Math.PI / 4;
+                mesh.rotation.z = -Math.PI / 2;
+                break;
+        }
+
         mesh.position.set(x, y + CELL_SIZE / 2, z);
         mesh.name = 'stair';
         game.objects.push(mesh);
@@ -297,7 +320,7 @@ function Level(game) {
                 xx = x * MAP_CELL_SIZE;
                 zz = z * MAP_CELL_SIZE;
 
-                switch (cell.type) {
+                switch (cell.type.charAt(0)) {
                     case CELL_TYPES.nothing: color = this.mapColors.nothing; break;
                     case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
                     case CELL_TYPES.start: color = this.mapColors.floor; break;

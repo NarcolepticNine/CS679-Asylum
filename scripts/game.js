@@ -233,7 +233,8 @@ function bumpBack(collisionResults, directionVector, game) {
     var j = 0;
     var k = 0;
     if (game.player.mesh.position.x - game.oldplayer.x > 0) {
-        for (i = 0.1; i <= game.player.position.x - game.oldplayer.x; i += 0.1) {
+        for (i = 0.1; i <= game.player.mesh.position.x - game.oldplayer.x; i += 0.1) {
+     
             ray = new THREE.Ray(new THREE.Vector3(game.oldplayer.x + i, game.oldplayer.y, game.oldplayer.z), directionVector.clone().normalize());
             collisionResults = ray.intersectObjects(game.objects);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
