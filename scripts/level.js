@@ -277,9 +277,9 @@ function Level(game) {
         var x, z, xx, zz, px, pz, ry, cell, color;
 
         // Calculate the player's position on the minimap
-        px = Math.floor(game.player.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-        pz = Math.floor(game.player.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-        ry = Math.floor(Math.floor(game.player.position.y) / CELL_SIZE);
+        px = Math.floor(game.player.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+        pz = Math.floor(game.player.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+        ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
 
         // Clear the map
         mapContext.save();

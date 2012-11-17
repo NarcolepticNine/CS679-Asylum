@@ -9,6 +9,12 @@ function Warden() {
 	 */
 	this.awareness = 0; 
 	
+	//pass in level.startPos
+	this.setStartPos = function ( vec3  ){
+		this.mesh.position.set( vec3.x, vec3.y + 8.5, vec3.z ); 	
+		
+	}
+	
 	this.init = function( scene ){
 		this.mesh = new THREE.Mesh(
 			new THREE.CubeGeometry( 10, 10, 10 ),
@@ -23,16 +29,16 @@ function Warden() {
 	 * Basic Sound Mechanic.  Player movement causes Player sound to rise.  
 	 * Sound is passed as a the player's sound level currently.  '
 	 */
-	this.update = function(x, z, sound){
+	this.update = function( posVec ){
 		
-		dX = x - this.mesh.position.x; 
-		dZ = z - this.mesh.position.z; 
+		dX = posVec.x - this.mesh.position.x; 
+		dZ = posVec.z - this.mesh.position.z; 
 				
 		var d = Math.sqrt(dX*dX+dZ*dZ);    		
 		
-		awareness = ( sound > d ) ? awareness +=5 : awareness -= 5 ; 
+		//awareness = ( sound > d ) ? awareness +=5 : awareness -= 5 ; 
 			
-		if( awareness > 30 ){
+		if( d  > 30 ){
 			this.mesh.position.x += (this.speed * ( dX / d ));
 	        this.mesh.position.z += (this.speed * ( dZ / d )); 
 	    }
