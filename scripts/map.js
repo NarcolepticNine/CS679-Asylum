@@ -95,7 +95,7 @@ Map[1].push(
 "w       w    w\n" +
 "wwwwwwwww    w\n" +
 "w       w    w\n" +
-"w            w\n" +
+"w  f         w\n" +
 "w       w    w\n" +
 "wwwwwwwwwwwwww");
 

@@ -306,9 +306,9 @@ function Level(game) {
 
         mesh.position.set(x, y + CELL_SIZE / 2, z);
         mesh.name = 'stair';
-        mesh2.name = 'stair';
-        mesh3.name = 'stair';
-        mesh4.name = 'stair';
+        mesh2.name = 'side';
+        mesh3.name = 'side';
+        mesh4.name = 'side';
         game.objects.push(mesh);
         game.scene.add(mesh);
         this.geometry.stair.push(mesh);
