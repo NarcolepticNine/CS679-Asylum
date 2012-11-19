@@ -22,13 +22,11 @@ for (y = 0; y < numFloors; ++y) {
     for (var t = 0; t < Map[y].length; t++) {
         rows[y][t] = Map[y][t].split("\n");
     }
-    NUM_CELLS.z = NUM_CELLS.z > rows[0][0].length ? NUM_CELLS.z : rows[0][0].length;
+    NUM_CELLS.z = NUM_CELLS.z > rows[y][0].length ? NUM_CELLS.z : rows[y][0].length;
     for (z = 0; z < NUM_CELLS.z; ++z) {
-        NUM_CELLS.x = NUM_CELLS.x > rows[0][0][z].length ? NUM_CELLS.x : rows[0][0][z].length;
+        NUM_CELLS.x = NUM_CELLS.x > rows[y][0][z].length ? NUM_CELLS.x : rows[y][0][z].length;
     }
 }
-
-
 
 // ----------------------------------------------------------------------------
 // Level 
@@ -48,7 +46,7 @@ function Level(game) {
     this.mapContext = null;
     this.mapColors = {};
     this.startPos = new THREE.Vector3();
-    this.wardenPos = new THREE.Vector3(); 
+    this.wardenPos = new THREE.Vector3();
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -74,34 +72,45 @@ function Level(game) {
             //break apart map[i] into rows on \n
             for (var z = 0; z < rows[y][0].length; z++) {
                 for (var x = 0; x < rows[y][0][z].length; x++) {
-                    switch (rows[y][0][z].charAt(x)) {
-                        case CELL_TYPES.wall:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.wall);
+                    for (var t = 0; t < rows[y].length; t++) {
+                        var stop = 0;
+                        switch (rows[y][t][z].charAt(x)) {
+                            case CELL_TYPES.wall:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.wall));
+                                break;
+                            case CELL_TYPES.start:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
+                                this.addStartPosition(x, y, z);
+                                break;
+                            case CELL_TYPES.key:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.key));
+                                break;
+                            case CELL_TYPES.floor:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
+                                break;
+                            case CELL_TYPES.stair:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.stair + rows[y][t + 1][z].charAt(x)));
+                                break;
+                            case CELL_TYPES.ceil:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.ceil));
+                                break;
+                            case CELL_TYPES.warden:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
+                                this.addWardenPosition(x, y, z);
+                                break;
+                            case CELL_TYPES.nothing:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.nothing));
+                                break;
+                            case CELL_TYPES.stop:
+                                stop = 1;
+                                break;
+                            default:
+                                stop = 1;
+                                break;
+                        }
+                        if (stop === 1) {
                             break;
-                        case CELL_TYPES.start:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.start);
-                            this.addStartPosition(x, y, z);
-                            break;
-                       case CELL_TYPES.key:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.key);
-                            break;
-                        case CELL_TYPES.floor:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.floor);
-                            break;
-                        case CELL_TYPES.stair:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.stair + rows[y][1][z].charAt(x));
-                            break;
-                        case CELL_TYPES.ceil:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.ceil);
-                            break;
-                        case CELL_TYPES.warden:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.floor);
-                            this.addWardenPosition( x, y, z ); 
-                            break;
-
-                        case CELL_TYPES.nothing:
-                            this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.nothing);
-                            break;
+                        }
                     }
                 }
             }
@@ -118,7 +127,7 @@ function Level(game) {
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 this.grid[y][z] = new Array(NUM_CELLS.x);
                 for (x = 0; x < NUM_CELLS.x; ++x) {
-                    this.grid[y][z][x] = new Cell(x, y, z, CELL_TYPES.nothing);
+                    this.grid[y][z][x] = []
                 }
             }
         }
@@ -134,7 +143,9 @@ function Level(game) {
             str += "Floor " + y + ":\n";
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 for (x = 0; x < NUM_CELLS.x; ++x) {
-                    str += this.grid[y][z][x].type.charAt(0);
+                    for (var t = 0; t < this.grid[y][z][x].length; t++) {
+                        str += this.grid[y][z][x][t].type.charAt(0);
+                    }
                 }
                 str += "\n";
             }
@@ -146,30 +157,31 @@ function Level(game) {
     // Creates new geometry based on grid layout
     // -----------------------------------------
     this.generateGeometry = function () {
-        var x, y, z, xx, yy, zz, cell;
+        var x, y, z, t, xx, yy, zz, cell;
 
         for (y = 0; y < NUM_CELLS.y; ++y) {
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 for (x = 0; x < NUM_CELLS.x; ++x) {
-                    cell = this.grid[y][z][x];
-                    xx = x * CELL_SIZE;
-                    yy = y * CELL_SIZE;
-                    zz = z * CELL_SIZE;
-                    // Generate geometry according to cell type
-                    if (cell.type.charAt(0) === CELL_TYPES.nothing) {
-                        continue;
-                    } else if (cell.type.charAt(0) === CELL_TYPES.start || cell.type.charAt(0) === CELL_TYPES.floor) {
-                        this.generateFloorGeometry(xx, yy, zz);
-                    } else if (cell.type.charAt(0) === CELL_TYPES.key) {
-                    	this.generateFloorGeometry(xx, yy, zz);
-                    	this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js');
-                    } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
-                        this.generateCeilingGeometry(xx, yy, zz);
-                    }
-                    else if (cell.type.charAt(0) === CELL_TYPES.stair) {
-                        this.generateStairGeometry(xx, yy, zz, cell.type.charAt(1));
-                    } else if (cell.type === CELL_TYPES.wall) {
-                        this.generateWallGeometry(xx, yy, zz);
+                    for (t = 0; t < this.grid[y][z][x].length; t++) {
+                        cell = this.grid[y][z][x][t];
+                        xx = x * CELL_SIZE;
+                        yy = y * CELL_SIZE;
+                        zz = z * CELL_SIZE;
+                        // Generate geometry according to cell type
+                        if (cell.type.charAt(0) === CELL_TYPES.nothing) {
+                            continue;
+                        } else if (cell.type.charAt(0) === CELL_TYPES.floor) {
+                            this.generateFloorGeometry(xx, yy, zz);
+                        } else if (cell.type.charAt(0) === CELL_TYPES.key) {
+                            this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js');
+                        } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
+                            this.generateCeilingGeometry(xx, yy, zz);
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.stair) {
+                            this.generateStairGeometry(xx, yy, zz, cell.type.charAt(1));
+                        } else if (cell.type === CELL_TYPES.wall) {
+                            this.generateWallGeometry(xx, yy, zz);
+                        }
                     }
                 }
             }
@@ -189,24 +201,24 @@ function Level(game) {
         game.scene.add(mesh);
         this.geometry.floor.push(mesh);
     };
-    
+
     // Generate Obj geometyr
     this.generateObjGeometry = function (x, y, z, scale, obj) {
-    
-    	var loader = new THREE.JSONLoader();
-		var cbo = function( geometry ) { createGeo( geometry,  x, y, z, scale ) };
 
-		loader.load(obj, cbo);
+        var loader = new THREE.JSONLoader();
+        var cbo = function (geometry) { createGeo(geometry, x, y, z, scale) };
+
+        loader.load(obj, cbo);
 
     };
-    
-    function createGeo( geometry, x, y, z, scale ) {
-		var objMesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
-		objMesh.position.set( x, y, z );
-		objMesh.scale.set( scale, scale, scale );
-		game.objects.push(objMesh);
-		game.scene.add(objMesh);
-	}
+
+    function createGeo(geometry, x, y, z, scale) {
+        var objMesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial());
+        objMesh.position.set(x, y, z);
+        objMesh.scale.set(scale, scale, scale);
+        game.objects.push(objMesh);
+        game.scene.add(objMesh);
+    }
 
     // Generate ceiling geometry
     var CEIL_MATERIAL = new THREE.MeshPhongMaterial({ map: CEIL_TEXTURE });
@@ -224,28 +236,28 @@ function Level(game) {
     var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(2) * CELL_SIZE);
 
     var TRIANGLE_GEOMETRY_L = new THREE.Geometry();
-    var v0 = new THREE.Vector3(CELL_SIZE / 2, -CELL_SIZE / 2, 0);   
-    var v1 = new THREE.Vector3(CELL_SIZE / 2, CELL_SIZE / 2, 0);   
+    var v0 = new THREE.Vector3(CELL_SIZE / 2, -CELL_SIZE / 2, 0);
+    var v1 = new THREE.Vector3(CELL_SIZE / 2, CELL_SIZE / 2, 0);
     var v2 = new THREE.Vector3(-CELL_SIZE / 2, -CELL_SIZE / 2, 0);
     TRIANGLE_GEOMETRY_L.vertices.push(v0);
     TRIANGLE_GEOMETRY_L.vertices.push(v1);
     TRIANGLE_GEOMETRY_L.vertices.push(v2);
-    TRIANGLE_GEOMETRY_L.faces.push(new THREE.Face3(0, 1, 2, new THREE.Vector3( 0, 0, 1)));
+    TRIANGLE_GEOMETRY_L.faces.push(new THREE.Face3(0, 1, 2, new THREE.Vector3(0, 0, 1)));
     TRIANGLE_GEOMETRY_L.faceVertexUvs[0].push([
-    new THREE.UV(0,0),
-    new THREE.UV(1,1),
-    new THREE.UV(1,0)
+    new THREE.UV(0, 0),
+    new THREE.UV(1, 1),
+    new THREE.UV(1, 0)
     ]);
 
     var TRIANGLE_GEOMETRY_R = new THREE.Geometry();
     THREE.Geometry.call(TRIANGLE_GEOMETRY_R);
-    v0 = new THREE.Vector3(-CELL_SIZE / 2, -CELL_SIZE / 2, 0);   
+    v0 = new THREE.Vector3(-CELL_SIZE / 2, -CELL_SIZE / 2, 0);
     v1 = new THREE.Vector3(CELL_SIZE / 2, -CELL_SIZE / 2, 0);
-    v2 = new THREE.Vector3(-CELL_SIZE / 2, CELL_SIZE / 2, 0);   
+    v2 = new THREE.Vector3(-CELL_SIZE / 2, CELL_SIZE / 2, 0);
     TRIANGLE_GEOMETRY_R.vertices.push(v0);
     TRIANGLE_GEOMETRY_R.vertices.push(v1);
     TRIANGLE_GEOMETRY_R.vertices.push(v2);
-    TRIANGLE_GEOMETRY_R.faces.push(new THREE.Face3(0, 1, 2, new THREE.Vector3( 0, 0, 1)));
+    TRIANGLE_GEOMETRY_R.faces.push(new THREE.Face3(0, 1, 2, new THREE.Vector3(0, 0, 1)));
     TRIANGLE_GEOMETRY_R.faceVertexUvs[0].push([
     new THREE.UV(1, 0),
     new THREE.UV(0, 0),
@@ -256,18 +268,16 @@ function Level(game) {
 
     var STAIR_MATERIAL = new THREE.MeshPhongMaterial({ map: STAIR_TEXTURE });
     this.generateStairGeometry = function (x, y, z, c) {
-        var mesh = new THREE.Mesh(STAIR_GEOMETRY, STAIR_MATERIAL);
-        var mesh2 = new THREE.Mesh(TRIANGLE_GEOMETRY_L, STAIR_MATERIAL);
-        console.log(mesh);
-        console.log(mesh2);
-        var mesh3 = new THREE.Mesh(TRIANGLE_GEOMETRY_R, STAIR_MATERIAL);
+        var mesh = new THREE.Mesh(STAIR_GEOMETRY, STAIR_MATERIAL);//replace with real texture later
+        var mesh2 = new THREE.Mesh(TRIANGLE_GEOMETRY_L, STAIR_MATERIAL);//replace with real texture later
+        var mesh3 = new THREE.Mesh(TRIANGLE_GEOMETRY_R, STAIR_MATERIAL);//replace with real texture later
         mesh3.receiveShadow = true;
-        var mesh4 = new THREE.Mesh(BACK_GEOMETRY, STAIR_MATERIAL);
+        var mesh4 = new THREE.Mesh(BACK_GEOMETRY, STAIR_MATERIAL);//replace with real texture later
         switch (c) {
             case 's':
                 mesh.rotation.x = -Math.PI * 3 / 4;
                 mesh.rotation.z = Math.PI;
-                mesh2.rotation.y = -Math.PI  / 2;
+                mesh2.rotation.y = -Math.PI / 2;
                 mesh2.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
                 mesh3.rotation.y = Math.PI / 2;
                 mesh3.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
@@ -368,7 +378,7 @@ function Level(game) {
     // Update minimap
     // --------------------------------
     this.updateMinimap = function () {
-        var x, z, xx, zz, px, pz, ry, cell, color;
+        var x, z, t, xx, zz, px, pz, ry, cell, color;
 
         // Calculate the player's position on the minimap
         px = Math.floor(game.player.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
@@ -387,22 +397,28 @@ function Level(game) {
         // Draw the map cells
         for (z = 0; z < NUM_CELLS.z; ++z) {
             for (x = 0; x < NUM_CELLS.x; ++x) {
-                cell = this.grid[ry][z][x];
+                color = this.mapColors.nothing;
                 xx = x * MAP_CELL_SIZE;
                 zz = z * MAP_CELL_SIZE;
-
-                switch (cell.type.charAt(0)) {
-                    case CELL_TYPES.nothing: color = this.mapColors.nothing; break;
-                    case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
-                    case CELL_TYPES.start: color = this.mapColors.floor; break;
-                    case CELL_TYPES.floor: color = this.mapColors.floor; break;
-                    case CELL_TYPES.stair: color = this.mapColors.stair; break;
-                    case CELL_TYPES.wall: color = this.mapColors.wall; break;
+                var chosen = 0;
+                for (t = 0; t < this.grid[ry][z][x].length; t++) {
+                    cell = this.grid[ry][z][x][t];
+                    switch (cell.type.charAt(0)) {
+                        //case CELL_TYPES.nothing: color = this.mapColors.nothing; break;
+                        //case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
+                        //case CELL_TYPES.start: color = this.mapColors.floor; break;
+                        //case CELL_TYPES.floor: color = this.mapColors.floor; break;
+                        case CELL_TYPES.stair: color = this.mapColors.stair; chosen = 1; break;
+                        case CELL_TYPES.wall: color = this.mapColors.wall; chosen = 1; break;
+                    }
+                    if (chosen === 1) {
+                        break;
+                    }
                 }
-
-                mapContext.fillStyle = color;
-                mapContext.fillRect(xx, zz, MAP_CELL_SIZE, MAP_CELL_SIZE);
-
+                if (this.grid[ry][z][x].length > 0) {
+                    mapContext.fillStyle = color;
+                    mapContext.fillRect(xx, zz, MAP_CELL_SIZE, MAP_CELL_SIZE);
+                }
             }
         }
 

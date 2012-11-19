@@ -31,7 +31,7 @@ Map[0].push(
 "wfffffffwffffw\n" +
 "wwwwwwwwwffffw\n" +
 "wfffffffwffffw\n" +
-"wftfsffWffkffw\n" +
+"wtfffsfWfffffw\n" +
 "wfffffffwffffw\n" +
 "wwwwwwwwwwwwww");
 
@@ -59,15 +59,10 @@ Map[0].push(
 "..............\n" +
 "..............\n" +
 "..............\n" +
-"..............\n" +
-"..e...........\n" +
+".c............\n" +
+".n........k...\n" +
 "..............\n" +
 "..............");
-
-
-
-
-
 
 Map[1] = [];
 Map[1].push(
@@ -94,8 +89,8 @@ Map[1].push(
 "w            w\n" +
 "w       w    w\n" +
 "wwwwwwwww    w\n" +
-"w       w    w\n" +
-"w  f         w\n" +
+"wf      w    w\n" +
+"w            w\n" +
 "w       w    w\n" +
 "wwwwwwwwwwwwww");
 
