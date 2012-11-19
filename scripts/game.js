@@ -125,7 +125,7 @@ function Game(renderer, canvas) {
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
-            if (smallDrop(this)) {            
+            if (smallDrop(this)) {
                 while (input.hold === 0) {
                     updateMovement(this, input);
                     handleCollisions(this, input);
@@ -236,15 +236,26 @@ function smallDrop(game) {
 
 
 function bumpUp(collisionResults, directionVector, game) {
-    for (var t = 1; t <= 50; t++) {
-        game.player.mesh.position.y += 0.1;
-        ray = new THREE.Ray(new THREE.Vector3(game.player.mesh.position.x, game.player.mesh.position.y, game.player.mesh.position.z), directionVector.clone().normalize());
+    var t;
+    for (t = 0.1; t <= 5; t = t + 0.1) {
+        ray = new THREE.Ray(new THREE.Vector3(game.player.mesh.position.x, game.player.mesh.position.y + t, game.player.mesh.position.z), directionVector.clone().normalize());
         collisionResults = ray.intersectObjects(game.objects);
         if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() > 1e-6) {
-            return true;
+            break;
         }
     }
-    return false;
+
+
+    for (var vertexIndex = 0; vertexIndex < game.player.mesh.geometry.vertices.length; vertexIndex++) {
+        var allDirectionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
+        var ray = new THREE.Ray(new THREE.Vector3(game.player.mesh.position.x, game.player.mesh.position.y + t, game.player.mesh.position.z), allDirectionVector.clone().normalize());
+        var allCollisionResults = ray.intersectObjects(game.objects);
+        if (allCollisionResults.length > 0 && allCollisionResults[0].distance - allDirectionVector.length() < -1e-6) {
+            return vertexIndex;
+        }
+    }
+    game.player.mesh.position.y += t;
+    return -1;
 }
 
 
@@ -373,11 +384,16 @@ function handleCollisions(game, input) {
                         if (selected.name === 'stair' || selected.name === 'floor') {
                             input.hold = 1;
                             input.v = 0;
-                            if (bumpUp(collisionResults, directionVector, game) === false) {
+
+                            var newCollide = bumpUp(collisionResults, directionVector, game);
+                            if (newCollide !== -1) {
                                 bumpBack(collisionResults, directionVector, game);
                             }
                         }
                     }
+                }
+                else {
+                    count++;
                 }
             }
             else {

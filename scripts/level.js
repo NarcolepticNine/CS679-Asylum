@@ -104,9 +104,6 @@ function Level(game) {
                             case CELL_TYPES.stop:
                                 stop = 1;
                                 break;
-                            default:
-                                stop = 1;
-                                break;
                         }
                         if (stop === 1) {
                             break;
