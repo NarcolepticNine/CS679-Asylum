@@ -18,7 +18,7 @@
 
 	<body>
 
-		<script src="../scripts/three.min.js"></script>
+		<script src="three.min.js"></script>
 
 		<script>
 
@@ -48,14 +48,14 @@
 				document.body.appendChild( container );
 
 				camera = new THREE.PerspectiveCamera( 75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 100000 );
-				camera.position.x = 100;
-				camera.position.y = 100;
-				camera.position.z = 100;
+				camera.position.x = 400;
+				camera.position.y = 200;
+				camera.position.z = 400;
 
 				scene = new THREE.Scene();
 
 				// LIGHTS
-				var ambient = new THREE.AmbientLight( 0xaaaaaa );
+				var ambient = new THREE.AmbientLight( 0x666666 );
 				scene.add( ambient );
 
 				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
@@ -71,18 +71,34 @@
 
 
 				var loader = new THREE.JSONLoader(),
-					callbackKey   = function( geometry ) { createScene( geometry,  -150, 0, 0, 5 ) },
-					callbackFlashlight = function( geometry ) { createScene( geometry, 0, 0, 0, 10 ) };
+					callbackKey   = function( geometry ) { createScene( geometry,  -150, 0, 0, 5, "key.jpg" ) },
+					callbackFlashlight = function( geometry ) { createScene( geometry, 0, 0, 0, 5, "flashlight.jpg" ) };
+					callbackBed = function( geometry ) { createScene( geometry, 150, 0, 0, 10, "bed.jpg" ) };
+					callbackBookcase = function( geometry ) { createScene( geometry, 0, 0, 150, 20, "bookcase.jpg" ) };
+					callbackClock = function( geometry ) { createScene( geometry, 0, 0, -150, 5, "clock.jpg" ) };
+					callbackDoor = function( geometry ) { createScene( geometry, -150, 0, 0, 10, "door.jpg" ) };
+					callbackFinalDoor = function( geometry ) { createScene( geometry, 150, 0, 150, 10, "door.jpg" ) };
+					callbackBulletinBoard = function( geometry ) { createScene( geometry, 150, 0, -150, 3, "bulletin-board.jpg" ) };
+					callbackPicture = function( geometry ) { createScene( geometry, -150, 0, 150, 5, "picture.jpg" ) };
+					callbackWindow = function( geometry ) { createScene( geometry, -150, 0, -150, 3, "window.jpg" ) };
 
 				loader.load( "key.js", callbackKey );
 				loader.load( "flashlight.js", callbackFlashlight );
+				loader.load( "bed.js", callbackBed );
+				loader.load( "bookcase.js", callbackBookcase );
+				loader.load( "clock.js", callbackClock );
+				loader.load( "door.js", callbackDoor );
+				loader.load( "final-door.js", callbackFinalDoor );
+				loader.load( "bulletin-board.js", callbackBulletinBoard );
+				loader.load( "picture.js", callbackPicture );
+				loader.load( "window.js", callbackWindow );
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
 			
-			function createScene( geometry, x, y, z, scale ) {
-				zmesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+			function createScene( geometry, x, y, z, scale, tmap ) {
+				zmesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture(tmap)}));
 				zmesh.position.set( x, y, z );
 				zmesh.scale.set( scale, scale, scale );
 				meshes.push(zmesh);
