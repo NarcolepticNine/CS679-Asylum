@@ -4,6 +4,7 @@ var CELL_TYPES = {
     ceil: 'c',
     stair: 't',
     wall: 'w',
+    window: 'i',
     start: 's',
     key: 'k',
     warden: 'W',
@@ -40,6 +41,7 @@ function Level(game) {
         floor: [],
         ceil: [],
         wall: [],
+        window: [],
         stair: []
     };
     this.mapCanvas = null;
@@ -55,6 +57,7 @@ function Level(game) {
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/stone.png"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/brick.png"),
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
+    TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
     FLOOR_TEXTURE.wrapS = THREE.RepeatWrapping;
@@ -90,6 +93,11 @@ function Level(game) {
                                 break;
                             case CELL_TYPES.stair:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.stair + rows[y][t + 1][z].charAt(x)));
+                                t++;
+                                break;
+                            case CELL_TYPES.window:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.window + rows[y][t + 1][z].charAt(x)));
+                                t++;
                                 break;
                             case CELL_TYPES.ceil:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.ceil));
@@ -176,6 +184,9 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.stair) {
                             this.generateStairGeometry(xx, yy, zz, cell.type.charAt(1));
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.window) {
+                            this.generateWindowGeometry(xx, yy, zz, cell.type.charAt(1));
                         } else if (cell.type === CELL_TYPES.wall) {
                             this.generateWallGeometry(xx, yy, zz);
                         }
@@ -330,6 +341,36 @@ function Level(game) {
         this.geometry.stair.push(mesh4);
     };
 
+    var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE / 2),
+    WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: TRANSPARENT_TEXTURE });
+    console.log(WINDOW_MATERIAL.transparent);
+    WINDOW_MATERIAL.transparent = true;
+    WINDOW_MATERIAL.shininess = 10000;
+
+
+    this.generateWindowGeometry = function (x, y, z, c) {
+        var mesh = new THREE.Mesh(CUBOID_GEOMETRY, WINDOW_MATERIAL);//replace with real texture later
+        switch (c) {
+            case 's':
+                mesh.rotation.y = Math.PI;                
+                break;
+            case 'n':              
+                break;
+            case 'w':
+                mesh.rotation.y = Math.PI / 2;               
+                break;
+            case 'e':
+                mesh.rotation.y = -Math.PI / 2;               
+                break;
+        }
+
+        mesh.position.set(x, y + CELL_SIZE / 2, z);
+        mesh.name = 'window';
+        game.objects.push(mesh);
+        game.scene.add(mesh);
+        this.geometry.window.push(mesh);
+    };
+
     // Generate wall geometry
     // --------------------------------
     var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE),
@@ -369,6 +410,7 @@ function Level(game) {
         this.mapColors.floor = "#00004f";
         this.mapColors.ceil = "#4f0000";
         this.mapColors.stair = "#ff7f00";
+        this.mapColors.window = "#0000ff";
         this.mapColors.wall = "#c0c0c0";
     };
 
@@ -406,6 +448,7 @@ function Level(game) {
                         //case CELL_TYPES.start: color = this.mapColors.floor; break;
                         //case CELL_TYPES.floor: color = this.mapColors.floor; break;
                         case CELL_TYPES.stair: color = this.mapColors.stair; chosen = 1; break;
+                        case CELL_TYPES.window: color = this.mapColors.window; chosen = 1; break;
                         case CELL_TYPES.wall: color = this.mapColors.wall; chosen = 1; break;
                     }
                     if (chosen === 1) {
