@@ -170,7 +170,7 @@ function Level(game) {
                         } else if (cell.type.charAt(0) === CELL_TYPES.floor) {
                             this.generateFloorGeometry(xx, yy, zz);
                         } else if (cell.type.charAt(0) === CELL_TYPES.key) {
-                            this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js');
+                            this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js', 'obj/key.jpg');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz);
                         }
@@ -200,17 +200,17 @@ function Level(game) {
     };
 
     // Generate Obj geometyr
-    this.generateObjGeometry = function (x, y, z, scale, obj) {
+    this.generateObjGeometry = function (x, y, z, scale, obj, tmap) {
 
         var loader = new THREE.JSONLoader();
-        var cbo = function (geometry) { createGeo(geometry, x, y, z, scale) };
+        var cbo = function (geometry) { createGeo(geometry, x, y, z, scale, tmap ) };
 
         loader.load(obj, cbo);
 
     };
 
-    function createGeo(geometry, x, y, z, scale) {
-        var objMesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial());
+    function createGeo(geometry, x, y, z, scale, tmap) {
+        var objMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture(tmap)}));
         objMesh.position.set(x, y, z);
         objMesh.scale.set(scale, scale, scale);
         game.objects.push(objMesh);

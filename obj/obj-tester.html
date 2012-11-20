@@ -18,7 +18,7 @@
 
 	<body>
 
-		<script src="../scripts/three.min.js"></script>
+		<script src="three.min.js"></script>
 
 		<script>
 
@@ -55,7 +55,7 @@
 				scene = new THREE.Scene();
 
 				// LIGHTS
-				var ambient = new THREE.AmbientLight( 0xaaaaaa );
+				var ambient = new THREE.AmbientLight( 0x666666 );
 				scene.add( ambient );
 
 				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
@@ -71,18 +71,22 @@
 
 
 				var loader = new THREE.JSONLoader(),
-					callbackKey   = function( geometry ) { createScene( geometry,  -150, 0, 0, 5 ) },
-					callbackFlashlight = function( geometry ) { createScene( geometry, 0, 0, 0, 10 ) };
+					callbackKey   = function( geometry ) { createScene( geometry,  -150, 0, 0, 5, "key.jpg" ) },
+					callbackFlashlight = function( geometry ) { createScene( geometry, 0, 0, 0, 10, "flashlight.jpg" ) };
+					callbackBed = function( geometry ) { createScene( geometry, 150, 0, 0, 10, "bed.jpg" ) };
 
 				loader.load( "key.js", callbackKey );
 				loader.load( "flashlight.js", callbackFlashlight );
+				loader.load( "bed.js", callbackBed );
+				
+				
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
 			
-			function createScene( geometry, x, y, z, scale ) {
-				zmesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+			function createScene( geometry, x, y, z, scale, tmap ) {
+				zmesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture(tmap)}));
 				zmesh.position.set( x, y, z );
 				zmesh.scale.set( scale, scale, scale );
 				meshes.push(zmesh);
