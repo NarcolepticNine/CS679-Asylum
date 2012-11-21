@@ -51,37 +51,25 @@ function Game(renderer, canvas) {
 
         // Setup scene
         this.scene = new THREE.Scene();
+        
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
         this.scene.add(new THREE.AmbientLight(0x1f1f1f));
 
-        // Load the test level
+        // Load the level
         this.level = new Level(this);
 
         // Setup camera
         this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         this.scene.add(this.camera);
 
-        this.player = new Player();
-        this.player.init(this.scene, this.camera);
-        this.player.setStartPos(this.level.startPos);
         // Setup player
-        /*
-        this.player = new THREE.Mesh(
-            new THREE.CubeGeometry(9, 17, 3.5),
-            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-        );
-        this.player.position.set(
-            this.level.startPos.x, this.level.startPos.y + 8.5, this.level.startPos.z);
-        this.scene.add(this.player);
-		*/
-        // Initialize warden(s) 
-
+        this.player = new Player();
+        this.player.init( this.scene, this.camera, this.level.startPos );
+       
+        // Initialize warden 
         this.warden = new Warden();
-        this.warden.init(this.scene);
-        this.warden.setStartPos(this.level.wardenPos);
-
-
-
+        this.warden.init( this.scene, this.level.wardenPos );
+        
         // Update the view ray (center of canvas into screen)
         var rayVec = new THREE.Vector3(0, 0, 1);
         this.projector.unprojectVector(rayVec, this.camera);
@@ -92,24 +80,6 @@ function Game(renderer, canvas) {
             0, 1000                                           // near, far
         );
 
-        /*
-        // Setup a light that will move with the player
-        this.lights[0] = new THREE.SpotLight(0xffffff, 10, 100);
-        this.lights[0].position.set(
-            this.player.position.x,
-            this.player.position.y,
-            this.player.position.z);
-
-        this.lights[0].target.position.set(
-            this.player.position.x + input.viewRay.direction.x,
-            this.player.position.y + input.viewRay.direction.y,
-            this.player.position.z + input.viewRay.direction.z);
-        this.lights[0].castShadow = true;
-        this.lights[0].shadowCameraNear = 0;
-        this.lights[0].shadowCameraFar = 5;
-        this.lights[0].shadowCameraVisible = true;
-        this.scene.add(this.lights[0]);
-		*/
         console.log("Game initialized.");
     };
 
@@ -146,56 +116,43 @@ function Game(renderer, canvas) {
 // ----------------------------------------------------------------------------
 var PLAYER_MOVE_SPEED = 0.6;
 function updateMovement(game, input) {
-    var triggerAD = input.trigger.A - input.trigger.D,
-        triggerWS = input.trigger.W - input.trigger.S,
-        jumpVelocity = 4;
 
-    // Reorient camera
+
+	//correct for mouse cursor not being locked.  
     if (!document.pointerLockEnabled) {
-        if ((input.mouseX - canvas.offsetLeft) / canvas.width < 0.2) {
-            input.center -= 0.1 * (0.2 - (input.mouseX - canvas.offsetLeft) / canvas.width);
+    	
+    	var xRatio = (input.mouseX - canvas.offsetLeft) / canvas.width; 
+    	
+        if ( xRatio < 0.2) {
+            input.center -= 0.1 * (0.2 - xRatio );
         }
-        if ((input.mouseX - canvas.offsetLeft) / canvas.width > 0.8) {
-            input.center += 0.1 * ((input.mouseX - canvas.offsetLeft) / canvas.width - 0.8);
+        
+        if ( xRatio > 0.8) {
+            input.center += 0.1 * ( xRatio - 0.8);
         }
     }
+
+
+    // Reorient camera
     input.f.z = Math.sin(input.theta) * Math.sin(input.phi + input.center)
     input.f.x = Math.sin(input.theta) * Math.cos(input.phi + input.center);
     input.f.y = Math.cos(input.theta);
 
     // Handle jumping
-    if (input.hold === 1) {
-        input.Jump = 0;
-        if (input.trigger.Jump === 1) {
-            input.Jump = 1;
-            input.v = jumpVelocity;
-            input.trigger.Jump = 0;
-            input.hold = 0;
-            input.v -= 0.4;
-            game.player.mesh.position.y += input.v;
-        }
-    } else {
-        input.v -= 0.4;
-        game.player.mesh.position.y += input.v;
-    }
+    game.player.handleJump( input ); 
 
     // Update player position
-    var xzNorm = Math.sqrt(input.f.x * input.f.x + input.f.z * input.f.z);
-    game.player.mesh.position.add(
-        game.player.mesh.position,
-        new THREE.Vector3(
-            PLAYER_MOVE_SPEED * (triggerWS * input.f.x + triggerAD * input.f.z / xzNorm),
-            0,
-            PLAYER_MOVE_SPEED * (triggerWS * input.f.z - triggerAD * input.f.x / xzNorm)
-        )
-    );
-
+    game.player.updatePos( input ); 
+    
     // Update camera position/lookat 
+    game.player.updateCamera( input );
+    /*
     game.camera.position = game.player.mesh.position;
     var look = new THREE.Vector3();
     look.add(game.camera.position, input.f);
     game.camera.lookAt(look);
-
+	*/
+    
     // Update the view ray (center of canvas into screen)
     var rayVec = new THREE.Vector3(0, 0, 1);
     game.projector.unprojectVector(rayVec, game.camera);
@@ -208,16 +165,7 @@ function updateMovement(game, input) {
     //Update the player's light
     game.player.updateLight(input.viewRay.direction);
 
-    /*game.lights[0].position.set(
-        game.player.position.x,
-        game.player.position.y,
-        game.player.position.z);
 
-    game.lights[0].target.position.set(
-            game.player.position.x + input.viewRay.direction.x,
-            game.player.position.y + input.viewRay.direction.y,
-            game.player.position.z + input.viewRay.direction.z);
-    */
 }
 
 function smallDrop(game) {

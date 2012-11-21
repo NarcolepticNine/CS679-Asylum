@@ -7,10 +7,13 @@ function Player() {
 	this.flashlight = null;
 	
 	//mechanic variables
+	var speed    = 0.6; 
+	var jumpVel  =   4;
+	this.currSpd = speed; //TODO add sprinting ability by doubling this on holding shift 
 	this.sound = 0;
-	this.vY = 0; 
-	 
-	this.init = function( scene, camera ){
+	this.vY = 0;
+	
+	this.init = function( scene, camera, startPos ){
 		
 		this.camera = camera; 
 		
@@ -27,6 +30,8 @@ function Player() {
                 
 		scene.add( this.mesh ); 
 		scene.add( this.flashlight ); 
+		
+		this.setStartPos( startPos ); 
 	}
 	
 	//pass in level.startPos
@@ -47,12 +52,52 @@ function Player() {
 	this.update = function( input ){
 	
 		this.sound = 0; 
+		
 		    
+		
 	}	
 	
-	this.updateCamera = function( ){
+	this.updateCamera = function( input ){
+		
+		// Update camera position/lookat 
+    	this.camera.position = this.mesh.position;
+   	 	var look = new THREE.Vector3();
+   	 	look.add(this.camera.position, input.f);
+	    this.camera.lookAt(look);
+
+	}
+	
+	this.handleJump = function( input ){
+		if (input.hold === 1) {
+	        input.Jump = 0;
+	        if (input.trigger.Jump === 1) {
+	            input.Jump = 1;
+	            input.v = jumpVel;
+	            input.trigger.Jump = 0;
+	            input.hold = 0;
+	            input.v -= 0.4;
+	            this.mesh.position.y += input.v;
+	        }
+	    } else {
+	        input.v -= 0.4;
+	        this.mesh.position.y += input.v;
+	    }
+
 		
 	}
+	
+	this.updatePos = function( input ){
+		var AD = input.trigger.A - input.trigger.D,
+			WS = input.trigger.W - input.trigger.S; 
+		
+		var xzNorm = Math.sqrt(input.f.x * input.f.x + input.f.z * input.f.z);
+    	this.mesh.position.x += 
+           this.currSpd * ( WS * input.f.x + AD * input.f.z / xzNorm) ; 
+        
+        this.mesh.position.z += 
+        	this.currSpd * ( WS * input.f.z - AD * input.f.x / xzNorm );
+        
+   }
 	
 	this.updateLight  = function( inputVec ) {
 		var meshPos = this.mesh.position; 
