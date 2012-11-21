@@ -84,7 +84,7 @@ function setupInput(data, game) {
     data.hold = 1;
     data.click = 0;
     data.Jump = 0;
-    data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0 };
+    data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0 };
 
     // Hookup key input
     document.addEventListener("keydown", function (event) {
@@ -97,6 +97,7 @@ function setupInput(data, game) {
             case 65: data.trigger.A = 1; break;
             case 68: data.trigger.D = 1; break;
             case 67: data.trigger.crouch = 1; break;
+            case 70: data.trigger.light  = 1; break; 
             case 16: data.trigger.run = 1; break;  
             case 32: data.trigger.Jump = 1; break;
             
@@ -111,6 +112,7 @@ function setupInput(data, game) {
             case 65: data.trigger.A = 0; break;
             case 68: data.trigger.D = 0; break;
             case 67: data.trigger.crouch = 0; break;
+            case 70: data.trigger.light  = 0; break; 
             case 16: data.trigger.run = 0; break;  
         }
     }, false);

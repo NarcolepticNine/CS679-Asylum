@@ -6,6 +6,8 @@ function Player() {
 	this.input  = null; 
 	this.camera = null; 
 	this.flashlight = null;
+	this.lightTog = false; 
+	this.lightOn  = true; 
 	
 	//mechanic variables
 	var speed    = 0.6; 
@@ -58,7 +60,7 @@ function Player() {
 		this.sound = this.sound * 100;  
 		
 		this.updateViewRay( input ); 
-		this.updateLight( input.viewRay.direction ); 
+		this.updateLight( input.trigger.light, input.viewRay.direction ); 
 		
 	}	
 	
@@ -143,13 +145,31 @@ function Player() {
 		
 	}
 	
-	this.updateLight  = function( inputVec ) {
-		var meshPos = this.mesh.position; 
-		this.flashlight.position.set( meshPos.x, meshPos.y, meshPos.z );
-		this.flashlight.target.position.set(
-			meshPos.x + inputVec.x, 
-			meshPos.y + inputVec.y, 
-			meshPos.z + inputVec.z ); 
+	this.updateLight  = function( inLight, inputVec ) {
+		
+		if( inLight ){
+			
+			//lightTog prevents cycling the light until inLight is released.
+			if( !this.lightTog ){
+				this.flashlight.onlyShadow = this.lightOn; 
+				this.lightOn = !this.lightOn;
+				this.lightTog = true;  
+			}
+		} else {
+			this.lightTog = false; 
+		}
+		
+		
+		if( this.lightOn ){
+			var meshPos = this.mesh.position; 
+			this.flashlight.position.set( meshPos.x, meshPos.y, meshPos.z );
+			this.flashlight.target.position.set(
+				meshPos.x + inputVec.x, 
+				meshPos.y + inputVec.y, 
+				meshPos.z + inputVec.z );
+		} else {
+			
+		}
 	}
 	
 	

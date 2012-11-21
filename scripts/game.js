@@ -73,7 +73,7 @@ function Game(renderer, canvas) {
         // Update the view ray (center of canvas into screen)
         this.player.updateViewRay( input ); 
         
-        console.log("Game initialized.");
+        console.log( "Game initialized." );
     };
 
     // Update everything in the scene
