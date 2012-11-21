@@ -73,8 +73,6 @@ function Game(renderer, canvas) {
         // Update the view ray (center of canvas into screen)
         this.player.updateViewRay( input ); 
         
-        
-
         console.log("Game initialized.");
     };
 
@@ -86,17 +84,17 @@ function Game(renderer, canvas) {
         }
         
         this.level.update();
-        updateMovement(this, input);
-        this.warden.update(this.player.getPosVec());
+        this.player.update( input ); 
+        this.warden.update( this.player.getPosVec(), this.player.sound );
         
         //TODO Commented because it is causing massive fps drops during movement
-        //handleCollisions(this, input);
+        handleCollisions(this, input);
         
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
             if (smallDrop(this)) {
                 while (input.hold === 0) {
-                    updateMovement(this, input);
+                    this.player.update( input ); 
                     handleCollisions(this, input);
                 }
             }
@@ -110,32 +108,6 @@ function Game(renderer, canvas) {
     }
 }; // end Game object
 
-// ----------------------------------------------------------------------------
-// Update based on player movement: camera, player position/jumping, view ray
-// ----------------------------------------------------------------------------
-function updateMovement(game, input) {
-
-
-	game.player.updateMovement( input ); 
-	
-	  
-    // Update the view ray (center of canvas into screen)
-    game.player.updateViewRay( input ); 
-    /*
-    var rayVec = new THREE.Vector3(0, 0, 1);
-    game.projector.unprojectVector(rayVec, game.camera);
-    input.viewRay = new THREE.Ray(
-        game.player.mesh.position,                             // origin
-        rayVec.subSelf(game.player.mesh.position).normalize(), // direction
-        0, 1000                                           // near, far
-    );
-    */
-
-    //Update the player's light
-    game.player.updateLight(input.viewRay.direction);
-
-
-}
 
 function smallDrop(game) {
     for (var vertexIndex = 0; vertexIndex < game.player.mesh.geometry.vertices.length; vertexIndex++) {

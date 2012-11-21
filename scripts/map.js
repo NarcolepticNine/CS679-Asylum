@@ -17,7 +17,7 @@ Map[0].push(
 "wfffffffwffffwfffwfffwffffffffw\n" +
 "wwwwwwwwwffffwwfwwwfwwwwwffwwww\n" +
 "wfffffffffffffffffffffffffffffw\n" +
-"wfffffffffffffffffffffffffffffw\n" +
+"wffffffffffWffffffffffffffffffw\n" +
 "wfffffffffffffffffffffffffffffw\n" +
 "wwwwfwwwwffffwwwwwwwwwwwwwwwwww\n" +
 "wfffffffwffffw\n" +
@@ -31,7 +31,7 @@ Map[0].push(
 "wfffffffwffffw\n" +
 "wwwwwfwwwffffw\n" +
 "wfffffffwffffw\n" +
-"wtffwfwWfffffw\n" +
+"wtffwfwffffffw\n" +
 "wffffsffwffffw\n" +
 "wwwwwwwwwwwwww");
 

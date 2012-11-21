@@ -53,9 +53,12 @@ function Player() {
 	
 	this.update = function( input ){
 	
-		this.sound = 0; 
+		this.sound = this.updateMovement( input ); 
+		this.sound = this.sound * this.currSpd; 
+		this.sound = this.sound * 100;  
 		
-		    
+		this.updateViewRay( input ); 
+		this.updateLight( input.viewRay.direction ); 
 		
 	}	
 	
@@ -71,6 +74,17 @@ function Player() {
 	}
 	
 	this.updateMovement = function( input ){
+		
+		//adjust for running or crouching, or neither: 
+		if( input.trigger.run || input.trigger.crouch ){
+			
+			this.currSpd = ( input.trigger.run ) ? speed * 2 : speed / 2 ; 
+			
+		} else {
+			
+			this.currSpd = speed; 
+			
+		}
 		
 		//correct for mouse cursor not being locked.  
 	    if (!document.pointerLockEnabled) {
