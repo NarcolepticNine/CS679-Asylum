@@ -71,14 +71,9 @@ function Game(renderer, canvas) {
         this.warden.init( this.scene, this.level.wardenPos );
         
         // Update the view ray (center of canvas into screen)
-        var rayVec = new THREE.Vector3(0, 0, 1);
-        this.projector.unprojectVector(rayVec, this.camera);
-        var playPos = this.player.getPosVec();
-        input.viewRay = new THREE.Ray(
-            playPos,                             // origin
-            rayVec.subSelf(playPos).normalize(), // direction
-            0, 1000                                           // near, far
-        );
+        this.player.updateViewRay( input ); 
+        
+        
 
         console.log("Game initialized.");
     };
@@ -89,10 +84,14 @@ function Game(renderer, canvas) {
         if (this.initialized == false) {
             this.init(input);
         }
+        
         this.level.update();
         updateMovement(this, input);
         this.warden.update(this.player.getPosVec());
-        handleCollisions(this, input);
+        
+        //TODO Commented because it is causing massive fps drops during movement
+        //handleCollisions(this, input);
+        
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
             if (smallDrop(this)) {
@@ -121,6 +120,8 @@ function updateMovement(game, input) {
 	
 	  
     // Update the view ray (center of canvas into screen)
+    game.player.updateViewRay( input ); 
+    /*
     var rayVec = new THREE.Vector3(0, 0, 1);
     game.projector.unprojectVector(rayVec, game.camera);
     input.viewRay = new THREE.Ray(
@@ -128,6 +129,7 @@ function updateMovement(game, input) {
         rayVec.subSelf(game.player.mesh.position).normalize(), // direction
         0, 1000                                           // near, far
     );
+    */
 
     //Update the player's light
     game.player.updateLight(input.viewRay.direction);

@@ -1,6 +1,7 @@
 function Player() {
 	
-	//player definition 
+	//player definition
+	this.game   = null;  
 	this.mesh   = null; 
 	this.input  = null; 
 	this.camera = null; 
@@ -15,7 +16,8 @@ function Player() {
 	
 	this.init = function( game, scene, camera, startPos ){
 		
-		this.camera = camera; 
+		this.camera = camera;
+		this.game   = game;  
 		
 		this.mesh = new THREE.Mesh(
 			new THREE.CubeGeometry(9, 17, 3.5),
@@ -57,6 +59,17 @@ function Player() {
 		
 	}	
 	
+	this.updateViewRay = function( input ) {
+		var rayVec = new THREE.Vector3(0, 0, 1);
+        this.game.projector.unprojectVector(rayVec, this.camera);
+        var playPos = this.mesh.position;
+        input.viewRay = new THREE.Ray(
+            playPos,                             // origin
+            rayVec.subSelf(playPos).normalize(), // direction
+            0, 1000                                           // near, far
+        );		
+	}
+	
 	this.updateMovement = function( input ){
 		
 		//correct for mouse cursor not being locked.  
@@ -79,9 +92,6 @@ function Player() {
 	    input.f.x = Math.sin(input.theta) * Math.cos(input.phi + input.center);
 	    input.f.y = Math.cos(input.theta);
 	
-		
-		
-		
 		// handle player jump
 		if (input.hold === 1) {
 	        input.Jump = 0;
@@ -114,6 +124,8 @@ function Player() {
    	 	var look = new THREE.Vector3();
    	 	look.add(this.camera.position, input.f);
 	    this.camera.lookAt(look);
+		
+		return ( AD + WS != 0 );
 		
 	}
 	
