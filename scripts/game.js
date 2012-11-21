@@ -64,7 +64,7 @@ function Game(renderer, canvas) {
 
         // Setup player
         this.player = new Player();
-        this.player.init( this.scene, this.camera, this.level.startPos );
+        this.player.init( this, this.scene, this.camera, this.level.startPos );
        
         // Initialize warden 
         this.warden = new Warden();
@@ -114,45 +114,12 @@ function Game(renderer, canvas) {
 // ----------------------------------------------------------------------------
 // Update based on player movement: camera, player position/jumping, view ray
 // ----------------------------------------------------------------------------
-var PLAYER_MOVE_SPEED = 0.6;
 function updateMovement(game, input) {
 
 
-	//correct for mouse cursor not being locked.  
-    if (!document.pointerLockEnabled) {
-    	
-    	var xRatio = (input.mouseX - canvas.offsetLeft) / canvas.width; 
-    	
-        if ( xRatio < 0.2) {
-            input.center -= 0.1 * (0.2 - xRatio );
-        }
-        
-        if ( xRatio > 0.8) {
-            input.center += 0.1 * ( xRatio - 0.8);
-        }
-    }
-
-
-    // Reorient camera
-    input.f.z = Math.sin(input.theta) * Math.sin(input.phi + input.center)
-    input.f.x = Math.sin(input.theta) * Math.cos(input.phi + input.center);
-    input.f.y = Math.cos(input.theta);
-
-    // Handle jumping
-    game.player.handleJump( input ); 
-
-    // Update player position
-    game.player.updatePos( input ); 
-    
-    // Update camera position/lookat 
-    game.player.updateCamera( input );
-    /*
-    game.camera.position = game.player.mesh.position;
-    var look = new THREE.Vector3();
-    look.add(game.camera.position, input.f);
-    game.camera.lookAt(look);
-	*/
-    
+	game.player.updateMovement( input ); 
+	
+	  
     // Update the view ray (center of canvas into screen)
     var rayVec = new THREE.Vector3(0, 0, 1);
     game.projector.unprojectVector(rayVec, game.camera);

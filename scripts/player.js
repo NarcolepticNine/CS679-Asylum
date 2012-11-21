@@ -13,7 +13,7 @@ function Player() {
 	this.sound = 0;
 	this.vY = 0;
 	
-	this.init = function( scene, camera, startPos ){
+	this.init = function( game, scene, camera, startPos ){
 		
 		this.camera = camera; 
 		
@@ -57,17 +57,32 @@ function Player() {
 		
 	}	
 	
-	this.updateCamera = function( input ){
+	this.updateMovement = function( input ){
 		
-		// Update camera position/lookat 
-    	this.camera.position = this.mesh.position;
-   	 	var look = new THREE.Vector3();
-   	 	look.add(this.camera.position, input.f);
-	    this.camera.lookAt(look);
-
-	}
+		//correct for mouse cursor not being locked.  
+	    if (!document.pointerLockEnabled) {
+	    	
+	    	var xRatio = (input.mouseX - canvas.offsetLeft) / canvas.width; 
+	    	
+	        if ( xRatio < 0.2) {
+	            input.center -= 0.1 * (0.2 - xRatio );
+	        }
+	        
+	        if ( xRatio > 0.8) {
+	            input.center += 0.1 * ( xRatio - 0.8);
+	        }
+	    }
 	
-	this.handleJump = function( input ){
+	
+	    // Reorient camera
+	    input.f.z = Math.sin(input.theta) * Math.sin(input.phi + input.center)
+	    input.f.x = Math.sin(input.theta) * Math.cos(input.phi + input.center);
+	    input.f.y = Math.cos(input.theta);
+	
+		
+		
+		
+		// handle player jump
 		if (input.hold === 1) {
 	        input.Jump = 0;
 	        if (input.trigger.Jump === 1) {
@@ -83,10 +98,7 @@ function Player() {
 	        this.mesh.position.y += input.v;
 	    }
 
-		
-	}
-	
-	this.updatePos = function( input ){
+		// Update player position relative to the view direction
 		var AD = input.trigger.A - input.trigger.D,
 			WS = input.trigger.W - input.trigger.S; 
 		
@@ -96,8 +108,14 @@ function Player() {
         
         this.mesh.position.z += 
         	this.currSpd * ( WS * input.f.z - AD * input.f.x / xzNorm );
-        
-   }
+
+		// Update camera position/lookat 
+    	this.camera.position = this.mesh.position;
+   	 	var look = new THREE.Vector3();
+   	 	look.add(this.camera.position, input.f);
+	    this.camera.lookAt(look);
+		
+	}
 	
 	this.updateLight  = function( inputVec ) {
 		var meshPos = this.mesh.position; 

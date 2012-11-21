@@ -2,7 +2,8 @@
 // Initialize Game
 // ----------------------------------------------------------------------------
 (function initialize() {
-    var canvas = document.getElementById("canvas"),
+	
+	var canvas = document.getElementById("canvas"),
         canvasWidth = window.innerWidth,
         canvasHeight = window.innerHeight,
         renderer = new THREE.WebGLRenderer({
@@ -13,6 +14,16 @@
         }),
         inputData = {},
         game = null;
+    
+    
+    //performance monitor also by Mr. Doob.  Probably should make it togglable. 
+    var stats = new Stats();     
+    stats.setMode(1); 
+    stats.domElement.style.position = 'absolute';
+	stats.domElement.style.left = '0px';
+	stats.domElement.style.top = '0px';
+	document.body.appendChild( stats.domElement );
+	
     requestFrame = window.requestAnimationFrame
                 || window.webkitRequestAnimationFrame
                 || window.mozRequestAnimationFrame
@@ -39,8 +50,10 @@
 
     // Enter main loop
     (function mainLoop() {
+    	stats.begin();
         game.update(inputData);
         game.render(inputData);
+        stats.end(); 
         requestFrame(mainLoop);
     })();
 
