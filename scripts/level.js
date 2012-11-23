@@ -53,9 +53,9 @@ function Level(game) {
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
     // ------------------------------------------------------------------------
-    FLOOR_TEXTURE = THREE.ImageUtils.loadTexture("images/floor.png"),
-    CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/stone.png"),
-    WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/brick.png"),
+    FLOOR_TEXTURE = THREE.ImageUtils.loadTexture("images/floor_tiles.jpg"),
+    CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
+    WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
@@ -177,6 +177,7 @@ function Level(game) {
                             continue;
                         } else if (cell.type.charAt(0) === CELL_TYPES.floor) {
                             this.generateFloorGeometry(xx, yy, zz);
+                            this.generateCeilingGeometry(xx, yy, zz);
                         } else if (cell.type.charAt(0) === CELL_TYPES.key) {
                             this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js', 'obj/key.jpg');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
