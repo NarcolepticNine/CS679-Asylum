@@ -79,7 +79,8 @@ function Level(game) {
                         var stop = 0;
                         switch (rows[y][t][z].charAt(x)) {
                             case CELL_TYPES.wall:
-                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.wall));
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.wall + rows[y][t + 1][z].charAt(x)));
+                                t++;
                                 break;
                             case CELL_TYPES.start:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
@@ -188,8 +189,8 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.window) {
                             this.generateWindowGeometry(xx, yy, zz, cell.type.charAt(1));
-                        } else if (cell.type === CELL_TYPES.wall) {
-                            this.generateWallGeometry(xx, yy, zz);
+                        } else if (cell.type.charAt(0) === CELL_TYPES.wall) {
+                            this.generateWallGeometry(xx, yy, zz, cell.type.charAt(1));
                         }
                     }
                 }
@@ -344,7 +345,6 @@ function Level(game) {
 
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE / 2),
     WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: TRANSPARENT_TEXTURE });
-    console.log(WINDOW_MATERIAL.transparent);
     WINDOW_MATERIAL.transparent = true;
     WINDOW_MATERIAL.shininess = 10000;
 
@@ -374,12 +374,31 @@ function Level(game) {
 
     // Generate wall geometry
     // --------------------------------
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE),
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 7 / 8, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, WALL_MATERIAL,
+            { px: false, nx: false, py: false, ny: false, pz: true, nz: true }),//thin wall, only two sides are drawn
         WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
 
-    this.generateWallGeometry = function (x, y, z) {
+    this.generateWallGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
-        mesh.position.set(x, y + CELL_SIZE / 2, z);
+        console.log(c);
+        switch (c) {
+            case 's':
+                mesh.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                mesh.rotation.y = Math.PI;
+                break;
+            case 'n':
+                mesh.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                break;
+            case 'w':
+                mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh.rotation.y = Math.PI / 2;
+                break;
+            case 'e':
+                mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh.rotation.y = Math.PI / 2;
+                break;
+        }
+
         mesh.name = 'wall';
         game.objects.push(mesh);
         game.scene.add(mesh);
