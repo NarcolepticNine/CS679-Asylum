@@ -6,6 +6,7 @@ var CELL_TYPES = {
     wall: 'w',
     column: 'o',
     window: 'i',
+    bed: 'b',
     start: 's',
     key: 'k',
     warden: 'W',
@@ -44,6 +45,7 @@ function Level(game) {
         wall: [],
         column: [],
         window: [],
+        bed: [],
         stair: []
     };
     this.mapCanvas = null;
@@ -105,6 +107,10 @@ function Level(game) {
                                 break;
                             case CELL_TYPES.window:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.window + rows[y][t + 1][z].charAt(x)));
+                                t++;
+                                break;
+                            case CELL_TYPES.bed:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.bed + rows[y][t + 1][z].charAt(x)));
                                 t++;
                                 break;
                             case CELL_TYPES.ceil:
@@ -201,6 +207,9 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.column) {
                             this.generateColumnGeometry(xx, yy, zz, cell.type.charAt(1));
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.bed) {
+                            this.generateBedGeometry(xx, yy, zz, cell.type.charAt(1));
                         }
                     }
                 }
@@ -355,8 +364,6 @@ function Level(game) {
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
     WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: TRANSPARENT_TEXTURE });
     WINDOW_MATERIAL.transparent = true;
-    WINDOW_MATERIAL.shininess = 10000;
-
 
     this.generateWindowGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(CUBOID_GEOMETRY, WINDOW_MATERIAL);//replace with real texture later
@@ -385,6 +392,24 @@ function Level(game) {
         game.objects.push(mesh);
         game.scene.add(mesh);
         this.geometry.window.push(mesh);
+    };
+
+    this.generateBedGeometry = function (x, y, z, c) {
+        switch (c) {
+            case 's':
+                this.generateObjGeometry(x, y + CELL_SIZE / 8, z + CELL_SIZE / 4, 1, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
+                break;
+            case 'n':
+                console.log('bb');
+                this.generateObjGeometry(x, y + CELL_SIZE / 8, z - CELL_SIZE / 4, 1, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
+                break;
+            case 'w':
+                this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE / 8, z, 1, Math.PI, 'obj/bed.js', 'obj/bed.jpg');
+                break;
+            case 'e':
+                this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE / 8, z, 1, 0, 'obj/bed.js', 'obj/bed.jpg');
+                break;
+        }
     };
 
     // Generate wall geometry
