@@ -353,7 +353,7 @@ function Level(game) {
         this.geometry.stair.push(mesh4);
     };
 
-    var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE / 2),
+    var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
     WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: TRANSPARENT_TEXTURE });
     WINDOW_MATERIAL.transparent = true;
     WINDOW_MATERIAL.shininess = 10000;
@@ -361,21 +361,24 @@ function Level(game) {
 
     this.generateWindowGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(CUBOID_GEOMETRY, WINDOW_MATERIAL);//replace with real texture later
+        console.log('haha' + c);
         switch (c) {
             case 's':
-                mesh.rotation.y = Math.PI;                
+                mesh.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                mesh.rotation.y = Math.PI;
                 break;
-            case 'n':              
+            case 'n':
+                mesh.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
                 break;
             case 'w':
-                mesh.rotation.y = Math.PI / 2;               
+                mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh.rotation.y = Math.PI / 2;
                 break;
             case 'e':
-                mesh.rotation.y = -Math.PI / 2;               
+                mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh.rotation.y = Math.PI / 2;
                 break;
         }
-
-        mesh.position.set(x, y + CELL_SIZE / 2, z);
         mesh.name = 'window';
         game.objects.push(mesh);
         game.scene.add(mesh);
@@ -419,7 +422,6 @@ function Level(game) {
         COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
 
     this.generateColumnGeometry = function (x, y, z, c) {
-        console.log('haha:'+c);
         var mesh = new THREE.Mesh(COLUMN_GEOMETRY, COLUMN_MATERIAL);
         switch (c) {
             case '1':

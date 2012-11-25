@@ -28,23 +28,23 @@ Map[0].push(
 
 Map[0].push(
 "...................sssss\n" +
-"..................4w...w\n" +
+"..................4i...i\n" +
 "..................4w.W.w\n" +
 "..................4w.k.w\n" +
 "............4wwwwwww...w\n" +
 ".333333333333w.w.w.w...w\n" +
-"wwwwwwwwwwwww.o.o.owww.w\n" +
+"wwiwwiwwwwwww.o.o.owww.w\n" +
 "w......................w\n" +
-"wwo.......wwwwwwwwwwwwww\n" +
+"wwo.......wwwiwwwwwwiwww\n" +
 "..wwwwwo.w\n" +
-"..w......w\n" +
+"..w......i\n" +
+"..w...w..w\n" +
+"..wwwwwo.w\n" +
+"..i......i\n" +
 "..w...w..w\n" +
 "..wwwwwo.w\n" +
 "..w......w\n" +
-"..w...w..w\n" +
-"..wwwwwo.w\n" +
-"..w......w\n" +
-"..wwwwwwww");
+"..wwwwwwiw");
 
 Map[0].push(
 "...................wooow\n" +
@@ -76,13 +76,13 @@ Map[0].push(
 "w..................oo..w\n" +
 "o......................o\n" +
 "wo........ooooooooooooow\n" +
-"..wooow..o\n" +
+"..iooow..o\n" +
 "..o......o\n" +
 ".........o\n" +
-"..wooow..o\n" +
+"..iooow..o\n" +
 "..o......o\n" +
 ".........o\n" +
-"..wooow..o\n" +
+"..iooow..o\n" +
 "..o......o\n" +
 "..wooow.ow");
 
