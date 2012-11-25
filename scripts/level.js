@@ -7,6 +7,7 @@ var CELL_TYPES = {
     column: 'o',
     window: 'i',
     bed: 'b',
+    bookcase: 'a',
     start: 's',
     key: 'k',
     warden: 'W',
@@ -46,6 +47,7 @@ function Level(game) {
         column: [],
         window: [],
         bed: [],
+        bookcase: [],
         stair: []
     };
     this.mapCanvas = null;
@@ -111,6 +113,10 @@ function Level(game) {
                                 break;
                             case CELL_TYPES.bed:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.bed + rows[y][t + 1][z].charAt(x)));
+                                t++;
+                                break;
+                            case CELL_TYPES.bookcase:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.bookcase + rows[y][t + 1][z].charAt(x)));
                                 t++;
                                 break;
                             case CELL_TYPES.ceil:
@@ -210,6 +216,9 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.bed) {
                             this.generateBedGeometry(xx, yy, zz, cell.type.charAt(1));
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.bookcase) {
+                            this.generateBookCaseGeometry(xx, yy, zz, cell.type.charAt(1));
                         }
                     }
                 }
@@ -400,7 +409,6 @@ function Level(game) {
                 this.generateObjGeometry(x, y + CELL_SIZE / 8, z + CELL_SIZE / 4, 1, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
                 break;
             case 'n':
-                console.log('bb');
                 this.generateObjGeometry(x, y + CELL_SIZE / 8, z - CELL_SIZE / 4, 1, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
                 break;
             case 'w':
@@ -408,6 +416,23 @@ function Level(game) {
                 break;
             case 'e':
                 this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE / 8, z, 1, 0, 'obj/bed.js', 'obj/bed.jpg');
+                break;
+        }
+    };
+
+    this.generateBookCaseGeometry = function (x, y, z, c) {
+        switch (c) {
+            case 's':
+                this.generateObjGeometry(x, y + CELL_SIZE / 3, z - CELL_SIZE / 3, 2, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                break;
+            case 'n':
+                this.generateObjGeometry(x, y + CELL_SIZE / 3, z + CELL_SIZE / 3, 2, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                break;
+            case 'w':
+                this.generateObjGeometry(x + CELL_SIZE / 3, y + CELL_SIZE / 3, z, 2, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                break;
+            case 'e':
+                this.generateObjGeometry(x - CELL_SIZE / 3, y + CELL_SIZE / 3, z, 2, 0, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
         }
     };
