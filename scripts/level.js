@@ -4,6 +4,7 @@ var CELL_TYPES = {
     ceil: 'c',
     stair: 't',
     wall: 'w',
+    column: 'o',
     window: 'i',
     start: 's',
     key: 'k',
@@ -41,6 +42,7 @@ function Level(game) {
         floor: [],
         ceil: [],
         wall: [],
+        column: [],
         window: [],
         stair: []
     };
@@ -56,6 +58,7 @@ function Level(game) {
     FLOOR_TEXTURE = THREE.ImageUtils.loadTexture("images/floor_tiles.jpg"),
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
+    COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),//replace it later
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
@@ -80,6 +83,10 @@ function Level(game) {
                         switch (rows[y][t][z].charAt(x)) {
                             case CELL_TYPES.wall:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.wall + rows[y][t + 1][z].charAt(x)));
+                                t++;
+                                break;
+                            case CELL_TYPES.column:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.column + rows[y][t + 1][z].charAt(x)));
                                 t++;
                                 break;
                             case CELL_TYPES.start:
@@ -191,6 +198,9 @@ function Level(game) {
                             this.generateWindowGeometry(xx, yy, zz, cell.type.charAt(1));
                         } else if (cell.type.charAt(0) === CELL_TYPES.wall) {
                             this.generateWallGeometry(xx, yy, zz, cell.type.charAt(1));
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.column) {
+                            this.generateColumnGeometry(xx, yy, zz, cell.type.charAt(1));
                         }
                     }
                 }
@@ -374,13 +384,12 @@ function Level(game) {
 
     // Generate wall geometry
     // --------------------------------
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 7 / 8, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, WALL_MATERIAL,
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, WALL_MATERIAL,
             { px: false, nx: false, py: false, ny: false, pz: true, nz: true }),//thin wall, only two sides are drawn
         WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
 
     this.generateWallGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
-        console.log(c);
         switch (c) {
             case 's':
                 mesh.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
@@ -403,6 +412,34 @@ function Level(game) {
         game.objects.push(mesh);
         game.scene.add(mesh);
         this.geometry.wall.push(mesh);
+    }
+
+    var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, COLUMN_MATERIAL,
+            { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),//column
+        COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
+
+    this.generateColumnGeometry = function (x, y, z, c) {
+        console.log('haha:'+c);
+        var mesh = new THREE.Mesh(COLUMN_GEOMETRY, COLUMN_MATERIAL);
+        switch (c) {
+            case '1':
+                mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                break;
+            case '2':
+                mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                break;
+            case '3':
+                mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                break;
+            case '4':
+                mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z + CELL_SIZE / 2)
+                break;
+        }
+
+        mesh.name = 'column';
+        game.objects.push(mesh);
+        game.scene.add(mesh);
+        this.geometry.column.push(mesh);
     }
 
 
