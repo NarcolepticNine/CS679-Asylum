@@ -26,7 +26,7 @@ function Player() {
             new THREE.MeshBasicMaterial({ color: 0x00ff00 })
 		);
 		
-		this.flashlight = new THREE.SpotLight(0xffffff, 10, 100);
+		this.flashlight = new THREE.SpotLight(0xffffff, 10, 50);
         this.flashlight.castShadow = true; 
         this.flashlight.shadowCameraNear = 0; 
         this.flashlight.shadowCameraFar  = 5; 

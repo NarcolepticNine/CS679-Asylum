@@ -60,7 +60,7 @@ function Level(game) {
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
     COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),//replace it later
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
-    TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
+    TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/window_wall.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
     FLOOR_TEXTURE.wrapS = THREE.RepeatWrapping;
@@ -187,7 +187,7 @@ function Level(game) {
                             this.generateFloorGeometry(xx, yy, zz);
                             this.generateCeilingGeometry(xx, yy, zz);
                         } else if (cell.type.charAt(0) === CELL_TYPES.key) {
-                            this.generateObjGeometry(xx, yy + 8, zz, .5, 'obj/key.js', 'obj/key.jpg');
+                            this.generateObjGeometry(xx, yy + 8, zz, .5, 0, 'obj/key.js', 'obj/key.jpg');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz);
                         }
@@ -223,19 +223,18 @@ function Level(game) {
     };
 
     // Generate Obj geometyr
-    this.generateObjGeometry = function (x, y, z, scale, obj, tmap) {
-
+    this.generateObjGeometry = function (x, y, z, scale, rot, obj, tmap) {
         var loader = new THREE.JSONLoader();
-        var cbo = function (geometry) { createGeo(geometry, x, y, z, scale, tmap ) };
-
+        var cbo = function (geometry) { createGeo(geometry, x, y, z, scale, rot, tmap) };
         loader.load(obj, cbo);
-
     };
 
-    function createGeo(geometry, x, y, z, scale, tmap) {
-        var objMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture(tmap)}));
-        objMesh.position.set(x, y, z);
-        objMesh.scale.set(scale, scale, scale);
+    function createGeo(geometry, x, y, z, scale, rot, tmap) {
+        var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap) }));
+        objMesh.name = 'model';
+        objMesh.rotation.y = rot;
+        objMesh.position.set(x, y, z);        
+        objMesh.scale.set(scale, scale, scale);           
         game.objects.push(objMesh);
         game.scene.add(objMesh);
     }
@@ -361,22 +360,25 @@ function Level(game) {
 
     this.generateWindowGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(CUBOID_GEOMETRY, WINDOW_MATERIAL);//replace with real texture later
-        console.log('haha' + c);
         switch (c) {
             case 's':
                 mesh.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
                 mesh.rotation.y = Math.PI;
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE  / 2, .5, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
                 break;
             case 'n':
                 mesh.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE / 2, .5, Math.Pi / 2, 'obj/window.js', 'obj/window.jpg');
                 break;
             case 'w':
                 mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 2 / 3, z, .5, Math.PI, 'obj/window.js', 'obj/window.jpg');
                 mesh.rotation.y = Math.PI / 2;
                 break;
             case 'e':
                 mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                mesh.rotation.y = Math.PI / 2;
+                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE * 2 / 3, z, .5, 0, 'obj/window.js', 'obj/window.jpg');
+                mesh.rotation.y = -Math.PI / 2;
                 break;
         }
         mesh.name = 'window';
@@ -407,7 +409,7 @@ function Level(game) {
                 break;
             case 'e':
                 mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                mesh.rotation.y = Math.PI / 2;
+                mesh.rotation.y = -Math.PI / 2;
                 break;
         }
 

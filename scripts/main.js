@@ -53,7 +53,12 @@
     	stats.begin();
         game.update(inputData);
         game.render(inputData);
-        stats.end(); 
+        stats.end();
+        //for (var i = 0; i < game.objects.length; i++) {
+        //    if (game.objects[i].name === 'model') {
+        //        console.log(game.objects[i].rotation.y);
+        //    }
+        //}
         requestFrame(mainLoop);
     })();
 

@@ -53,7 +53,7 @@ function Game(renderer, canvas) {
         this.scene = new THREE.Scene();
         
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
-        this.scene.add(new THREE.AmbientLight(0x0f0f0f));
+        this.scene.add(new THREE.AmbientLight(0x070707));
 
         // Load the level
         this.level = new Level(this);
