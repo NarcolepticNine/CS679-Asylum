@@ -68,7 +68,7 @@ function Game(renderer, canvas) {
        
         // Initialize warden 
         this.warden = new Warden();
-        this.warden.init( this.scene, this.level.wardenPos );
+        this.warden.init( this.scene, this.level.wardenPos, this.level.patrolPos );
         
         // Update the view ray (center of canvas into screen)
         this.player.updateViewRay( input ); 

@@ -2,8 +2,14 @@ function Warden() {
 	
 	this.mesh    = null; 
 	this.speed   = 0.6; 
-	this.currSpd = this.speed; 
-	this.patrol  = new Array(); 
+	this.currSpd = this.speed;
+	
+	//patrol Variables
+	this.pDir    = true; //direction of patrol
+	this.nextPt  = 0; 
+	this.pt      = null; 
+	this.patrols = new Array(); 
+		
 	/*Awareness determines how hard it is to hide from the Warden.  
 	 * If the player is heard, or spotted within a certain amount of time,
 	 * awareness goes up.  If the player is able to hide, awareness will drop.
@@ -16,7 +22,7 @@ function Warden() {
 		
 	}
 	
-	this.init = function( scene, startPos ){
+	this.init = function( scene, startPos, patrolArr ){
 		this.mesh = new THREE.Mesh(
 			new THREE.CubeGeometry( 10, 10, 10 ),
 			new THREE.MeshLambertMaterial( { color: 0xff0000 } ) 
@@ -24,55 +30,81 @@ function Warden() {
 		
 		scene.add( this.mesh ); 
 		this.setStartPos( startPos ); 
+		this.patrols = patrolArr; 
+	
+		//basic update function that idles until mesh is loaded ( eventually ); 
+		this.update  = this.updateLoad; 
+		
 		
 	}
 	
-	this.addPatrol = function ( x, y , z ){
-				
+
+	this.checkPlayer = function ( d, playerSound, lightOn ){
 		
-		
-	}
-	
-	this.checkPlayer = function ( posVec, playerSound, lightOn ){
-		dX = posVec.x - this.mesh.position.x; 
-		dZ = posVec.z - this.mesh.position.z; 
-				
-		var d = Math.sqrt(dX*dX+dZ*dZ);    		
-		
-		this.awareness += 5;
-		 
-		if( ( ( lightOn ) ? playerSound * 2 : playerSound )  < d ){
-			this.awareness = ( ( this.awareness - 10 ) < 0 ) ? 0 : this.awareness - 10;   
-		}
+		playerSound = ( lightOn ) ? playerSound * 2 : playerSound ;		
 		this.awareness = ( playerSound > d ) ? this.awareness += 5 : this.awareness -= 5 ; 
-		
-		return d; 
+		this.awareness = ( this.awareness < 0 ) ? 0 : ( ( this.awareness > 100 ) ? 100 : this.awareness ); 		
 	} 
 	
 	/*
 	 * Basic Sound Mechanic.  Player movement causes Player sound to rise.  
 	 * Sound is passed as a the player's sound level currently.  
 	 */
-	this.update = function( posVec, playerSound, lightOn ){
+	this.updateLoaded = function( posVec, playerSound, lightOn ){
 		
-		this.checkPlayer( posVec, playerSound, lightOn ); 		
+		//current position.
+		var X  = this.mesh.position.x; 
+		var Z  = this.mesh.position.z;
+		
+		var dX = posVec.x - X; 
+		var dZ = posVec.z - Z; 
+		
+		var d = Math.sqrt(dX*dX+dZ*dZ);    		
+		
+		this.checkPlayer( d, playerSound, lightOn ); 	
+		
+		if( this.awareness < 30 ) {
 			
-		if( this.awareness  > 30 ){
-			this.mesh.position.x += (this.curSpd * ( dX / d ));
-	        this.mesh.position.z += (this.curSpd * ( dZ / d )); 
-	    }
-	}	
-	
-	this.patrol = function( posVec, playerSound, lightOn ){
-	
-	
+			if( this.pt == null ){
+				this.pt = this.patrols[ this.nextPt ];
+				this.nextPt = ( ++this.nextPt == this.patrols.length ) ? 0 : this.nextPt;  
+			}
 			
+			//target position
+			var pX = this.pt.x; 
+			var pZ = this.pt.z; 
+			
+			dX = pX - X; 
+			dZ = pZ - Z; 
+			d = Math.sqrt(dX*dX+dZ*dZ);
+			
+			if( d < 10 ){
+				//select new current point.  
+				this.pt = this.patrols[ this.nextPt ];
+				this.nextPt = ( this.pDir ) ? this.nextPt + 1 : this.nextPt - 1 ;  
+				this.pDir = ( this.nextPt == 0 || this.nextPt == this.patrols.length - 1 ) ? !this.pDir : this.pDir; 
+				
+			} else {
+				//keep going towards current point
+				this.mesh.position.x += (this.currSpd * ( dX / d ));
+			    this.mesh.position.z += (this.currSpd * ( dZ / d ));	
+				 
+			}
+		 } else {
+		 	//if awareness too high, warden sprints
+		 	this.currSpd = ( this.awareness >= 60 ) ? this.speed * 2 : this.speed; 		 	
+		 	this.mesh.position.x += (this.currSpd * ( dX / d ));
+		    this.mesh.position.z += (this.currSpd * ( dZ / d )); 
+		 	
+		 }	
 	}
 	
-	this.fury = function ( posVec, playerSound, lightOn ){
+	this.updateLoad = function ( posVec, playerSound, lightOn ){
 		
-		
+		if( this.mesh ) this.update = this.updateLoaded; 
 		
 	}
+
+	
 	
 }

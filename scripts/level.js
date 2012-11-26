@@ -56,6 +56,8 @@ function Level(game) {
     this.mapColors = {};
     this.startPos = new THREE.Vector3();
     this.wardenPos = new THREE.Vector3();
+    
+    this.patrolPos = new Array(); 
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -74,8 +76,6 @@ function Level(game) {
     // Populates grid; parse Map Array from map.js
     // -------------------------------------------------------
     this.populateGrid = function () {
-
-        //eventually pull more than just map[0] 
 
         //for each character in each row, check character, and set grid to 
         // that cell type. 
@@ -131,7 +131,7 @@ function Level(game) {
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.nothing));
                                 break;
                             case CELL_TYPES.patrol:
-                            	this.warden.addPatrol( x, y, z ); 
+                            	this.patrolPos.push( new THREE.Vector3( x * CELL_SIZE, y, z * CELL_SIZE ) );  
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
                                 break;
                             case CELL_TYPES.stop:

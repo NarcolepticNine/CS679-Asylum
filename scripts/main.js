@@ -102,7 +102,12 @@ function updateDebug( info, game ){
 		info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
 		info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
 		info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
-		info.innerHTML += " Awareness: " + warden.awareness.toFixed(2) + "<br / >";      
+		info.innerHTML += " mode: " + warden.mode + "<br />" ;
+		 
+		info.innerHTML += " currSpd: " + warden.currSpd; 
+		info.innerHTML += " Awareness: " + warden.awareness.toFixed(2);
+		info.innerHTML += " Next Pt: " + warden.nextPt + "<br / >";
+		      
 	}
 	
 }
@@ -114,16 +119,16 @@ function updateDebug( info, game ){
 function setupInput(data, game) {
     // Setup input data structure
     data.viewRay = null;
-    data.mouseX = canvas.offsetLeft + canvas.width / 2;
-    data.mouseY = canvas.offsetTop + canvas.height / 2;
-    data.center = -Math.PI / 2;
-    data.theta = Math.PI / 2;
-    data.phi = 0;
-    data.f = new THREE.Vector3();
-    data.v = 0;
-    data.hold = 1;
-    data.click = 0;
-    data.Jump = 0;
+    data.mouseX  = canvas.offsetLeft + canvas.width / 2;
+    data.mouseY  = canvas.offsetTop + canvas.height / 2;
+    data.center  = -Math.PI / 2;
+    data.theta   = Math.PI / 2;
+    data.phi     = 0;
+    data.f       = new THREE.Vector3();
+    data.v       = 0;
+    data.hold    = 1;
+    data.click   = 0;
+    data.Jump    = 0;
     data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0 };
 
     // Hookup key input
