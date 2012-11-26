@@ -8,6 +8,7 @@ var CELL_TYPES = {
     window: 'i',
     bed: 'b',
     bookcase: 'a',
+    clock: 'l',
     start: 's',
     key: 'k',
     warden: 'W',
@@ -48,6 +49,7 @@ function Level(game) {
         window: [],
         bed: [],
         bookcase: [],
+        clock: [],
         stair: []
     };
     this.mapCanvas = null;
@@ -117,6 +119,10 @@ function Level(game) {
                                 break;
                             case CELL_TYPES.bookcase:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.bookcase + rows[y][t + 1][z].charAt(x)));
+                                t++;
+                                break;
+                            case CELL_TYPES.clock:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.clock + rows[y][t + 1][z].charAt(x)));
                                 t++;
                                 break;
                             case CELL_TYPES.ceil:
@@ -220,6 +226,9 @@ function Level(game) {
                         else if (cell.type.charAt(0) === CELL_TYPES.bookcase) {
                             this.generateBookCaseGeometry(xx, yy, zz, cell.type.charAt(1));
                         }
+                        else if (cell.type.charAt(0) === CELL_TYPES.clock) {
+                            this.generateClockGeometry(xx, yy, zz, cell.type.charAt(1));
+                        }
                     }
                 }
             }
@@ -253,7 +262,6 @@ function Level(game) {
         objMesh.rotation.y = rot;
         objMesh.position.set(x, y, z);        
         objMesh.scale.set(scale, scale, scale);           
-        game.objects.push(objMesh);
         game.scene.add(objMesh);
     }
 
@@ -384,7 +392,7 @@ function Level(game) {
                 break;
             case 'n':
                 mesh.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE / 2, .5, Math.Pi / 2, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE / 2, .5, Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
                 break;
             case 'w':
                 mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
@@ -422,17 +430,34 @@ function Level(game) {
 
     this.generateBookCaseGeometry = function (x, y, z, c) {
         switch (c) {
-            case 's':
+            case 'n':
                 this.generateObjGeometry(x, y + CELL_SIZE / 3, z - CELL_SIZE / 3, 2, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
-            case 'n':
+            case 's':
                 this.generateObjGeometry(x, y + CELL_SIZE / 3, z + CELL_SIZE / 3, 2, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
-            case 'w':
+            case 'e':
                 this.generateObjGeometry(x + CELL_SIZE / 3, y + CELL_SIZE / 3, z, 2, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
-            case 'e':
+            case 'w':
                 this.generateObjGeometry(x - CELL_SIZE / 3, y + CELL_SIZE / 3, z, 2, 0, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                break;
+        }
+    };
+
+    this.generateClockGeometry = function (x, y, z, c) {
+        switch (c) {
+            case 'n':
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE * 5.7 / 12, 1, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
+                break;
+            case 's':
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE * 5.7 / 12, 1, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
+                break;
+            case 'e':
+                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, 1, Math.PI, 'obj/clock.js', 'obj/clock.jpg');
+                break;
+            case 'w':
+                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, 1, 0, 'obj/clock.js', 'obj/clock.jpg');
                 break;
         }
     };
