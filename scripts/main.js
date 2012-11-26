@@ -13,17 +13,9 @@
             clearAlpha: 1
         }),
         inputData = {},
-        game = null;
-    
-    
-    //performance monitor also by Mr. Doob.  Probably should make it togglable. 
-    var stats = new Stats();     
-    stats.setMode(1); 
-    stats.domElement.style.position = 'absolute';
-	stats.domElement.style.left = '0px';
-	stats.domElement.style.top = '0px';
-	document.body.appendChild( stats.domElement );
-	
+        game = null,
+        debug = true; 
+    	
     requestFrame = window.requestAnimationFrame
                 || window.webkitRequestAnimationFrame
                 || window.mozRequestAnimationFrame
@@ -42,6 +34,27 @@
     renderer.setSize(canvasWidth, canvasHeight);
     document.getElementById("container").appendChild(renderer.domElement);
 
+	 if( debug ){  
+    	
+    	var stats = new Stats();     
+   	 	stats.setMode(0); 
+   	 	stats.domElement.style.position = 'absolute';
+		stats.domElement.style.left = '0px';
+		stats.domElement.style.top = '0px';
+		document.body.appendChild( stats.domElement );
+		
+		var info = document.createElement( 'div' );
+		info.style.position = 'absolute';
+		info.style.color = "#ffffff";
+		info.style.top   = '50px';
+		info.style.left  = '5px'; 
+		info.style.width = '100%';
+		info.style.textAlign = 'left';
+		info.innerHTML = '';
+		document.body.appendChild( info );
+	}
+
+
     // Create Game object
     game = new Game(renderer, canvas);
 
@@ -53,6 +66,7 @@
     	stats.begin();
         game.update(inputData);
         game.render(inputData);
+        updateDebug( info, game ); 
         stats.end();
         //for (var i = 0; i < game.objects.length; i++) {
         //    if (game.objects[i].name === 'model') {
@@ -72,6 +86,27 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
 })();
+
+function updateDebug( info, game ){
+	
+	if( game != null ){
+		
+		player = game.player;
+		warden = game.warden;  
+		info.innerHTML  = "Player x: " + player.mesh.position.x.toFixed(2); 
+		info.innerHTML += " y: " + player.mesh.position.y.toFixed(2); 
+		info.innerHTML += " z: " + player.mesh.position.z.toFixed(2);  
+		info.innerHTML += " Light: " + player.lightOn; 
+		info.innerHTML += " Current Speed: " + player.currSpd + "<br / >";
+		
+		info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
+		info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
+		info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
+		info.innerHTML += " Awareness: " + warden.awareness.toFixed(2) + "<br / >";      
+	}
+	
+}
+
 
 // ----------------------------------------------------------------------------
 // Setup input handlers and populate input data object

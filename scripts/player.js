@@ -6,15 +6,16 @@ function Player() {
 	this.input  = null; 
 	this.camera = null; 
 	this.flashlight = null;
-	this.lightTog = false; 
-	this.lightOn  = true; 
+	
 	
 	//mechanic variables
 	var speed    = 0.6; 
 	var jumpVel  =   4;
-	this.currSpd = speed; //TODO add sprinting ability by doubling this on holding shift 
+	this.currSpd = speed;
 	this.sound = 0;
 	this.vY = 0;
+	this.lightTog = false; 
+	this.lightOn  = true; 
 	
 	this.init = function( game, scene, camera, startPos ){
 		

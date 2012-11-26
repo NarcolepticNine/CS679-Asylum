@@ -11,7 +11,8 @@ var CELL_TYPES = {
     start: 's',
     key: 'k',
     warden: 'W',
-    stop: '.'
+    stop: '.',
+    patrol: 'p'
 },
     MAP_CELL_SIZE = 10,
     CELL_SIZE = 32,
@@ -128,6 +129,10 @@ function Level(game) {
                                 break;
                             case CELL_TYPES.nothing:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.nothing));
+                                break;
+                            case CELL_TYPES.patrol:
+                            	this.warden.addPatrol( x, y, z ); 
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
                                 break;
                             case CELL_TYPES.stop:
                                 stop = 1;

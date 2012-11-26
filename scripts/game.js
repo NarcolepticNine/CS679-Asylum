@@ -53,7 +53,7 @@ function Game(renderer, canvas) {
         this.scene = new THREE.Scene();
         
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
-        this.scene.add(new THREE.AmbientLight(0x070707));
+        this.scene.add(new THREE.AmbientLight(0x272727));
 
         // Load the level
         this.level = new Level(this);
@@ -85,9 +85,11 @@ function Game(renderer, canvas) {
         
         this.level.update();
         this.player.update( input ); 
-        this.warden.update( this.player.getPosVec(), this.player.sound );
+        this.warden.update( this.player.getPosVec(), 
+        					this.player.sound,
+        					this.player.lightOn );
         
-        //TODO Commented because it is causing massive fps drops during movement
+        //TODO Seems to have improved with thinner walls, but still seems weird.
         handleCollisions(this, input);
         
         if (input.hold === 0 && input.Jump === 0) {
