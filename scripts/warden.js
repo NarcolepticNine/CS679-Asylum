@@ -32,6 +32,11 @@ function Warden() {
 		this.setStartPos( startPos ); 
 		this.patrols = patrolArr; 
 	
+		console.log( "Patrol Points: ");
+		for( var i = 0; i < this.patrols.length ; i++ ){
+			console.log( this.patrols[i].x + " " + this.patrols[i].z );
+		}
+	
 		//basic update function that idles until mesh is loaded ( eventually ); 
 		this.update  = this.updateLoad; 
 		
