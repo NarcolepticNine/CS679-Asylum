@@ -9,6 +9,7 @@ function Game(renderer, canvas) {
     this.camera = null;
     this.objects = [];
     this.level = null;
+    this.skybox = null;
     this.player = null;
     this.oldplayer = new THREE.Vector3();
     this.initialized = false;
@@ -32,7 +33,7 @@ function Game(renderer, canvas) {
     var FOV = 67,
         ASPECT = canvas.width / canvas.height,
         NEAR = .01,
-        FAR = 1000;
+        FAR = 2000;
 
     // ------------------------------------------------------------------------
     // Game Methods -----------------------------------------------------------
@@ -46,6 +47,7 @@ function Game(renderer, canvas) {
         this.objects = [];
         this.lights = [];
         this.level = null;
+        this.skybox = null;
         this.player = null;
         this.warden = null;
 
@@ -62,6 +64,8 @@ function Game(renderer, canvas) {
         this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         this.scene.add(this.camera);
 
+        this.skybox = new Skybox(this);
+            
         // Setup player
         this.player = new Player();
         this.player.init( this, this.scene, this.camera, this.level.startPos );
