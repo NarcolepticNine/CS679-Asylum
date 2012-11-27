@@ -3,9 +3,9 @@
 // ----------------------------------------------------------------------------
 function Skybox(game) {
     game.skybox = THREE.ImageUtils.loadTextureCube([
-                './images/skybox/px.jpg','./images/skybox/nx.jpg',
-                './images/skybox/py.jpg','./images/skybox/ny.jpg',
-                './images/skybox/pz.jpg','./images/skybox/nz.jpg'
+                './images/skybox/px.png','./images/skybox/nx.png',
+                './images/skybox/py.png','./images/skybox/ny.png',
+                './images/skybox/pz.png','./images/skybox/nz.png'
         ]);
     var shader = THREE.ShaderUtils.lib["cube"];
     shader.uniforms["tCube"].value = game.skybox;
