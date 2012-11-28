@@ -42,17 +42,17 @@ function Level(game) {
     // Public properties ------------------------------------------------------
     // ------------------------------------------------------------------------
     this.grid = null;
-    this.geometry = {
-        floor: [],
-        ceil: [],
-        wall: [],
-        column: [],
-        window: [],
-        bed: [],
-        bookcase: [],
-        clock: [],
-        stair: []
-    };
+    this.geometry = new THREE.Geometry(); // {
+        //floor: [],
+        //ceil: [],
+        //wall: [],
+        //column: [],
+        //window: [],
+        //bed: [],
+        //bookcase: [],
+        //clock: [],
+        //stair: []
+    //};
     this.mapCanvas = null;
     this.mapContext = null;
     this.mapColors = {};
@@ -251,7 +251,7 @@ function Level(game) {
         mesh.name = 'floor';
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.floor.push(mesh);
+        THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.floor.push(mesh);
     };
 
     // Generate Obj geometyr
@@ -267,7 +267,9 @@ function Level(game) {
         objMesh.rotation.y = rot;
         objMesh.position.set(x, y, z);        
         objMesh.scale.set(scale, scale, scale);           
+        game.objects.push(objMesh);
         game.scene.add(objMesh);
+        THREE.GeometryUtils.merge(geometry, objMesh);
     }
 
     // Generate ceiling geometry
@@ -279,7 +281,7 @@ function Level(game) {
         mesh.name = 'ceiling';
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.ceil.push(mesh);
+         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.ceil.push(mesh);
     };
 
     // Generate stair geometry
@@ -371,16 +373,16 @@ function Level(game) {
         mesh4.name = 'side';
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.stair.push(mesh);
+         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.stair.push(mesh);
         game.objects.push(mesh2);
         game.scene.add(mesh2);
-        this.geometry.stair.push(mesh2);
+         THREE.GeometryUtils.merge(this.geometry, mesh2); //this.geometry.stair.push(mesh2);
         game.objects.push(mesh3);
         game.scene.add(mesh3);
-        this.geometry.stair.push(mesh3);
+         THREE.GeometryUtils.merge(this.geometry, mesh3); //this.geometry.stair.push(mesh3);
         game.objects.push(mesh4);
         game.scene.add(mesh4);
-        this.geometry.stair.push(mesh4);
+         THREE.GeometryUtils.merge(this.geometry, mesh4); //this.geometry.stair.push(mesh4);
     };
 
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
@@ -413,7 +415,7 @@ function Level(game) {
         mesh.name = 'window';
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.window.push(mesh);
+  THREE.GeometryUtils.merge(this.geometry, mesh); //       this.geometry.window.push(mesh);
     };
 
     this.generateBedGeometry = function (x, y, z, c) {
@@ -496,7 +498,7 @@ function Level(game) {
         mesh.name = 'wall';
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.wall.push(mesh);
+        THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
     }
 
     var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, COLUMN_MATERIAL,
@@ -523,7 +525,7 @@ function Level(game) {
         mesh.name = 'column';
         game.objects.push(mesh);
         game.scene.add(mesh);
-        this.geometry.column.push(mesh);
+        THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.column.push(mesh);
     }
 
 

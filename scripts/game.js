@@ -264,16 +264,16 @@ var collisionResults = null;
 
 
 function handleCollisions(game, input) {
-    if (input.trigger.A || input.trigger.D || input.trigger.W || input.trigger.S || input.hold === 0) {
-        var count = 0;
+    //if (input.trigger.A || input.trigger.D || input.trigger.W || input.trigger.S || input.Jumping === 0) {
+        //var count = 0;
         for (var vertexIndex = 0; vertexIndex < game.player.mesh.geometry.vertices.length; vertexIndex++) {
             directionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
             ray = new THREE.Ray(game.player.mesh.position, directionVector.clone().normalize());
             collisionResults = ray.intersectObjects(game.objects);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
-                if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
-                    if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column') {
+                    if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
+                                                    || selected.name === 'model') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;
@@ -286,26 +286,25 @@ function handleCollisions(game, input) {
                         if (selected.name === 'stair' || selected.name === 'floor') {
                             input.hold = 1;
                             input.v = 0;
-
+                            input.Jumping = 0; 
                             var newCollide = bumpUp(collisionResults, directionVector, game);
                             if (newCollide !== -1) {
                                 bumpBack(collisionResults, directionVector, game);
                             }
                         }
                     }
-                }
-                else {
-                    count++;
-                }
+                //else {
+                //    count++;
+                //}
             }
-            else {
-                count++;
-            }
+            //else {
+            //    count++;
+            //}
         }
-        if (count === game.player.mesh.geometry.vertices.length) {
-            input.hold = 0;
-        }
+        //if (count === game.player.mesh.geometry.vertices.length) {
+        //    input.hold = 0;
+        //}
         game.oldplayer.copy(game.player.mesh.position);
-    }
+    //}
 }
 

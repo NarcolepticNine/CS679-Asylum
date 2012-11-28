@@ -110,20 +110,23 @@ function Player() {
 	    input.f.y = Math.cos(input.theta);
 	
 		// handle player jump
-		if (input.hold === 1) {
-	        input.Jump = 0;
-	        if (input.trigger.Jump === 1) {
-	            input.Jump = 1;
-	            input.v = jumpVel;
-	            input.trigger.Jump = 0;
-	            input.hold = 0;
-	            input.v -= 0.4;
-	            this.mesh.position.y += input.v;
-	        }
-	    } else {
-	        input.v -= 0.4;
-	        this.mesh.position.y += input.v;
-	    }
+        if (input.trigger.Jump === 1) {
+            if (input.Jumping === 0) {
+                input.Jumping = 1;
+                input.v = jumpVel;
+            }
+        }
+        if (input.Jumping === 1) {
+            this.mesh.position.y += input.v;
+            input.v -= 0.4;
+            //if (this.mesh.position.y < 8.5) {
+            //    this.mesh.position.y = 8.5;
+            //    input.Jumping = 0;
+            //}
+        }
+	       // input.v -= 0.4;
+	       // this.mesh.position.y += input.v;
+	    //}
 
 		// Update player position relative to the view direction
 		var AD = input.trigger.A - input.trigger.D,

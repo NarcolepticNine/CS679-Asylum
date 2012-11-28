@@ -128,7 +128,7 @@ function setupInput(data, game) {
     data.v       = 0;
     data.hold    = 1;
     data.click   = 0;
-    data.Jump    = 0;
+    data.Jumping = 0;
     data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0 };
 
     // Hookup key input
@@ -159,6 +159,7 @@ function setupInput(data, game) {
             case 67: data.trigger.crouch = 0; break;
             case 70: data.trigger.light  = 0; break; 
             case 16: data.trigger.run = 0; break;  
+            case 32: data.trigger.Jump = 0; break;
         }
     }, false);
 
