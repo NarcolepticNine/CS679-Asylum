@@ -96,15 +96,15 @@ function Game(renderer, canvas) {
         //TODO Seems to have improved with thinner walls, but still seems weird.
         handleCollisions(this, input);
         
-        if (input.hold === 0 && input.Jump === 0) {
-            input.Jump = 1;
-            if (smallDrop(this)) {
-                while (input.hold === 0) {
-                    this.player.update( input ); 
-                    handleCollisions(this, input);
-                }
-            }
-        }
+        //if (input.hold === 0 && input.Jump === 0) {
+        //    input.Jump = 1;
+            //if (smallDrop(this)) {
+            //    while (input.hold === 0) {
+            //        this.player.update( input ); 
+            //        handleCollisions(this, input);
+            //    }
+            //}
+        //}
     };
 
     // Draw the scene as seen through the current camera
@@ -256,13 +256,20 @@ function bumpBack(collisionResults, directionVector, game) {
 // ----------------------------------------------------------------------------
 // Handle collision detection
 // ----------------------------------------------------------------------------
+
+// Globals used by collision detection
+var directionVector = null;
+var ray = null;
+var collisionResults = null;
+
+
 function handleCollisions(game, input) {
     if (input.trigger.A || input.trigger.D || input.trigger.W || input.trigger.S || input.hold === 0) {
         var count = 0;
         for (var vertexIndex = 0; vertexIndex < game.player.mesh.geometry.vertices.length; vertexIndex++) {
-            var directionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
-            var ray = new THREE.Ray(game.player.mesh.position, directionVector.clone().normalize());
-            var collisionResults = ray.intersectObjects(game.objects);
+            directionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
+            ray = new THREE.Ray(game.player.mesh.position, directionVector.clone().normalize());
+            collisionResults = ray.intersectObjects(game.objects);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
