@@ -13,6 +13,7 @@ function Game(renderer, canvas) {
     this.player = null;
     this.oldplayer = new THREE.Vector3();
     this.initialized = false;
+	this.soundManager = null; 
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -64,6 +65,10 @@ function Game(renderer, canvas) {
         this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         this.scene.add(this.camera);
 
+		this.soundManager = new SoundManager();
+		this.soundManager.init();
+		this.soundManager.loadSound( "./sounds/lust_0.mp3" ); 
+		
         this.skybox = new Skybox(this);
             
         // Setup player
@@ -75,16 +80,21 @@ function Game(renderer, canvas) {
         this.warden.init( this.scene, this.level.wardenPos, this.level.patrolPos );
         
         // Update the view ray (center of canvas into screen)
-        this.player.updateViewRay( input ); 
-        
+        this.player.updateViewRay( input );  
         console.log( "Game initialized." );
     };
 
     // Update everything in the scene
     // ------------------------------------------------------------------------
+    
+    var loaded = true; 
     this.update = function (input) {
         if (this.initialized == false) {
             this.init(input);
+        }
+        
+        if( loaded ){
+        	loaded = this.soundManager.playSound("./sounds/lust_0.mp3");
         }
         
         this.level.update();
