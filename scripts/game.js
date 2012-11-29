@@ -93,8 +93,9 @@ function Game(renderer, canvas) {
             this.init(input);
         }
         
+        //testing music playing
         if( loaded ){
-        	loaded = this.soundManager.playSound("./sounds/lust_0.mp3");
+        	//loaded = this.soundManager.playSound("./sounds/lust_0.mp3");
         }
         
         this.level.update();
