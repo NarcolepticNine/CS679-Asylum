@@ -7,25 +7,24 @@ var Map = new Array(numFloors);
 Map[0] = [];
 
 Map[0].push(
-	
-"...................wwwww\n" +
-"..................offfff\n" +
-"..................offfff\n" +
-"..................offfff\n" +
-"............offfffffWfff\n" +
-".oooooooooooofffffffffff\n" +
-"ffffffffffffffffpfffffff\n" +
-"fffffffffffpffffffffff\n" +
-"fffffpffffffffffffffffff\n" +
-"..ffffffff\n" +
-"..fffpffff\n" +
-"..ffffffff\n" +
-"..ffffffff\n" +
-"..fffpffff\n" +
-"..ffffffff\n" +
-"..ffffffff\n" +
-"..ffsfffff\n" +
-"..ffffffff");
+"...............wwwww\n" +
+"..............offfff\n" +
+"..............offfff\n" +
+".........o.o.oofffff\n" +
+"........offfffffffff\n" +
+".oooooooofffffffffff\n" +
+"fffffffffffffffpffff\n" +
+"ffffffffffpfffffffff\n" +
+"ffffffffffffffffffff\n" +
+".fffpf\n" +
+".fffff\n" +
+".fffff\n" +
+".ffpff\n" +
+".fffff\n" +
+".ffpff\n" +
+".fffff\n" +
+".fsfff\n" +
+".fffff");
 
 Map[0].push(
 "...............sssss\n" +

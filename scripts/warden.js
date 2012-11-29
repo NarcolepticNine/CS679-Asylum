@@ -25,7 +25,7 @@ function Warden() {
 	this.init = function( scene, startPos, patrolArr ){
 		this.mesh = new THREE.Mesh(
 			new THREE.CubeGeometry( 10, 10, 10 ),
-			new THREE.MeshLambertMaterial( { color: 0xff0000 } ) 
+			new THREE.MeshPhongMaterial( { color: 0xff0000 } ) 
 		);
 		
 		scene.add( this.mesh ); 

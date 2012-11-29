@@ -1,3 +1,34 @@
+function updateCollisionSet(game) {
+    var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+    var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+    if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
+        game.old.x = rx;
+        game.old.y = ry;
+        game.old.z = rz;
+        game.collisionSet = [];
+        for (var y = ry - 1; y <= ry + 1; y++) {
+            if (y < 0 || y >= NUM_CELLS.y) {
+                continue;
+            }           
+            for (var z = rz - 1; z <= rz + 1; z++) {
+                if (z < 0 || z >= NUM_CELLS.z) {
+                    continue;
+                }
+                for (var x = rx - 1; x <= rx + 1; x++) {
+                    if (x < 0 || x >= NUM_CELLS.x) {
+                        continue;
+                    }
+                    for (var o = 0; o < game.objects[y][z][x].length; o++) {
+                        game.collisionSet.push(game.objects[y][z][x][o]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 function Game(renderer, canvas) {
     // ------------------------------------------------------------------------
     // Public properties ------------------------------------------------------
@@ -7,13 +38,15 @@ function Game(renderer, canvas) {
     this.canvas = canvas;
     this.scene = null;
     this.camera = null;
-    this.objects = [];
+    this.objects = null;
     this.level = null;
     this.skybox = null;
     this.player = null;
     this.oldplayer = new THREE.Vector3();
     this.initialized = false;
 	this.soundManager = null; 
+    this.collisionSet = null;
+    this.old = new THREE.Vector3();
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -45,18 +78,23 @@ function Game(renderer, canvas) {
         this.initialized = true;
         this.scene = null;
         this.camera = null;
-        this.objects = [];
+        this.objects = null;
         this.lights = [];
         this.level = null;
         this.skybox = null;
         this.player = null;
         this.warden = null;
+        this.collisionSet = null;
+        this.old.x = -1;
+        this.old.y = -1;
+        this.old.z = -1;
 
         // Setup scene
         this.scene = new THREE.Scene();
         
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
-        this.scene.add(new THREE.AmbientLight(0x272727));
+        //this.scene.add(new THREE.AmbientLight(0x06080e));
+        //this.scene.add(new THREE.AmbientLight(0x272727));
 
         // Load the level
         this.level = new Level(this);
@@ -73,7 +111,10 @@ function Game(renderer, canvas) {
             
         // Setup player
         this.player = new Player();
-        this.player.init( this, this.scene, this.camera, this.level.startPos );
+        this.player.init(this, this.scene, this.camera, this.level.startPos);
+        this.oldplayer.x = this.player.mesh.position.x;
+        this.oldplayer.y = this.player.mesh.position.y;
+        this.oldplayer.z = this.player.mesh.position.z;
        
         // Initialize warden 
         this.warden = new Warden();
@@ -104,9 +145,8 @@ function Game(renderer, canvas) {
         					this.player.sound,
         					this.player.lightOn );
         
-        //TODO Seems to have improved with thinner walls, but still seems weird.
+        updateCollisionSet(this);
         handleCollisions(this, input);
-        
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
             if (smallDrop(this)) {
@@ -131,7 +171,7 @@ function smallDrop(game) {
         var directionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
         for (var t = 0.0; t <= 2; t = t + 0.1) {
             ray = new THREE.Ray(new THREE.Vector3(game.player.mesh.position.x, game.player.mesh.position.y - t, game.player.mesh.position.z), directionVector.clone().normalize());
-            collisionResults = ray.intersectObjects(game.objects);
+            collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                 return true;
             }
@@ -145,7 +185,7 @@ function bumpUp(collisionResults, directionVector, game) {
     var t;
     for (t = 0.1; t <= 5; t = t + 0.1) {
         ray = new THREE.Ray(new THREE.Vector3(game.player.mesh.position.x, game.player.mesh.position.y + t, game.player.mesh.position.z), directionVector.clone().normalize());
-        collisionResults = ray.intersectObjects(game.objects);
+        collisionResults = ray.intersectObjects(game.collisionSet);
         if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() > 1e-6) {
             break;
         }
@@ -155,7 +195,7 @@ function bumpUp(collisionResults, directionVector, game) {
     for (var vertexIndex = 0; vertexIndex < game.player.mesh.geometry.vertices.length; vertexIndex++) {
         var allDirectionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
         var ray = new THREE.Ray(new THREE.Vector3(game.player.mesh.position.x, game.player.mesh.position.y + t, game.player.mesh.position.z), allDirectionVector.clone().normalize());
-        var allCollisionResults = ray.intersectObjects(game.objects);
+        var allCollisionResults = ray.intersectObjects(game.collisionSet);
         if (allCollisionResults.length > 0 && allCollisionResults[0].distance - allDirectionVector.length() < -1e-6) {
             return vertexIndex;
         }
@@ -176,7 +216,7 @@ function bumpBack(collisionResults, directionVector, game) {
         bumpx = 0;
         for (i = 0.1; i <= game.player.mesh.position.x - game.oldplayer.x; i += 0.1) {
             ray = new THREE.Ray(new THREE.Vector3(game.oldplayer.x + i, game.oldplayer.y, game.oldplayer.z), directionVector.clone().normalize());
-            collisionResults = ray.intersectObjects(game.objects);
+            collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                 bumpx = -1;
                 break;
@@ -190,7 +230,7 @@ function bumpBack(collisionResults, directionVector, game) {
         bumpx = 0;
         for (i = -0.1; i >= game.player.mesh.position.x - game.oldplayer.x; i -= 0.1) {
             ray = new THREE.Ray(new THREE.Vector3(game.oldplayer.x + i, game.oldplayer.y, game.oldplayer.z), directionVector.clone().normalize());
-            collisionResults = ray.intersectObjects(game.objects);
+            collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                 bumpx = 1;
                 break;
@@ -205,7 +245,7 @@ function bumpBack(collisionResults, directionVector, game) {
         bumpy = 0;
         for (j = 0.1; j <= game.player.mesh.position.y - game.oldplayer.y; j += 0.1) {
             ray = new THREE.Ray(new THREE.Vector3(game.oldplayer.x + i, game.oldplayer.y + j, game.oldplayer.z), directionVector.clone().normalize());
-            collisionResults = ray.intersectObjects(game.objects);
+            collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                 bumpy = -1;
                 break;
@@ -219,7 +259,7 @@ function bumpBack(collisionResults, directionVector, game) {
         bumpy = 0;
         for (j = -0.1; j >= game.player.mesh.position.y - game.oldplayer.y; j -= 0.1) {
             ray = new THREE.Ray(new THREE.Vector3(game.oldplayer.x + i, game.oldplayer.y + j, game.oldplayer.z), directionVector.clone().normalize());
-            collisionResults = ray.intersectObjects(game.objects);
+            collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                 bumpy = 1;
                 break;
@@ -234,7 +274,7 @@ function bumpBack(collisionResults, directionVector, game) {
         bumpz = 0;
         for (k = 0.1; k <= game.player.mesh.position.z - game.oldplayer.z; k += 0.1) {
             ray = new THREE.Ray(new THREE.Vector3(game.oldplayer.x + i, game.oldplayer.y + j, game.oldplayer.z + k), directionVector.clone().normalize());
-            collisionResults = ray.intersectObjects(game.objects);
+            collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                 bumpz = -1;
                 break;
@@ -248,7 +288,7 @@ function bumpBack(collisionResults, directionVector, game) {
         bumpz = 0;
         for (k = -0.1; k >= game.player.mesh.position.z - game.oldplayer.z; k -= 0.1) {
             ray = new THREE.Ray(new THREE.Vector3(game.oldplayer.x + i, game.oldplayer.y + j, game.oldplayer.z + k), directionVector.clone().normalize());
-            collisionResults = ray.intersectObjects(game.objects);
+            collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                 bumpz = 1;
                 break;
@@ -267,17 +307,19 @@ function bumpBack(collisionResults, directionVector, game) {
 // ----------------------------------------------------------------------------
 // Handle collision detection
 // ----------------------------------------------------------------------------
+
 function handleCollisions(game, input) {
     if (input.trigger.A || input.trigger.D || input.trigger.W || input.trigger.S || input.hold === 0) {
         var count = 0;
         for (var vertexIndex = 0; vertexIndex < game.player.mesh.geometry.vertices.length; vertexIndex++) {
             var directionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
             var ray = new THREE.Ray(game.player.mesh.position, directionVector.clone().normalize());
-            var collisionResults = ray.intersectObjects(game.objects);
+            var collisionResults = ray.intersectObjects(game.collisionSet);
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
-                    if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column') {
+                    if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
+                                                    || selected.name === 'model') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;
@@ -290,7 +332,6 @@ function handleCollisions(game, input) {
                         if (selected.name === 'stair' || selected.name === 'floor') {
                             input.hold = 1;
                             input.v = 0;
-
                             var newCollide = bumpUp(collisionResults, directionVector, game);
                             if (newCollide !== -1) {
                                 bumpBack(collisionResults, directionVector, game);
