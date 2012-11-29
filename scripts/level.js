@@ -67,7 +67,7 @@ function Level(game) {
     FLOOR_TEXTURE = THREE.ImageUtils.loadTexture("images/floor_tiles.jpg"),
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
-    COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),//replace it later
+    COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/window_wall.png"),
 
@@ -438,16 +438,16 @@ function Level(game) {
     this.generateBookCaseGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE / 3, z - CELL_SIZE / 3, 2, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 2, z - CELL_SIZE / 3, 3, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE / 3, z + CELL_SIZE / 3, 2, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 2, z + CELL_SIZE / 3, 3, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 3, y + CELL_SIZE / 3, z, 2, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x + CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE / 3, y + CELL_SIZE / 3, z, 2, 0, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x - CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, 0, 'obj/bookcase.js', 'obj/bookcase.jpg');
                 break;
         }
     };
@@ -455,16 +455,16 @@ function Level(game) {
     this.generateClockGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE * 5.7 / 12, 1, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 2.5, z - CELL_SIZE * 5.7 / 12, .5, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE * 5.7 / 12, 1, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 2.5, z + CELL_SIZE * 5.7 / 12, .5, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, 1, Math.PI, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 2.5, z, .5, Math.PI, 'obj/clock.js', 'obj/clock.jpg');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, 1, 0, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 2.5, z, .5, 0, 'obj/clock.js', 'obj/clock.jpg');
                 break;
         }
     };

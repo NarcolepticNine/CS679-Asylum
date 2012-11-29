@@ -7,9 +7,8 @@ function Player() {
 	this.camera = null; 
 	this.flashlight = null;
 	
-	
 	//mechanic variables
-	var speed    = 0.6; 
+	var speed    = 0.5; 
 	var jumpVel  =   4;
 	this.currSpd = speed;
 	this.sound = 0;
@@ -23,11 +22,11 @@ function Player() {
 		this.game   = game;  
 		
 		this.mesh = new THREE.Mesh(
-			new THREE.CubeGeometry(9, 17, 3.5),
-            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+			new THREE.CubeGeometry(9, 32, 3.5),
+            new THREE.MeshPhongMaterial({ color: 0x00ff00 })
 		);
 		
-		this.flashlight = new THREE.SpotLight(0xffffff, 10, 50);
+		this.flashlight = new THREE.SpotLight(0xfffed9, 5, 50);
         this.flashlight.castShadow = true; 
         this.flashlight.shadowCameraNear = 0; 
         this.flashlight.shadowCameraFar  = 5; 
@@ -42,7 +41,7 @@ function Player() {
 	//pass in level.startPos
 	this.setStartPos = function ( vec3  ){
 		
-		var x = vec3.x, y = vec3.y + 8.5, z = vec3.z ; 
+		var x = vec3.x, y = vec3.y + 16, z = vec3.z ; 
 		
 		this.mesh.position.set( x, y, z ); 
 		this.flashlight.position.set( x, y, z );
@@ -62,7 +61,6 @@ function Player() {
 		
 		this.updateViewRay( input ); 
 		this.updateLight( input.trigger.light, input.viewRay.direction ); 
-		
 	}	
 	
 	this.updateViewRay = function( input ) {

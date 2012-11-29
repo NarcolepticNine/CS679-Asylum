@@ -145,7 +145,6 @@ function setupInput(data, game) {
             case 70: data.trigger.light  = 1; break; 
             case 16: data.trigger.run = 1; break;  
             case 32: data.trigger.Jump = 1; break;
-            
         }
     }, false);
 
