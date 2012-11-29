@@ -585,12 +585,16 @@ function Level(game) {
     // Update minimap
     // --------------------------------
     this.updateMinimap = function () {
-        var x, z, t, xx, zz, px, pz, ry, cell, color;
+        var x, z, t, xx, zz, px, pz, py, cell, color;
 
         // Calculate the player's position on the minimap
         px = Math.floor(game.player.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
         pz = Math.floor(game.player.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
         ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+
+        wx = Math.floor(game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+        wz = Math.floor(game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+        wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
 
         // Clear the map
         mapContext.save();
@@ -601,40 +605,47 @@ function Level(game) {
         // Blend the map a bit
         mapContext.globalAlpha = 0.5;
 
-        // Draw the map cells
-        for (z = 0; z < NUM_CELLS.z; ++z) {
-            for (x = 0; x < NUM_CELLS.x; ++x) {
-                color = this.mapColors.nothing;
-                xx = x * MAP_CELL_SIZE;
-                zz = z * MAP_CELL_SIZE;
-                var chosen = 0;
-                for (t = 0; t < this.grid[ry][z][x].length; t++) {
-                    cell = this.grid[ry][z][x][t];
-                    switch (cell.type.charAt(0)) {
-                        //case CELL_TYPES.nothing: color = this.mapColors.nothing; break;
-                        //case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
-                        //case CELL_TYPES.start: color = this.mapColors.floor; break;
-                        //case CELL_TYPES.floor: color = this.mapColors.floor; break;
-                        case CELL_TYPES.stair: color = this.mapColors.stair; chosen = 1; break;
-                        case CELL_TYPES.window: color = this.mapColors.window; chosen = 1; break;
-                        case CELL_TYPES.wall: color = this.mapColors.wall; chosen = 1; break;
-                    }
-                    if (chosen === 1) {
-                        break;
-                    }
-                }
-                if (this.grid[ry][z][x].length > 0) {
-                    mapContext.fillStyle = color;
-                    mapContext.fillRect(xx, zz, MAP_CELL_SIZE, MAP_CELL_SIZE);
-                }
-            }
-        }
+        //// Draw the map cells
+        //for (z = 0; z < NUM_CELLS.z; ++z) {
+        //    for (x = 0; x < NUM_CELLS.x; ++x) {
+        //        color = this.mapColors.nothing;
+        //        xx = x * MAP_CELL_SIZE;
+        //        zz = z * MAP_CELL_SIZE;
+        //        var chosen = 0;
+        //        for (t = 0; t < this.grid[ry][z][x].length; t++) {
+        //            cell = this.grid[ry][z][x][t];
+        //            switch (cell.type.charAt(0)) {
+        //                //case CELL_TYPES.nothing: color = this.mapColors.nothing; break;
+        //                //case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
+        //                //case CELL_TYPES.start: color = this.mapColors.floor; break;
+        //                //case CELL_TYPES.floor: color = this.mapColors.floor; break;
+        //                case CELL_TYPES.stair: color = this.mapColors.stair; chosen = 1; break;
+        //                case CELL_TYPES.window: color = this.mapColors.window; chosen = 1; break;
+        //                case CELL_TYPES.wall: color = this.mapColors.wall; chosen = 1; break;
+        //            }
+        //            if (chosen === 1) {
+        //                break;
+        //            }
+        //        }
+        //        if (this.grid[ry][z][x].length > 0) {
+        //            mapContext.fillStyle = color;
+        //            mapContext.fillRect(xx, zz, MAP_CELL_SIZE, MAP_CELL_SIZE);
+        //        }
+        //    }
+        //}
 
         // Draw the player
         mapContext.beginPath();
         mapContext.strokeStyle = "#ff0000";
         mapContext.lineWidth = 3;
         mapContext.arc(px, pz, 3, 0, 2 * Math.PI, false);
+        mapContext.stroke();
+
+        //draw the warden
+        mapContext.beginPath();
+        mapContext.strokeStyle = "#00ff00";
+        mapContext.lineWidth = 3;
+        mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
         mapContext.stroke();
     };
 
