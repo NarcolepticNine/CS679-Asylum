@@ -440,16 +440,16 @@ function Level(game) {
     this.generateBedGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE / 8, z + CELL_SIZE / 4, 1, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 8, z + CELL_SIZE / 4, 2, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
                 break;
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE / 8, z - CELL_SIZE / 4, 1, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 8, z - CELL_SIZE / 4, 2, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE / 8, z, 1, Math.PI, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, Math.PI, 'obj/bed.js', 'obj/bed.jpg');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE / 8, z, 1, 0, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, 0, 'obj/bed.js', 'obj/bed.jpg');
                 break;
         }
     };
