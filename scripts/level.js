@@ -43,23 +43,23 @@ function Level(game) {
     // ------------------------------------------------------------------------
     this.grid = null;
     this.geometry = new THREE.Geometry(); // {
-        //floor: [],
-        //ceil: [],
-        //wall: [],
-        //column: [],
-        //window: [],
-        //bed: [],
-        //bookcase: [],
-        //clock: [],
-        //stair: []
+    //floor: [],
+    //ceil: [],
+    //wall: [],
+    //column: [],
+    //window: [],
+    //bed: [],
+    //bookcase: [],
+    //clock: [],
+    //stair: []
     //};
     this.mapCanvas = null;
     this.mapContext = null;
     this.mapColors = {};
     this.startPos = new THREE.Vector3();
     this.wardenPos = new THREE.Vector3();
-    
-    this.patrolPos = new Array(); 
+
+    this.patrolPos = new Array();
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -137,7 +137,7 @@ function Level(game) {
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.nothing));
                                 break;
                             case CELL_TYPES.patrol:
-                            	this.patrolPos.push( new THREE.Vector3( x * CELL_SIZE, y, z * CELL_SIZE ) );  
+                                this.patrolPos.push(new THREE.Vector3(x * CELL_SIZE, y, z * CELL_SIZE));
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
                                 break;
                             case CELL_TYPES.stop:
@@ -158,12 +158,16 @@ function Level(game) {
     this.generateGridCells = function () {
         var x, y, z;
         this.grid = new Array(NUM_CELLS.y);
+        game.objects = new Array(NUM_CELLS.y);
         for (y = 0; y < NUM_CELLS.y; ++y) {
             this.grid[y] = new Array(NUM_CELLS.z);
+            game.objects[y] = new Array(NUM_CELLS.z);
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 this.grid[y][z] = new Array(NUM_CELLS.x);
+                game.objects[y][z] = new Array(NUM_CELLS.x);
                 for (x = 0; x < NUM_CELLS.x; ++x) {
-                    this.grid[y][z][x] = []
+                    this.grid[y][z][x] = [];
+                    game.objects[y][z][x] = [];
                 }
             }
         }
@@ -249,7 +253,10 @@ function Level(game) {
         mesh.rotation.x = -Math.PI / 2;
         mesh.position.set(x, y, z);
         mesh.name = 'floor';
-        game.objects.push(mesh);
+        var rx = x / CELL_SIZE;
+        var rz = z / CELL_SIZE;
+        var ry = y / CELL_SIZE;
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh);
         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.floor.push(mesh);
     };
@@ -265,9 +272,12 @@ function Level(game) {
         var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap) }));
         objMesh.name = 'model';
         objMesh.rotation.y = rot;
-        objMesh.position.set(x, y, z);        
-        objMesh.scale.set(scale, scale, scale);           
-        game.objects.push(objMesh);
+        objMesh.position.set(x, y, z);
+        objMesh.scale.set(scale, scale, scale);
+        var rx = Math.floor(Math.floor(x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(z) / CELL_SIZE + 1 / 2);
+        var ry = Math.floor(Math.floor(y) / CELL_SIZE);
+        game.objects[ry][rz][rx].push(objMesh);
         game.scene.add(objMesh);
         THREE.GeometryUtils.merge(geometry, objMesh);
     }
@@ -279,9 +289,12 @@ function Level(game) {
         mesh.rotation.x = Math.PI / 2;
         mesh.position.set(x, y + CELL_SIZE, z);
         mesh.name = 'ceiling';
-        game.objects.push(mesh);
+        var rx = x / CELL_SIZE;
+        var rz = z / CELL_SIZE;
+        var ry = y / CELL_SIZE;
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh);
-         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.ceil.push(mesh);
+        THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.ceil.push(mesh);
     };
 
     // Generate stair geometry
@@ -371,18 +384,21 @@ function Level(game) {
         mesh2.name = 'side';
         mesh3.name = 'side';
         mesh4.name = 'side';
-        game.objects.push(mesh);
+        var rx = x / CELL_SIZE;
+        var rz = z / CELL_SIZE;
+        var ry = y / CELL_SIZE;
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh);
-         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.stair.push(mesh);
-        game.objects.push(mesh2);
+        THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.stair.push(mesh);
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh2);
-         THREE.GeometryUtils.merge(this.geometry, mesh2); //this.geometry.stair.push(mesh2);
-        game.objects.push(mesh3);
+        THREE.GeometryUtils.merge(this.geometry, mesh2); //this.geometry.stair.push(mesh2);
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh3);
-         THREE.GeometryUtils.merge(this.geometry, mesh3); //this.geometry.stair.push(mesh3);
-        game.objects.push(mesh4);
+        THREE.GeometryUtils.merge(this.geometry, mesh3); //this.geometry.stair.push(mesh3);
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh4);
-         THREE.GeometryUtils.merge(this.geometry, mesh4); //this.geometry.stair.push(mesh4);
+        THREE.GeometryUtils.merge(this.geometry, mesh4); //this.geometry.stair.push(mesh4);
     };
 
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
@@ -395,27 +411,30 @@ function Level(game) {
             case 's':
                 mesh.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
                 mesh.rotation.y = Math.PI;
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE  / 2, .5, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE * 5.7 / 12, .5, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
                 break;
             case 'n':
                 mesh.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE / 2, .5, Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE * 5.7 / 12, .5, Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
                 break;
             case 'w':
                 mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 2 / 3, z, .5, Math.PI, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, Math.PI, 'obj/window.js', 'obj/window.jpg');
                 mesh.rotation.y = Math.PI / 2;
                 break;
             case 'e':
                 mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE * 2 / 3, z, .5, 0, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, 0, 'obj/window.js', 'obj/window.jpg');
                 mesh.rotation.y = -Math.PI / 2;
                 break;
         }
         mesh.name = 'window';
-        game.objects.push(mesh);
+        var rx = x / CELL_SIZE;
+        var rz = z / CELL_SIZE;
+        var ry = y / CELL_SIZE;
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh);
-  THREE.GeometryUtils.merge(this.geometry, mesh); //       this.geometry.window.push(mesh);
+        THREE.GeometryUtils.merge(this.geometry, mesh); //       this.geometry.window.push(mesh);
     };
 
     this.generateBedGeometry = function (x, y, z, c) {
@@ -496,7 +515,10 @@ function Level(game) {
         }
 
         mesh.name = 'wall';
-        game.objects.push(mesh);
+        var rx = x / CELL_SIZE;
+        var rz = z / CELL_SIZE;
+        var ry = y / CELL_SIZE;
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh);
         THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
     }
@@ -523,7 +545,10 @@ function Level(game) {
         }
 
         mesh.name = 'column';
-        game.objects.push(mesh);
+        var rx = x / CELL_SIZE;
+        var rz = z / CELL_SIZE;
+        var ry = y / CELL_SIZE;
+        game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh);
         THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.column.push(mesh);
     }
