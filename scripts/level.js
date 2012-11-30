@@ -284,8 +284,7 @@ function Level(game) {
     // Generate Obj geometyr
     this.generateObjGeometry = function (x, y, z, scalex, scaley, scalez, rot, obj, tmap, name) {
         var loader = new THREE.JSONLoader();
-        var cbo = function (geometry) { createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) };
-        loader.load(obj, cbo);
+        loader.load(obj, function (geometry) { createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) });
     };
 
     function createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) {
@@ -299,7 +298,7 @@ function Level(game) {
         var ry = Math.floor(Math.floor(y) / CELL_SIZE);
         game.objects[ry][rz][rx].push(objMesh);
         game.scene.add(objMesh);
-        THREE.GeometryUtils.merge(geometry, objMesh);
+        THREE.GeometryUtils.merge(game.geometry, objMesh);
     }
 
     // Generate ceiling geometry

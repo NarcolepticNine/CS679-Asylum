@@ -229,7 +229,7 @@ function updatePlayerInformation(game, input) {
     }
     else {
         if (dis > 24 * CELL_SIZE) {
-            angle = Math.PI / 12;
+            angle = -Math.PI / 12;
         }
         else {
             angle = -(-Math.PI / 12 * dis / CELL_SIZE + 25 / 12 * Math.PI);
