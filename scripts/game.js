@@ -13,7 +13,7 @@ function Game(renderer, canvas) {
     this.player = null;
     this.oldplayer = new THREE.Vector3();
     this.initialized = false;
-	this.soundManager = null; 
+    this.soundManager = null;
     this.collisionSet = null;
     this.old = new THREE.Vector3();
     this.key = 0;
@@ -85,10 +85,10 @@ function Game(renderer, canvas) {
         this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         this.scene.add(this.camera);
 
-		this.soundManager = new SoundManager();
-		this.soundManager.init();
-		this.soundManager.loadSound( "./sounds/lust_0.mp3" ); 
-		
+        this.soundManager = new SoundManager();
+        this.soundManager.init();
+        this.soundManager.loadSound("./sounds/lust_0.mp3");
+
         this.skybox = new Skybox(this);
 
         // Setup player
@@ -104,24 +104,24 @@ function Game(renderer, canvas) {
 
         // Update the view ray (center of canvas into screen)
 
-        this.player.updateViewRay( input );  
-        console.log( "Game initialized." );
+        this.player.updateViewRay(input);
+        console.log("Game initialized.");
     };
 
     // Update everything in the scene
     // ------------------------------------------------------------------------
-    
-    var loaded = true; 
+
+    var loaded = true;
     this.update = function (input) {
         if (this.initialized == false) {
             this.init(input);
         }
-        
+
         //testing music playing
-        if( loaded ){
-        	//loaded = this.soundManager.playSound("./sounds/lust_0.mp3");
+        if (loaded) {
+            //loaded = this.soundManager.playSound("./sounds/lust_0.mp3");
         }
-        
+
         this.level.update();
         this.player.update(input);
         this.warden.update(this.player.getPosVec(),
@@ -215,21 +215,32 @@ function updateOperation(game, input) {
                     continue;
                 }
 
-                if (game.key === 0) {
-                    for (var o = 0; o < game.objects[ry][z][x].length; o++) {
-                        if (game.objects[ry][z][x][o].name === 'key') {
+                var o = 0;
+                while (o !== game.objects[ry][z][x].length) {
+                    switch (game.objects[ry][z][x][o].name) {
+                        case 'key':
                             game.scene.remove(game.objects[ry][z][x][o]);
                             game.objects[ry][z][x].splice(o, 1);
+                            game.old.x = -1;
+                            game.old.y = -1;
+                            game.old.z = -1;
                             game.key = 1;
                             break;
-                        }
-                    }
-                }
-                else {
-                    for (var o = 0; o < game.objects[ry][z][x].length; o++) {
-                        if (game.objects[ry][z][x][o].name === 'fdoor') {
-                            game.end = 1;
-                        }
+                        case 'fdoor':
+                            if (game.key === 1) {
+                                game.end = 1;
+                            }
+                            o++;
+                            break;
+                        case 'door':
+                            game.scene.remove(game.objects[ry][z][x][o]);
+                            game.objects[ry][z][x].splice(o, 1);
+                            game.old.x = -1;
+                            game.old.y = -1;
+                            game.old.z = -1;
+                            break;
+                        default:
+                            o++;
                     }
                 }
             }
@@ -389,7 +400,7 @@ function handleCollisions(game, input) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                     if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
-                                                    || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor') {
+                                                    || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;
