@@ -105,8 +105,7 @@ function Game(renderer, canvas) {
 
 		this.soundManager = new SoundManager();
 		this.soundManager.init();
-		this.soundManager.loadSound( "./sounds/lust_0.mp3" ); 
-		
+				
         this.skybox = new Skybox(this);
             
         // Setup player
@@ -128,16 +127,13 @@ function Game(renderer, canvas) {
     // Update everything in the scene
     // ------------------------------------------------------------------------
     
-    var loaded = true; 
+    var loaded = false; 
+    var once = true; 
     this.update = function (input) {
         if (this.initialized == false) {
             this.init(input);
         }
         
-        //testing music playing
-        if( loaded ){
-        	//loaded = this.soundManager.playSound("./sounds/lust_0.mp3");
-        }
         
         this.level.update();
         this.player.update( input ); 

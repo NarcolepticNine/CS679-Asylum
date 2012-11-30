@@ -6,6 +6,9 @@ function Player() {
     this.input = null;
     this.camera = null;
     this.flashlight = null;
+    this.soundManager; 
+	this.heartbeat  = "./sounds/heartbeat.mp3";
+	this.lastbeat = 0; 
 
     //mechanic variables
     var speed = 0.5;
@@ -20,6 +23,7 @@ function Player() {
 
         this.camera = camera;
         this.game = game;
+        this.soundManager = game.soundManager; 
 
         this.mesh = new THREE.Mesh(
 			new THREE.CubeGeometry(9, 30, 3.5),
@@ -36,6 +40,8 @@ function Player() {
         scene.add(this.flashlight);
 
         this.setStartPos(startPos);
+        
+        game.soundManager.loadSound( this.heartbeat ); 
     }
 
     //pass in level.startPos
@@ -53,8 +59,35 @@ function Player() {
         return this.mesh.position;
     }
 
+	this.soundLoaded = function () {
+		
+		var start =  new Date().getTime();
+		if( start - this.lastbeat > 5000 ){
+			console.log( "Heartbeat" ); 
+			this.soundManager.playSound( this.heartbeat, 0 );
+			this.lastbeat = start; 
+		} 
+		
+	}
+
+	this.soundLoad  = function() {
+			
+		var tempBuff; 					
+		if( ( tempBuff = this.soundManager.returnBuffer( this.heartbeat ) ) ){
+			this.heartbeat = tempBuff; 
+			this.playSounds = this.soundLoaded; 
+			return true; 
+		}
+		
+		return false; 
+				
+	}
+
+	this.playSounds = this.soundLoad; 
+
     this.update = function (input) {
 
+		this.playSounds(); 
         this.sound = this.updateMovement(input);
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;
