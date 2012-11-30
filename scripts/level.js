@@ -246,7 +246,7 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Fdoor) {
                             this.generateFdoorGeometry(xx, yy, zz, cell.type.charAt(1));
-                            game.nextGoal[1].push(THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                            game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
                             game.nextGoal[1].push('Escape');
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Door) {

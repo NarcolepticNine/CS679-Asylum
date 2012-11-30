@@ -63,8 +63,10 @@
 
     // Enter main loop
     (function mainLoop() {
-    	stats.begin();
-        game.update(inputData);
+        stats.begin();
+        if (game.update(inputData) === false) {
+            return;
+        }
         game.render(inputData);
         updateDebug( info, game ); 
         stats.end();
@@ -208,11 +210,5 @@ function setupInput(data, game) {
         }
 
         data.phi = ((data.mouseX - canvas.offsetLeft) / (canvas.width / 2) - 1) * Math.PI / 2;
-        if (data.phi < 0) {
-            data.phi += 2 * Math.PI;
-        }
-        if (data.theta > 2 * Math.PI) {
-            data.phi -= 2 * Math.PI;
-        }
     }
 }

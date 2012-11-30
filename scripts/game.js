@@ -126,7 +126,6 @@ function Game(renderer, canvas) {
         					this);
 
         // Update the view ray (center of canvas into screen)
-
         this.player.updateViewRay(input);
         console.log("Game initialized.");
     };
@@ -148,14 +147,13 @@ function Game(renderer, canvas) {
         					this.player.lightOn);
 
         updateOperation(this, input);
-        updatePlayerInformation(this);
+        updatePlayerInformation(this, input);
         if (this.end === 1) {
-
             if (this.warden.caught)
                 ending(this, 'You have been caught by the Warden.');
             else
                 ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
-            return;
+            return false;
         }
         updateCollisionSet(this);
         handleCollisions(this, input);
@@ -168,6 +166,7 @@ function Game(renderer, canvas) {
                 }
             }
         }
+        return true;
     };
 
     // Draw the scene as seen through the current camera
@@ -193,7 +192,7 @@ function ending(game, message) {
     Ending.fillText(message, game.endingInfo.width / 2, game.endingInfo.height / 2);
 }
 
-function updatePlayerInformation(game) {
+function updatePlayerInformation(game, input) {
     // Clear
     var playerContext = game.playerInfo.getContext("2d");
     playerContext.save();
@@ -236,10 +235,17 @@ function updatePlayerInformation(game) {
             angle = -(-Math.PI / 12 * dis / CELL_SIZE + 25 / 12 * Math.PI);
         }
     }
+    var direction1 = Math.atan2(game.nextGoal[game.gindex][0].z - game.player.mesh.position.z, game.nextGoal[game.gindex][0].x - game.player.mesh.position.x);
+    var direction2 = input.center + input.phi;
     playerContext.beginPath();
     playerContext.strokeStyle = "#ffff00";
     playerContext.lineWidth = 10;
-    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, 0, angle, true);
+    if (angle < 2 * Math.PI) {
+        playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, -Math.PI / 2 + direction1 - direction2 - angle / 2, -Math.PI / 2 + direction1 - direction2 + angle / 2, true);
+    }
+    else {
+        playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, 0, angle, true);
+    }
     playerContext.stroke();
 }
 

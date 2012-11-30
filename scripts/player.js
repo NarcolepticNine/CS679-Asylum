@@ -149,6 +149,12 @@ function Player() {
             if (xRatio > 0.8) {
                 input.center += 0.1 * (xRatio - 0.8);
             }
+            if (input.center < 0) {
+                input.center += 2 * Math.PI;
+            }
+            if (input.center > 2 * Math.PI) {
+                input.center -= 2 * Math.PI;
+            }
         }
 
 
