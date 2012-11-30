@@ -59,10 +59,15 @@ function Player() {
         return this.mesh.position;
     }
 
-	this.soundLoaded = function () {
+	this.soundLoaded = function ( distance ) {
 		
-		var start =  new Date().getTime();
-		if( start - this.lastbeat > 5000 ){
+		var start   =  new Date().getTime();
+		
+		//base rate of .5 seconds, and can go as high as 5 seconds
+		var timeout = 500 + ( distance * 5 );
+		timeout = ( timeout > 5000 ) ? 5000 : timeout;  
+		
+		if( start - this.lastbeat > timeout ){
 			console.log( "Heartbeat" ); 
 			this.soundManager.playSound( this.heartbeat, 0 );
 			this.lastbeat = start; 
@@ -70,7 +75,7 @@ function Player() {
 		
 	}
 
-	this.soundLoad  = function() {
+	this.soundLoad  = function( distance ) {
 			
 		var tempBuff; 					
 		if( ( tempBuff = this.soundManager.returnBuffer( this.heartbeat ) ) ){
@@ -87,7 +92,19 @@ function Player() {
 
     this.update = function (input) {
 
-		this.playSounds(); 
+
+		//current position.
+		var X  = this.mesh.position.x; 
+		var Z  = this.mesh.position.z;
+		
+		var warPos = this.game.warden.mesh.position;
+		
+		var dX = warPos.x - X; 
+		var dZ = warPos.z - Z; 
+		
+		var d = Math.sqrt(dX*dX+dZ*dZ); 
+		
+		this.playSounds( d ); 
         this.sound = this.updateMovement(input);
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;

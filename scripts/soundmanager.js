@@ -63,18 +63,4 @@ function SoundManager(){
 			
 	}
 	
-	
-	this.returnSource = function ( url ) {
-		var buffer
-		if( ( buffer = this.buffers[ url ] ) ){
-			var source = context.createBufferSource();
-			source.buffer = buffer;
-			source.connect( context.destination );
-			return source; 
-		} else {
-			return false; 
-		}
-	}
-	
-	
 }
