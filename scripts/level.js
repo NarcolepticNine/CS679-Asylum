@@ -225,6 +225,8 @@ function Level(game) {
                             this.generateCeilingGeometry(xx, yy, zz);
                         } else if (cell.type.charAt(0) === CELL_TYPES.key) {
                             this.generateObjGeometry(xx, yy + 8, zz, .5, .5, .5, 0, 'obj/key.js', 'obj/key.jpg', 'key');
+                            game.nextGoal[0].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                            game.nextGoal[0].push('Find Key');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz);
                         }
@@ -244,6 +246,8 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Fdoor) {
                             this.generateFdoorGeometry(xx, yy, zz, cell.type.charAt(1));
+                            game.nextGoal[1].push(THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                            game.nextGoal[1].push('Escape');
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Door) {
                             this.generateDoorGeometry(xx, yy, zz, cell.type.charAt(1));

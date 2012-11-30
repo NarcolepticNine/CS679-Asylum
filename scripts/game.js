@@ -9,15 +9,19 @@ function Game(renderer, canvas) {
     this.camera = null;
     this.objects = null;
     this.level = null;
+    this.lights = null;
     this.skybox = null;
     this.player = null;
-    this.oldplayer = new THREE.Vector3();
+    this.oldplayer = null;
     this.initialized = false;
     this.soundManager = null;
     this.collisionSet = null;
-    this.old = new THREE.Vector3();
+    this.warden = null;
+    this.old = null;
     this.key = 0;
     this.end = 0;
+    this.nextGoal = null;
+    this.gindex = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -41,6 +45,15 @@ function Game(renderer, canvas) {
     this.endingInfo.style.right = 0;
     document.getElementById("container").appendChild(this.endingInfo);
 
+    this.playerInfo = document.createElement("canvas");
+    this.playerInfo.id = "info";
+    this.playerInfo.width = canvas.width / 5;
+    this.playerInfo.height = canvas.height / 3;
+    this.playerInfo.style.position = "absolute";
+    this.playerInfo.style.bottom = 0;
+    this.playerInfo.style.right = 0;
+    document.getElementById("container").appendChild(this.playerInfo);
+
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
     // ------------------------------------------------------------------------
@@ -56,23 +69,30 @@ function Game(renderer, canvas) {
     this.init = function (input) {
         console.log("Game initializing...");
         this.initialized = true;
-        this.scene = null;
+        this.scene = new THREE.Scene();
         this.camera = null;
         this.objects = null;
         this.lights = [];
         this.level = null;
         this.skybox = null;
         this.player = null;
+        this.oldplayer = new THREE.Vector3();
         this.warden = null;
+        this.soundManager = null;
         this.collisionSet = null;
+        this.old = new THREE.Vector3();
         this.old.x = -1;
         this.old.y = -1;
         this.old.z = -1;
         this.key = 0;
         this.end = 0;
-
+        //goal list
+        this.nextGoal = new Array(2);
+        this.nextGoal[0] = [];
+        this.nextGoal[1] = [];
+        this.gindex = 0;
         // Setup scene
-        this.scene = new THREE.Scene();
+        
 
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
@@ -86,9 +106,9 @@ function Game(renderer, canvas) {
         this.scene.add(this.camera);
 
 
-		this.soundManager = new SoundManager();
-		this.soundManager.init();
-				
+        this.soundManager = new SoundManager();
+        this.soundManager.init();
+
         this.skybox = new Skybox(this);
 
         // Setup player
@@ -100,10 +120,10 @@ function Game(renderer, canvas) {
 
         // Initialize warden 
         this.warden = new Warden();
-        this.warden.init( 	this.scene, 
-        					this.level.wardenPos, 
+        this.warden.init(this.scene,
+        					this.level.wardenPos,
         					this.level.patrolPos,
-        					this );
+        					this);
 
         // Update the view ray (center of canvas into screen)
 
@@ -114,9 +134,9 @@ function Game(renderer, canvas) {
     // Update everything in the scene
     // ------------------------------------------------------------------------
 
-    
-    var loaded = false; 
-    var once = true; 
+
+    var loaded = false;
+    var once = true;
     this.update = function (input) {
         if (this.initialized == false) {
             this.init(input);
@@ -128,16 +148,15 @@ function Game(renderer, canvas) {
         					this.player.lightOn);
 
         updateOperation(this, input);
-        if ( this.end === 1 ) {
-        	
-        	if( this.warden.caught )
-        		ending(this, 'You have been caught by the Warden.' );
-        	else        	
-            	ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum' );
-            
-            	
+        updatePlayerInformation(this);
+        if (this.end === 1) {
+
+            if (this.warden.caught)
+                ending(this, 'You have been caught by the Warden.');
+            else
+                ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
             return;
-        } 
+        }
         updateCollisionSet(this);
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
@@ -171,8 +190,60 @@ function ending(game, message) {
     Ending.textBaseline = 'middle';
     Ending.textAlign = 'center';
     Ending.fillStyle = '#00ff00';
-    Ending.fillText( message, game.endingInfo.width / 2, game.endingInfo.height / 2);
+    Ending.fillText(message, game.endingInfo.width / 2, game.endingInfo.height / 2);
 }
+
+function updatePlayerInformation(game) {
+    // Clear
+    var playerContext = game.playerInfo.getContext("2d");
+    playerContext.save();
+    playerContext.setTransform(1, 0, 0, 1, 0, 0);
+    playerContext.clearRect(0, 0, game.playerInfo.width, game.playerInfo.height);
+    playerContext.restore();
+
+    // Draw the direction information
+    playerContext.beginPath();
+    playerContext.strokeStyle = "#7f7f7f";
+    playerContext.lineWidth = 2;
+    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 60, 0, 2 * Math.PI, false);
+    playerContext.stroke();
+
+    playerContext.beginPath();
+    playerContext.strokeStyle = "#7f7f7f";
+    playerContext.lineWidth = 2;
+    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 50, 0, 2 * Math.PI, false);
+    playerContext.stroke();
+
+    playerContext.font = '20px Arial';
+    playerContext.textBaseline = 'middle';
+    playerContext.textAlign = 'center';
+    playerContext.fillStyle = '#00ff00';
+    playerContext.fillText(game.nextGoal[game.gindex][1], game.playerInfo.width / 2, game.playerInfo.height / 2);
+
+    //calculate the distance between the player and the next goal
+    var dis = Math.sqrt((game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) * (game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) +
+                        (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z) * (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z));
+
+    var angle = 0;
+    if (dis < CELL_SIZE) {
+        angle = 2 * Math.PI;
+    }
+    else {
+        if (dis > 24 * CELL_SIZE) {
+            angle = Math.PI / 12;
+        }
+        else {
+            angle = -(-Math.PI / 12 * dis / CELL_SIZE + 25 / 12 * Math.PI);
+        }
+    }
+    playerContext.beginPath();
+    playerContext.strokeStyle = "#ffff00";
+    playerContext.lineWidth = 10;
+    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, 0, angle, true);
+    playerContext.stroke();
+}
+
+
 
 
 function updateCollisionSet(game) {
@@ -230,6 +301,7 @@ function updateOperation(game, input) {
                             game.old.y = -1;
                             game.old.z = -1;
                             game.key = 1;
+                            game.gindex++;
                             break;
                         case 'fdoor':
                             if (game.key === 1) {
