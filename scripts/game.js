@@ -1,34 +1,3 @@
-function updateCollisionSet(game) {
-    var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
-    var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
-    if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
-        game.old.x = rx;
-        game.old.y = ry;
-        game.old.z = rz;
-        game.collisionSet = [];
-        for (var y = ry - 1; y <= ry + 1; y++) {
-            if (y < 0 || y >= NUM_CELLS.y) {
-                continue;
-            }           
-            for (var z = rz - 1; z <= rz + 1; z++) {
-                if (z < 0 || z >= NUM_CELLS.z) {
-                    continue;
-                }
-                for (var x = rx - 1; x <= rx + 1; x++) {
-                    if (x < 0 || x >= NUM_CELLS.x) {
-                        continue;
-                    }
-                    for (var o = 0; o < game.objects[y][z][x].length; o++) {
-                        game.collisionSet.push(game.objects[y][z][x][o]);
-                    }
-                }
-            }
-        }
-    }
-}
-
-
 function Game(renderer, canvas) {
     // ------------------------------------------------------------------------
     // Public properties ------------------------------------------------------
@@ -46,6 +15,7 @@ function Game(renderer, canvas) {
     this.initialized = false;
     this.collisionSet = null;
     this.old = new THREE.Vector3();
+    this.key = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -87,10 +57,11 @@ function Game(renderer, canvas) {
         this.old.x = -1;
         this.old.y = -1;
         this.old.z = -1;
+        this.key = 0;
 
         // Setup scene
         this.scene = new THREE.Scene();
-        
+
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
         //this.scene.add(new THREE.AmbientLight(0x272727));
@@ -103,22 +74,22 @@ function Game(renderer, canvas) {
         this.scene.add(this.camera);
 
         this.skybox = new Skybox(this);
-            
+
         // Setup player
         this.player = new Player();
         this.player.init(this, this.scene, this.camera, this.level.startPos);
         this.oldplayer.x = this.player.mesh.position.x;
         this.oldplayer.y = this.player.mesh.position.y;
         this.oldplayer.z = this.player.mesh.position.z;
-       
+
         // Initialize warden 
         this.warden = new Warden();
-        this.warden.init( this.scene, this.level.wardenPos, this.level.patrolPos );
-        
+        this.warden.init(this.scene, this.level.wardenPos, this.level.patrolPos);
+
         // Update the view ray (center of canvas into screen)
-        this.player.updateViewRay( input ); 
-        
-        console.log( "Game initialized." );
+        this.player.updateViewRay(input);
+
+        console.log("Game initialized.");
     };
 
     // Update everything in the scene
@@ -127,20 +98,21 @@ function Game(renderer, canvas) {
         if (this.initialized == false) {
             this.init(input);
         }
-        
+
         this.level.update();
-        this.player.update( input ); 
-        this.warden.update( this.player.getPosVec(), 
+        this.player.update(input);
+        this.warden.update(this.player.getPosVec(),
         					this.player.sound,
-        					this.player.lightOn );
-        
+        					this.player.lightOn);
+
         updateCollisionSet(this);
+        updateOperation(this, input);
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
             if (smallDrop(this)) {
                 while (input.hold === 0) {
-                    this.player.update( input ); 
+                    this.player.update(input);
                     handleCollisions(this, input);
                 }
             }
@@ -154,6 +126,62 @@ function Game(renderer, canvas) {
     }
 }; // end Game object
 
+function updateCollisionSet(game) {
+    var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+    var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+    if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
+        game.old.x = rx;
+        game.old.y = ry;
+        game.old.z = rz;
+        game.collisionSet = [];
+        for (var y = ry - 1; y <= ry + 1; y++) {
+            if (y < 0 || y >= NUM_CELLS.y) {
+                continue;
+            }
+            for (var z = rz - 1; z <= rz + 1; z++) {
+                if (z < 0 || z >= NUM_CELLS.z) {
+                    continue;
+                }
+                for (var x = rx - 1; x <= rx + 1; x++) {
+                    if (x < 0 || x >= NUM_CELLS.x) {
+                        continue;
+                    }
+                    for (var o = 0; o < game.objects[y][z][x].length; o++) {
+                        game.collisionSet.push(game.objects[y][z][x][o]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+function updateOperation(game, input) {
+    if (input.click === 1) {
+        input.click = 0;
+        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        for (var z = rz - 1; z <= rz + 1; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
+                continue;
+            }
+            for (var x = rx - 1; x <= rx + 1; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                    if (game.objects[ry][z][x][o].name === 'key') {
+                        game.scene.remove(game.objects[ry][z][x][o]);
+                        game.objects[ry][z][x].splice(o, 1);
+                        game.key = 1;
+                    }
+                }
+            }
+        }
+
+    }
+}
 
 function smallDrop(game) {
     for (var vertexIndex = 0; vertexIndex < game.player.mesh.geometry.vertices.length; vertexIndex++) {
@@ -211,9 +239,8 @@ function bumpBack(collisionResults, directionVector, game) {
                 break;
             }
         }
-        if (bumpx === -1) {
-            i -= 0.1;
-        }
+
+        i -= 0.1;
     }
     if (game.player.mesh.position.x - game.oldplayer.x < 0) {
         bumpx = 0;
@@ -225,9 +252,9 @@ function bumpBack(collisionResults, directionVector, game) {
                 break;
             }
         }
-        if (bumpx === 1) {
-            i += 0.1;
-        }
+
+        i += 0.1;
+
     }
 
     if (game.player.mesh.position.y - game.oldplayer.y > 0) {
@@ -240,9 +267,9 @@ function bumpBack(collisionResults, directionVector, game) {
                 break;
             }
         }
-        if (bumpy === -1) {
-            j -= 0.1;
-        }
+
+        j -= 0.1;
+
     }
     if (game.player.mesh.position.y - game.oldplayer.y < 0) {
         bumpy = 0;
@@ -254,9 +281,9 @@ function bumpBack(collisionResults, directionVector, game) {
                 break;
             }
         }
-        if (bumpy === 1) {
-            j += 0.1;
-        }
+
+        j += 0.1;
+
     }
 
     if (game.player.mesh.position.z - game.oldplayer.z > 0) {
@@ -269,9 +296,9 @@ function bumpBack(collisionResults, directionVector, game) {
                 break;
             }
         }
-        if (bumpz === -1) {
-            k -= 0.1;
-        }
+
+        k -= 0.1;
+
     }
     if (game.player.mesh.position.z - game.oldplayer.z < 0) {
         bumpz = 0;

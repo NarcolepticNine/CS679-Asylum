@@ -67,7 +67,7 @@ function Level(game) {
     FLOOR_TEXTURE = THREE.ImageUtils.loadTexture("images/floor_tiles.jpg"),
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
-    COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
+    COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/window_wall.png"),
 
@@ -214,7 +214,7 @@ function Level(game) {
                             this.generateFloorGeometry(xx, yy, zz);
                             this.generateCeilingGeometry(xx, yy, zz);
                         } else if (cell.type.charAt(0) === CELL_TYPES.key) {
-                            this.generateObjGeometry(xx, yy + 8, zz, .5, 0, 'obj/key.js', 'obj/key.jpg');
+                            this.generateObjGeometry(xx, yy + 8, zz, .5, 0, 'obj/key.js', 'obj/key.jpg', 'key');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz);
                         }
@@ -262,15 +262,15 @@ function Level(game) {
     };
 
     // Generate Obj geometyr
-    this.generateObjGeometry = function (x, y, z, scale, rot, obj, tmap) {
+    this.generateObjGeometry = function (x, y, z, scale, rot, obj, tmap, name) {
         var loader = new THREE.JSONLoader();
-        var cbo = function (geometry) { createGeo(geometry, x, y, z, scale, rot, tmap) };
+        var cbo = function (geometry) { createGeo(geometry, x, y, z, scale, rot, tmap, name) };
         loader.load(obj, cbo);
     };
 
-    function createGeo(geometry, x, y, z, scale, rot, tmap) {
+    function createGeo(geometry, x, y, z, scale, rot, tmap, name) {
         var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap) }));
-        objMesh.name = 'model';
+        objMesh.name = name;
         objMesh.rotation.y = rot;
         objMesh.position.set(x, y, z);
         objMesh.scale.set(scale, scale, scale);
@@ -411,20 +411,20 @@ function Level(game) {
             case 's':
                 mesh.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
                 mesh.rotation.y = Math.PI;
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE * 5.7 / 12, .5, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE * 5.7 / 12, .5, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'model');
                 break;
             case 'n':
                 mesh.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE * 5.7 / 12, .5, Math.PI / 2, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE * 5.7 / 12, .5, Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'model');
                 break;
             case 'w':
                 mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, Math.PI, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, Math.PI, 'obj/window.js', 'obj/window.jpg', 'model');
                 mesh.rotation.y = Math.PI / 2;
                 break;
             case 'e':
                 mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, 0, 'obj/window.js', 'obj/window.jpg');
+                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, 0, 'obj/window.js', 'obj/window.jpg', 'model');
                 mesh.rotation.y = -Math.PI / 2;
                 break;
         }
@@ -440,16 +440,16 @@ function Level(game) {
     this.generateBedGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE / 8, z + CELL_SIZE / 4, 2, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 8, z + CELL_SIZE / 4, 2, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE / 8, z - CELL_SIZE / 4, 2, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 8, z - CELL_SIZE / 4, 2, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, Math.PI, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, Math.PI, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, 0, 'obj/bed.js', 'obj/bed.jpg');
+                this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, 0, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
         }
     };
@@ -457,16 +457,16 @@ function Level(game) {
     this.generateBookCaseGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE / 2, z - CELL_SIZE / 3, 3, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 2, z - CELL_SIZE / 3, 3, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE / 2, z + CELL_SIZE / 3, 3, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE / 2, z + CELL_SIZE / 3, 3, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x + CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, 0, 'obj/bookcase.js', 'obj/bookcase.jpg');
+                this.generateObjGeometry(x - CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, 0, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
         }
     };
@@ -474,16 +474,16 @@ function Level(game) {
     this.generateClockGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 2.5, z - CELL_SIZE * 5.7 / 12, .5, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 2.5, z - CELL_SIZE * 5.7 / 12, .5, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'model');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 2.5, z + CELL_SIZE * 5.7 / 12, .5, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 2.5, z + CELL_SIZE * 5.7 / 12, .5, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'model');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 2.5, z, .5, Math.PI, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 2.5, z, .5, Math.PI, 'obj/clock.js', 'obj/clock.jpg', 'model');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 2.5, z, .5, 0, 'obj/clock.js', 'obj/clock.jpg');
+                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 2.5, z, .5, 0, 'obj/clock.js', 'obj/clock.jpg', 'model');
                 break;
         }
     };

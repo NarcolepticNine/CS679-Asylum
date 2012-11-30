@@ -128,7 +128,6 @@ function setupInput(data, game) {
     data.v       = 0;
     data.hold    = 1;
     data.click   = 0;
-    data.Jumping = 0;
     data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0 };
 
     // Hookup key input
@@ -170,7 +169,7 @@ function setupInput(data, game) {
     }, false);
 
     document.addEventListener("mouseup", function (event) {
-        data.click = 0;
+        //data.click = 0;
     }, false);
 
     document.addEventListener("mousemove", function (event) {
