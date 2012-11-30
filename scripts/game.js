@@ -100,7 +100,10 @@ function Game(renderer, canvas) {
 
         // Initialize warden 
         this.warden = new Warden();
-        this.warden.init(this.scene, this.level.wardenPos, this.level.patrolPos);
+        this.warden.init( 	this.scene, 
+        					this.level.wardenPos, 
+        					this.level.patrolPos,
+        					this );
 
         // Update the view ray (center of canvas into screen)
 
@@ -125,10 +128,16 @@ function Game(renderer, canvas) {
         					this.player.lightOn);
 
         updateOperation(this, input);
-        if (this.end === 1) {
-            ending(this);
+        if ( this.end === 1 ) {
+        	
+        	if( this.warden.caught )
+        		ending(this, 'You have been caught by the Warden.' );
+        	else        	
+            	ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum' );
+            
+            	
             return;
-        }
+        } 
         updateCollisionSet(this);
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
@@ -149,7 +158,7 @@ function Game(renderer, canvas) {
     }
 }; // end Game object
 
-function ending(game) {
+function ending(game, message) {
     var Ending = game.endingInfo.getContext("2d");
     // Clear
     Ending.save();
@@ -162,7 +171,7 @@ function ending(game) {
     Ending.textBaseline = 'middle';
     Ending.textAlign = 'center';
     Ending.fillStyle = '#00ff00';
-    Ending.fillText('Congratulations! You\'ve escaped from the spooky manor!', game.endingInfo.width / 2, game.endingInfo.height / 2);
+    Ending.fillText( message, game.endingInfo.width / 2, game.endingInfo.height / 2);
 }
 
 

@@ -1,5 +1,6 @@
 function Warden() {
 	
+	this.game    = null; 
 	this.mesh    = null; 
 	this.speed   = 0.6; 
 	this.currSpd = this.speed;
@@ -16,13 +17,20 @@ function Warden() {
 	 */
 	this.awareness = 0; 
 	
+	//Game Variables
+	this.caught = false; 
+	
+	
 	//pass in level.startPos
 	this.setStartPos = function ( vec3  ){
 		this.mesh.position.set( vec3.x, vec3.y + 8.5, vec3.z ); 	
 		
 	}
 	
-	this.init = function( scene, startPos, patrolArr ){
+	this.init = function( scene, startPos, patrolArr, game ){
+		
+		this.game = game; 
+		
 		this.mesh = new THREE.Mesh(
 			new THREE.CubeGeometry( 10, 10, 10 ),
 			new THREE.MeshPhongMaterial( { color: 0xff0000 } ) 
@@ -67,6 +75,11 @@ function Warden() {
 		var d = Math.sqrt(dX*dX+dZ*dZ);    		
 		
 		this.checkPlayer( d, playerSound, lightOn ); 	
+		
+		if( d < 10 ){
+			this.caught = true;
+			this.game.end = 1; 
+		}  
 		
 		if( this.awareness < 30 ) {
 			

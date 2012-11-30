@@ -99,10 +99,12 @@ function updateDebug( info, game ){
 		info.innerHTML += " Light: " + player.lightOn; 
 		info.innerHTML += " Current Speed: " + player.currSpd + "<br / >";
 		
+		info.innerHTML += " Key: " + game.key + "<br / ><br />";
+		
 		info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
 		info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
 		info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
-		info.innerHTML += " mode: " + warden.mode + "<br />" ;
+		info.innerHTML += " caught: " + warden.caught + "<br />" ;
 		 
 		info.innerHTML += " currSpd: " + warden.currSpd; 
 		info.innerHTML += " Awareness: " + warden.awareness.toFixed(2);
