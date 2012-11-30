@@ -44,20 +44,23 @@ function SoundManager(){
 	  	request.send();
 	}
 	
-	this.playSound = function ( url ) {
+	this.playSound = function ( buffer, time ) {
 		
-		if( ( buffer = this.buffers[ url ] ) ){
-			var source = context.createBufferSource();
-			source.buffer = buffer;
-			source.connect( context.destination );
-			source.noteOn( 0 );
-			console.log( "Ready " ); 
-			return false; 
-		} else {
-			return true; 
-		}
+		var source = context.createBufferSource();
+    	source.buffer = buffer;
+    	source.connect(context.destination);
+    	source.noteOn(time);		
+	
 	}
 	
-	
+	this.returnBuffer = function ( url ) {
+		var buffer;
+		if( ( buffer = this.buffers[ url ] ) ){
+			return buffer;  
+		} else {
+			return false; 
+		}
+			
+	}
 	
 }
