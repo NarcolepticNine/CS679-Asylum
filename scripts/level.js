@@ -67,7 +67,7 @@ function Level(game) {
     FLOOR_TEXTURE = THREE.ImageUtils.loadTexture("images/floor_tiles.jpg"),
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
-    COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
+    COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/window_wall.png"),
 
