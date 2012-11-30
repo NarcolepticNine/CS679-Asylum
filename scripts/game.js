@@ -17,6 +17,7 @@ function Game(renderer, canvas) {
     this.collisionSet = null;
     this.old = new THREE.Vector3();
     this.key = 0;
+    this.end = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -30,6 +31,15 @@ function Game(renderer, canvas) {
     this.mapCanvas.style.top = "20px";
     this.mapCanvas.style.right = "20px";
     document.getElementById("container").appendChild(this.mapCanvas);
+
+    this.endingInfo = document.createElement("canvas");
+    this.endingInfo.id = "endinginfo";
+    this.endingInfo.width = canvas.width;
+    this.endingInfo.height = canvas.height;
+    this.endingInfo.style.position = "absolute";
+    this.endingInfo.style.bottom = 0;
+    this.endingInfo.style.right = 0;
+    document.getElementById("container").appendChild(this.endingInfo);
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -59,6 +69,7 @@ function Game(renderer, canvas) {
         this.old.y = -1;
         this.old.z = -1;
         this.key = 0;
+        this.end = 0;
 
         // Setup scene
         this.scene = new THREE.Scene();
@@ -117,8 +128,12 @@ function Game(renderer, canvas) {
         					this.player.sound,
         					this.player.lightOn);
 
-        updateCollisionSet(this);
         updateOperation(this, input);
+        if (this.end === 1) {
+            ending(this);
+            return;
+        }
+        updateCollisionSet(this);
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
@@ -137,6 +152,23 @@ function Game(renderer, canvas) {
         this.renderer.render(this.scene, this.camera);
     }
 }; // end Game object
+
+function ending(game) {
+    var Ending = game.endingInfo.getContext("2d");
+    // Clear
+    Ending.save();
+    Ending.setTransform(1, 0, 0, 1, 0, 0);
+    Ending.clearRect(0, 0, game.endingInfo.width, game.endingInfo.height);
+    Ending.restore();
+
+
+    Ending.font = '50px Arial';
+    Ending.textBaseline = 'middle';
+    Ending.textAlign = 'center';
+    Ending.fillStyle = '#00ff00';
+    Ending.fillText('Congratulations! You\'ve escaped from the spooky manor!', game.endingInfo.width / 2, game.endingInfo.height / 2);
+}
+
 
 function updateCollisionSet(game) {
     var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
@@ -182,16 +214,26 @@ function updateOperation(game, input) {
                 if (x < 0 || x >= NUM_CELLS.x) {
                     continue;
                 }
-                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
-                    if (game.objects[ry][z][x][o].name === 'key') {
-                        game.scene.remove(game.objects[ry][z][x][o]);
-                        game.objects[ry][z][x].splice(o, 1);
-                        game.key = 1;
+
+                if (game.key === 0) {
+                    for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                        if (game.objects[ry][z][x][o].name === 'key') {
+                            game.scene.remove(game.objects[ry][z][x][o]);
+                            game.objects[ry][z][x].splice(o, 1);
+                            game.key = 1;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                        if (game.objects[ry][z][x][o].name === 'fdoor') {
+                            game.end = 1;
+                        }
                     }
                 }
             }
         }
-
     }
 }
 
@@ -347,7 +389,7 @@ function handleCollisions(game, input) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                     if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
-                                                    || selected.name === 'model') {
+                                                    || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;
