@@ -85,10 +85,10 @@ function Game(renderer, canvas) {
         this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         this.scene.add(this.camera);
 
-        this.soundManager = new SoundManager();
-        this.soundManager.init();
-        this.soundManager.loadSound("./sounds/lust_0.mp3");
 
+		this.soundManager = new SoundManager();
+		this.soundManager.init();
+				
         this.skybox = new Skybox(this);
 
         // Setup player
@@ -111,17 +111,13 @@ function Game(renderer, canvas) {
     // Update everything in the scene
     // ------------------------------------------------------------------------
 
-    var loaded = true;
+    
+    var loaded = false; 
+    var once = true; 
     this.update = function (input) {
         if (this.initialized == false) {
             this.init(input);
         }
-
-        //testing music playing
-        if (loaded) {
-            //loaded = this.soundManager.playSound("./sounds/lust_0.mp3");
-        }
-
         this.level.update();
         this.player.update(input);
         this.warden.update(this.player.getPosVec(),
