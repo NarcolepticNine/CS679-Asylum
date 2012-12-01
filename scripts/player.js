@@ -94,6 +94,8 @@ function Player() {
 			//footsteps eventually based on walk speed.  
 			timeout = 1000 - ( 500 * speed ); 
 			if( start - this.laststep > timeout ){
+				
+				
 				this.soundManager.playSound( this.footsteps[0], 0 );
 				this.laststep = start; 
 			}
@@ -105,32 +107,25 @@ function Player() {
 	}
 
 	this.soundLoad  = function( distance, movement, speed ) {
+		
+		var loadHelper = function( player, soundmanager, variable ){
+			var tempBuff; 
 			
-		var tempBuff; 					
-		if( ( tempBuff = this.soundManager.returnBuffer( this.heartbeat ) ) ){
-			console.log( "Ready: " + this.heartbeat + " CountAssets " + this.countAssets );
-			this.heartbeat = tempBuff; 
-			this.countAssets--; 
+			if( ( tempBuff = soundmanager.returnBuffer( variable ) ) ){
+				console.log( "Sound Ready: " + variable + " CountAssets: " + player.countAssets );
+				variable = tempBuff; 
+				player.countAssets--; 
+			}
+			
+			return variable;	
 		}
 		
-		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[0] ) ) ){
-			console.log( "Ready: " + this.footsteps[0] + " CountAssets " + this.countAssets );
-			this.footsteps[0] = tempBuff; 
-			this.countAssets--; 
-		}
-		
-		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[1] ) ) ){
-			console.log( "Ready: " + this.footsteps[1] + " CountAssets " + this.countAssets );
-			this.footsteps[1] = tempBuff; 
-			this.countAssets--; 
-		}
-		
-		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[2] ) ) ){
-			console.log( "Ready: " + this.footsteps[2] + " CountAssets " + this.countAssets ); 
-			this.footsteps[2] = tempBuff; 
-			this.countAssets--; 
-		}
-		
+		// for more player sounds, expand here. 
+		this.heartbeat    = loadHelper( this, this.soundManager, this.heartbeat );
+		this.footsteps[0] = loadHelper( this, this.soundManager, this.footsteps[0] );
+		this.footsteps[1] = loadHelper( this, this.soundManager, this.footsteps[1] );	
+		this.footsteps[2] = loadHelper( this, this.soundManager, this.footsteps[2] );
+				
 		if( this.countAssets == 0 ) {
 			console.log( "All Loaded, switching to playing sounds" );
 			this.playSounds = this.soundLoaded; 
