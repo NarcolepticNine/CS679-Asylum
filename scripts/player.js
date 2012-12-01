@@ -95,8 +95,9 @@ function Player() {
 			timeout = 1000 - ( 500 * speed ); 
 			if( start - this.laststep > timeout ){
 				
-				
-				this.soundManager.playSound( this.footsteps[0], 0 );
+				//selected random from one of the footstep sounds
+				var step = Math.floor( Math.random() * this.footsteps.length  );
+				this.soundManager.playSound( this.footsteps[step], 0 );
 				this.laststep = start; 
 			}
 		} else {
@@ -134,7 +135,10 @@ function Player() {
 			return false; 
 		}	
 	}
-
+	
+	//playSounds is a meta function, first it points out soundLoad, then after
+	//  soundLoad has done its thing, it switches to soundLoaded, which has the
+	//  code to play the sounds.   
 	this.playSounds = this.soundLoad; 
 
     this.update = function (input) {
