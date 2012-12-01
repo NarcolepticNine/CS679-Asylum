@@ -1,9 +1,19 @@
 function Warden() {
 	
-	this.game    = null; 
-	this.mesh    = null; 
+	//Warden Definition
+	this.game       = null; 
+	this.mesh       = null;
+	this.flashlight = null; 
+	
+	//Mechanic Variables 
 	this.speed   = 0.6; 
 	this.currSpd = this.speed;
+	
+	//general Sound variables - Warden Sounds require nodes for positions. 
+	//  Needs research
+	//this.soundManager; 
+	//this.countAssets = 0; 
+	
 	
 	//patrol Variables
 	this.pDir    = true; //direction of patrol
@@ -31,14 +41,26 @@ function Warden() {
 		
 		this.game = game; 
 		
+		//TODO Improved Warden Mesh
 		this.mesh = new THREE.Mesh(
 			new THREE.CubeGeometry( 10, 10, 10 ),
 			new THREE.MeshPhongMaterial( { color: 0xff0000 } ) 
 		);
+	
+		//Warden Flashlight
+		this.flashlight = new THREE.SpotLight(0xfffed9, 5, 50);
+        this.flashlight.castShadow = true;
+        this.flashlight.shadowCameraNear = 0;
+        this.flashlight.shadowCameraFar = 5;
+        this.flashlight.shadowCameraVisible = true;
+		scene.add( this.flashlight ); 
 		
+		//Warden Location and Patrol
 		scene.add( this.mesh ); 
 		this.setStartPos( startPos ); 
 		this.patrols = patrolArr; 
+	
+	
 	
 		console.log( "Patrol Points: ");
 		for( var i = 0; i < this.patrols.length ; i++ ){
@@ -115,6 +137,11 @@ function Warden() {
 		    this.mesh.position.z += (this.currSpd * ( dZ / d )); 
 		 	
 		 }	
+		 
+		 //update light position and direction
+		 
+		 this.flashlight.position = this.mesh.position; 
+		 
 	}
 	
 	this.updateLoad = function ( posVec, playerSound, lightOn ){

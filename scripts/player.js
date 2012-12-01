@@ -11,7 +11,7 @@ function Player() {
     this.soundManager; 
     this.countAssets = 4 ; // number of sound files to be loaded
     
-    //heart beat variables
+    //heartbeat variables
 	this.lastbeat = 0; 
 	this.heartbeat  = "./sounds/heartbeat.mp3";
 	
