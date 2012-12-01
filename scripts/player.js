@@ -6,9 +6,22 @@ function Player() {
     this.input = null;
     this.camera = null;
     this.flashlight = null;
+    
+    //general sounds
     this.soundManager; 
-	this.heartbeat  = "./sounds/heartbeat.mp3";
+    this.countAssets = 4 ; // number of sound files to be loaded
+    
+    //heart beat variables
 	this.lastbeat = 0; 
+	this.heartbeat  = "./sounds/heartbeat.mp3";
+	
+	//footstep variables
+	this.laststep = 0; 
+	this.footsteps = new Array(); 
+	this.footsteps[0] = "./sounds/step1.mp3";
+	this.footsteps[1] = "./sounds/step2.mp3"; 
+	this.footsteps[2] = "./sounds/step3.mp3";  
+	
 
     //mechanic variables
     var speed = 0.5;
@@ -42,6 +55,9 @@ function Player() {
         this.setStartPos(startPos);
         
         game.soundManager.loadSound( this.heartbeat ); 
+        game.soundManager.loadSound( this.footsteps[0]  ); 
+        game.soundManager.loadSound( this.footsteps[1]  );
+        game.soundManager.loadSound( this.footsteps[2]  );
     }
 
     //pass in level.startPos
@@ -63,15 +79,24 @@ function Player() {
 		
 		var start   =  new Date().getTime();
 		
+		//heartbeat
 		//base rate of .5 seconds, and can go as high as 5 seconds
 		var timeout = 500 + ( distance * 5 );
 		timeout = ( timeout > 5000 ) ? 5000 : timeout;  
 		
 		if( start - this.lastbeat > timeout ){
-			console.log( "Heartbeat" ); 
 			this.soundManager.playSound( this.heartbeat, 0 );
 			this.lastbeat = start; 
 		} 
+		
+		//footsteps eventually based on walk speed.  
+		timeout = 1000; 
+		if( start - this.laststep > timeout ){
+			console.log( "Footstep" ); 
+			this.soundManager.playSound( this.footsteps[0], 0 );
+			this.laststep = start; 
+		}
+		
 		
 	}
 
@@ -80,12 +105,30 @@ function Player() {
 		var tempBuff; 					
 		if( ( tempBuff = this.soundManager.returnBuffer( this.heartbeat ) ) ){
 			this.heartbeat = tempBuff; 
-			this.playSounds = this.soundLoaded; 
-			return true; 
+			this.countAssets--; 
 		}
 		
-		return false; 
-				
+		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[0] ) ) ){
+			this.footsteps[0] = tempBuff; 
+			this.countAssets--; 
+		}
+		
+		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[1] ) ) ){
+			this.footsteps[1] = tempBuff; 
+			this.countAssets--; 
+		}
+		
+		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[2] ) ) ){
+			this.footsteps[2] = tempBuff; 
+			this.countAssets--; 
+		}
+		
+		if( this.countAssets == 0 ) {
+			this.playSounds = this.soundLoad; 
+			return true; 	
+		}else {
+			return false; 
+		}	
 	}
 
 	this.playSounds = this.soundLoad; 
