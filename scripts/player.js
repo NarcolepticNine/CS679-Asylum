@@ -75,7 +75,7 @@ function Player() {
         return this.mesh.position;
     }
 
-	this.soundLoaded = function ( distance ) {
+	this.soundLoaded = function ( distance, movement, speed ) {
 		
 		var start   =  new Date().getTime();
 		
@@ -89,42 +89,51 @@ function Player() {
 			this.lastbeat = start; 
 		} 
 		
-		//footsteps eventually based on walk speed.  
-		timeout = 1000; 
-		if( start - this.laststep > timeout ){
-			console.log( "Footstep" ); 
-			this.soundManager.playSound( this.footsteps[0], 0 );
-			this.laststep = start; 
-		}
 		
+		if( movement ){
+			//footsteps eventually based on walk speed.  
+			timeout = 1000 - ( 500 * speed ); 
+			if( start - this.laststep > timeout ){
+				this.soundManager.playSound( this.footsteps[0], 0 );
+				this.laststep = start; 
+			}
+		} else {
+			//so steps start right away on movement
+			this.laststep = 0; 
+		}
 		
 	}
 
-	this.soundLoad  = function( distance ) {
+	this.soundLoad  = function( distance, movement, speed ) {
 			
 		var tempBuff; 					
 		if( ( tempBuff = this.soundManager.returnBuffer( this.heartbeat ) ) ){
+			console.log( "Ready: " + this.heartbeat + " CountAssets " + this.countAssets );
 			this.heartbeat = tempBuff; 
 			this.countAssets--; 
 		}
 		
 		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[0] ) ) ){
+			console.log( "Ready: " + this.footsteps[0] + " CountAssets " + this.countAssets );
 			this.footsteps[0] = tempBuff; 
 			this.countAssets--; 
 		}
 		
 		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[1] ) ) ){
+			console.log( "Ready: " + this.footsteps[1] + " CountAssets " + this.countAssets );
 			this.footsteps[1] = tempBuff; 
 			this.countAssets--; 
 		}
 		
 		if( ( tempBuff = this.soundManager.returnBuffer( this.footsteps[2] ) ) ){
+			console.log( "Ready: " + this.footsteps[2] + " CountAssets " + this.countAssets ); 
 			this.footsteps[2] = tempBuff; 
 			this.countAssets--; 
 		}
 		
 		if( this.countAssets == 0 ) {
-			this.playSounds = this.soundLoad; 
+			console.log( "All Loaded, switching to playing sounds" );
+			this.playSounds = this.soundLoaded; 
 			return true; 	
 		}else {
 			return false; 
@@ -147,8 +156,9 @@ function Player() {
 		
 		var d = Math.sqrt(dX*dX+dZ*dZ); 
 		
-		this.playSounds( d ); 
+		
         this.sound = this.updateMovement(input);
+        this.playSounds( d, this.sound, this.currSpd ); 
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;
 
