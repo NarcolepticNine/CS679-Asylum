@@ -92,7 +92,7 @@ function Game(renderer, canvas) {
         this.nextGoal[1] = [];
         this.gindex = 0;
         // Setup scene
-        
+
 
         //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
@@ -166,6 +166,7 @@ function Game(renderer, canvas) {
                 }
             }
         }
+        TWEEN.update();
         return true;
     };
 
@@ -282,6 +283,7 @@ function updateCollisionSet(game) {
     }
 }
 
+var DOOR_TIMEOUT = 750; // milliseconds between door toggles
 function updateOperation(game, input) {
     if (input.click === 1) {
         input.click = 0;
@@ -316,11 +318,57 @@ function updateOperation(game, input) {
                             o++;
                             break;
                         case 'door':
-                            game.scene.remove(game.objects[ry][z][x][o]);
-                            game.objects[ry][z][x].splice(o, 1);
-                            game.old.x = -1;
-                            game.old.y = -1;
-                            game.old.z = -1;
+                            var door = game.objects[ry][z][x][o], tween;
+                            var ob = door.model;
+
+                            if (door.doorState === "closed" && door.canToggle) {
+                                var ix = door.position.x - door.halfsize * Math.sin(door.beginRot);
+                                var iz = door.position.z - door.halfsize * Math.cos(door.beginRot);
+                                tween = new TWEEN.Tween({ rot: door.beginRot })
+                                    .to({ rot: door.endRot }, DOOR_TIMEOUT)
+                                    .easing(TWEEN.Easing.Elastic.Out)
+                                    .onUpdate(function () {
+                                        door.rotation.y = this.rot;
+                                        ob.rotation.y = this.rot;
+                                        door.position.x = ix + door.halfsize * Math.sin(this.rot);
+                                        door.position.z = iz + door.halfsize * Math.cos(this.rot);
+                                        ob.position.x = door.position.x;
+                                        ob.position.z = door.position.z;
+
+                                    })
+                                    .start();
+
+                                door.doorState = "open";
+                                door.canToggle = false;
+
+                                setTimeout(function () {
+                                    door.canToggle = true;
+                                }, DOOR_TIMEOUT);
+                            } else if (door.doorState === "open" && door.canToggle) {
+                                var ix = door.position.x - door.halfsize * Math.sin(door.endRot);
+                                var iz = door.position.z - door.halfsize * Math.cos(door.endRot);
+                                tween = new TWEEN.Tween({ rot: door.endRot })
+                                    .to({ rot: door.beginRot }, DOOR_TIMEOUT)
+                                    .easing(TWEEN.Easing.Elastic.Out)
+                                    .onUpdate(function () {
+                                        door.rotation.y = this.rot;
+                                        ob.rotation.y = this.rot;
+                                        door.position.x = ix + door.halfsize * Math.sin(this.rot);
+                                        door.position.z = iz + door.halfsize * Math.cos(this.rot);
+                                        ob.position.x = door.position.x;
+                                        ob.position.z = door.position.z;
+
+                                    })
+                                    .start();
+
+                                door.doorState = "closed";
+                                door.canToggle = false;
+
+                                setTimeout(function () {
+                                    door.canToggle = true;
+                                }, DOOR_TIMEOUT);
+                            }
+                            o++;
                             break;
                         default:
                             o++;
@@ -479,6 +527,15 @@ function handleCollisions(game, input) {
             var directionVector = game.player.mesh.geometry.vertices[vertexIndex].clone();
             var ray = new THREE.Ray(game.player.mesh.position, directionVector.clone().normalize());
             var collisionResults = ray.intersectObjects(game.collisionSet);
+            var g = 0;
+            while (g < collisionResults.length) {
+                if (collisionResults[g].object.name === "door" && collisionResults[g].object.doorState === 'open') {
+                    collisionResults.splice(g, 1);
+                } else {
+                    g++;
+                }
+            }
+
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
