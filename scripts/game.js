@@ -539,6 +539,9 @@ function handleCollisions(game, input) {
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    console.log(selected.name);
+                    console.log(collisionResults[0].distance - directionVector.length());
+                    console.log(game.player.mesh.position.x + ':' + game.player.mesh.position.y + ':' + game.player.mesh.position.z);
                     if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
                                                     || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
@@ -559,9 +562,6 @@ function handleCollisions(game, input) {
                             }
                         }
                     }
-                }
-                else {
-                    count++;
                 }
             }
             else {

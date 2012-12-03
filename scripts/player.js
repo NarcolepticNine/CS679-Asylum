@@ -63,7 +63,7 @@ function Player() {
     //pass in level.startPos
     this.setStartPos = function (vec3) {
 
-        var x = vec3.x, y = vec3.y + 16, z = vec3.z;
+        var x = vec3.x, y = vec3.y + 15, z = vec3.z;
 
         this.mesh.position.set(x, y, z);
         this.flashlight.position.set(x, y, z);
