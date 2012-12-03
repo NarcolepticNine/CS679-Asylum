@@ -71,7 +71,8 @@ function Level(game) {
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
     COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/stair.png"),
-    TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/window_wall.png"),
+    WINDOW_WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/window_wall.png"),
+    TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
     FLOOR_TEXTURE.wrapS = THREE.RepeatWrapping;
@@ -281,6 +282,9 @@ function Level(game) {
         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.floor.push(mesh);
     };
 
+
+    var TRANSPARENT_MATERIAL = new THREE.MeshBasicMaterial({ map: TRANSPARENT_TEXTURE });
+    TRANSPARENT_MATERIAL.transparent = true;
     // Generate Obj geometyr
     this.generateObjGeometry = function (x, y, z, scalex, scaley, scalez, rot, obj, tmap, name) {
         var loader = new THREE.JSONLoader();
@@ -296,9 +300,41 @@ function Level(game) {
         var rx = Math.floor(Math.floor(x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(z) / CELL_SIZE + 1 / 2);
         var ry = Math.floor(Math.floor(y) / CELL_SIZE);
-        game.objects[ry][rz][rx].push(objMesh);
+        var maxX = geometry.vertices[0].x;
+        var minX = geometry.vertices[0].x;
+        var maxY = geometry.vertices[0].y;
+        var minY = geometry.vertices[0].y;
+        var maxZ = geometry.vertices[0].z;
+        var minZ = geometry.vertices[0].z;
+
+        for (var v = 0; v < geometry.vertices.length; v++) {
+            if (geometry.vertices[v].x > maxX) {
+                maxX = geometry.vertices[v].x;
+            }
+            if (geometry.vertices[v].x < minX) {
+                minX = geometry.vertices[v].x;
+            }
+            if (geometry.vertices[v].y > maxY) {
+                maxY = geometry.vertices[v].y;
+            }
+            if (geometry.vertices[v].y < minY) {
+                minY = geometry.vertices[v].y;
+            }
+            if (geometry.vertices[v].z > maxZ) {
+                maxZ = geometry.vertices[v].z;
+            }
+            if (geometry.vertices[v].z < minZ) {
+                minZ = geometry.vertices[v].z;
+            }
+        }
+        var boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
+        boundingBox.name = name;
+        boundingBox.rotation.y = rot;
+        boundingBox.position.set(x + scalex * (maxX + minX) / 2, y + scaley * (maxY + minY) / 2, z + scalez * (maxZ + minZ) / 2);
+
+        game.objects[ry][rz][rx].push(boundingBox);
         game.scene.add(objMesh);
-        THREE.GeometryUtils.merge(game.geometry, objMesh);
+        game.scene.add(boundingBox);
     }
 
     // Generate ceiling geometry
@@ -421,7 +457,7 @@ function Level(game) {
     };
 
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
-    WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: TRANSPARENT_TEXTURE });
+    WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: WINDOW_WALL_TEXTURE });
     WINDOW_MATERIAL.transparent = true;
 
     this.generateWindowGeometry = function (x, y, z, c) {
