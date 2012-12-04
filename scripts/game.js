@@ -8,6 +8,7 @@ function Game(renderer, canvas) {
     this.scene = null;
     this.camera = null;
     this.objects = null;
+    this.models = null;
     this.level = null;
     this.lights = null;
     this.skybox = null;
@@ -22,6 +23,9 @@ function Game(renderer, canvas) {
     this.end = 0;
     this.nextGoal = null;
     this.gindex = 0;
+    this.numCheck = 0;
+    this.modelNum = null;
+    this.again = false;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -72,6 +76,7 @@ function Game(renderer, canvas) {
         this.scene = new THREE.Scene();
         this.camera = null;
         this.objects = null;
+        this.models = null;
         this.lights = [];
         this.level = null;
         this.skybox = null;
@@ -91,6 +96,9 @@ function Game(renderer, canvas) {
         this.nextGoal[0] = [];
         this.nextGoal[1] = [];
         this.gindex = 0;
+        this.numCheck = 0;
+        this.modelNum = { number: 0 };
+        this.again = false;
         // Setup scene
 
 
@@ -140,6 +148,7 @@ function Game(renderer, canvas) {
         if (this.initialized == false) {
             this.init(input);
         }
+
         this.level.update();
         this.player.update(input);
         this.warden.update(this.player.getPosVec(),
@@ -155,7 +164,9 @@ function Game(renderer, canvas) {
                 ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
             return false;
         }
-        updateCollisionSet(this);
+        if (updateCollisionSet(this) || this.again === true) {
+            updateScene(this);
+        }
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
@@ -258,29 +269,81 @@ function updateCollisionSet(game) {
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
     var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
-        game.old.x = rx;
-        game.old.y = ry;
-        game.old.z = rz;
         game.collisionSet = [];
-        for (var y = ry - 1; y <= ry + 1; y++) {
-            if (y < 0 || y >= NUM_CELLS.y) {
+
+        for (var z = rz - 1; z <= rz + 1; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
                 continue;
             }
-            for (var z = rz - 1; z <= rz + 1; z++) {
-                if (z < 0 || z >= NUM_CELLS.z) {
+            for (var x = rx - 1; x <= rx + 1; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
                     continue;
                 }
-                for (var x = rx - 1; x <= rx + 1; x++) {
-                    if (x < 0 || x >= NUM_CELLS.x) {
-                        continue;
-                    }
-                    for (var o = 0; o < game.objects[y][z][x].length; o++) {
-                        game.collisionSet.push(game.objects[y][z][x][o]);
-                    }
+                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                    game.collisionSet.push(game.objects[ry][z][x][o]);
+                }
+            }
+        }
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function updateScene(game) {
+    if (game.modelNum.number !== game.numCheck) {
+        game.again = true;
+    }
+    else {
+        game.again = false;
+    }
+    if (game.old.x !== -1) {
+        var ox = Math.floor(Math.floor(game.old.x) / CELL_SIZE + 1 / 2);
+        var oz = Math.floor(Math.floor(game.old.z) / CELL_SIZE + 1 / 2);
+        var oy = Math.floor(Math.floor(game.old.y) / CELL_SIZE);
+
+        for (var z = oz - 2; z <= oz + 2; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
+                continue;
+            }
+            for (var x = ox - 2; x <= ox + 2; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+                for (var o = 0; o < game.objects[oy][z][x].length; o++) {
+                    game.scene.remove(game.objects[oy][z][x][o]);
+                }
+                for (var o = 0; o < game.models[oy][z][x].length; o++) {
+                    game.scene.remove(game.models[oy][z][x][o]);
                 }
             }
         }
     }
+
+    var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+    var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+
+    for (var z = rz - 2; z <= rz + 2; z++) {
+        if (z < 0 || z >= NUM_CELLS.z) {
+            continue;
+        }
+        for (var x = rx - 2; x <= rx + 2; x++) {
+            if (x < 0 || x >= NUM_CELLS.x) {
+                continue;
+            }
+            for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                game.scene.add(game.objects[ry][z][x][o]);
+            }
+            for (var o = 0; o < game.models[ry][z][x].length; o++) {
+                game.scene.add(game.models[ry][z][x][o]);
+            }
+        }
+    }
+    game.old.x = rx;
+    game.old.y = ry;
+    game.old.z = rz;
 }
 
 var DOOR_TIMEOUT = 750; // milliseconds between door toggles
@@ -542,7 +605,6 @@ function handleCollisions(game, input) {
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                     if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
                                                     || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
-                        console.log(selected.name);
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;

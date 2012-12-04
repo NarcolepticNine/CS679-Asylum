@@ -188,15 +188,19 @@ function Level(game) {
         var x, y, z;
         this.grid = new Array(NUM_CELLS.y);
         game.objects = new Array(NUM_CELLS.y);
+        game.models = new Array(NUM_CELLS.y);
         for (y = 0; y < NUM_CELLS.y; ++y) {
             this.grid[y] = new Array(NUM_CELLS.z);
             game.objects[y] = new Array(NUM_CELLS.z);
+            game.models[y] = new Array(NUM_CELLS.z);
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 this.grid[y][z] = new Array(NUM_CELLS.x);
                 game.objects[y][z] = new Array(NUM_CELLS.x);
+                game.models[y][z] = new Array(NUM_CELLS.x);
                 for (x = 0; x < NUM_CELLS.x; ++x) {
                     this.grid[y][z][x] = [];
                     game.objects[y][z][x] = [];
+                    game.models[y][z][x] = [];
                 }
             }
         }
@@ -309,8 +313,8 @@ function Level(game) {
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
         game.objects[ry][rz][rx].push(mesh);
-        game.scene.add(mesh);
-        THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.floor.push(mesh);
+        //game.scene.add(mesh);
+        //THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.floor.push(mesh);
     };
 
 
@@ -318,8 +322,12 @@ function Level(game) {
     TRANSPARENT_MATERIAL.transparent = true;
     // Generate Obj geometyr
     this.generateObjGeometry = function (x, y, z, scalex, scaley, scalez, rot, obj, tmap, name) {
+        game.numCheck++;
         var loader = new THREE.JSONLoader();
-        loader.load(obj, function (geometry) { createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) });
+        var modelNum = game.modelNum;
+        var AA = game.numCheck;
+
+        loader.load(obj, function (geometry) { createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name); modelNum.number++;});
     };
 
     function createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) {
@@ -362,10 +370,10 @@ function Level(game) {
         boundingBox.rotation.y = rot;
         boundingBox.position.set(x + scalex * (maxX + minX) / 2, y + scaley * (maxY + minY) / 2, z + scalez * (maxZ + minZ) / 2);
 
-        game.scene.add(objMesh);
+        game.models[ry][rz][rx].push(objMesh);
         if (name !== 'window' && name !== 'picture' && name !== 'bulletin') {
             game.objects[ry][rz][rx].push(boundingBox);
-            game.scene.add(boundingBox);
+            //game.scene.add(boundingBox);
         }
         if (name === 'door') {
             boundingBox.canToggle = true;
@@ -395,8 +403,8 @@ function Level(game) {
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
         game.objects[ry][rz][rx].push(mesh);
-        game.scene.add(mesh);
-        THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.ceil.push(mesh);
+        //game.scene.add(mesh);
+        //THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.ceil.push(mesh);
     };
 
     this.generateDeskGeometry = function (x, y, z) {
@@ -497,17 +505,17 @@ function Level(game) {
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
         game.objects[ry][rz][rx].push(mesh);
-        game.scene.add(mesh);
-        THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.stair.push(mesh);
+        //game.scene.add(mesh);
+        //THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.stair.push(mesh);
         game.objects[ry][rz][rx].push(mesh2);
-        game.scene.add(mesh2);
-        THREE.GeometryUtils.merge(this.geometry, mesh2); //this.geometry.stair.push(mesh2);
+        //game.scene.add(mesh2);
+        //THREE.GeometryUtils.merge(this.geometry, mesh2); //this.geometry.stair.push(mesh2);
         game.objects[ry][rz][rx].push(mesh3);
-        game.scene.add(mesh3);
-        THREE.GeometryUtils.merge(this.geometry, mesh3); //this.geometry.stair.push(mesh3);
+        //game.scene.add(mesh3);
+        //THREE.GeometryUtils.merge(this.geometry, mesh3); //this.geometry.stair.push(mesh3);
         game.objects[ry][rz][rx].push(mesh4);
-        game.scene.add(mesh4);
-        THREE.GeometryUtils.merge(this.geometry, mesh4); //this.geometry.stair.push(mesh4);
+        //game.scene.add(mesh4);
+        //THREE.GeometryUtils.merge(this.geometry, mesh4); //this.geometry.stair.push(mesh4);
     };
 
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
@@ -542,8 +550,8 @@ function Level(game) {
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
         game.objects[ry][rz][rx].push(mesh);
-        game.scene.add(mesh);
-        THREE.GeometryUtils.merge(this.geometry, mesh); //       this.geometry.window.push(mesh);
+        //game.scene.add(mesh);
+        //THREE.GeometryUtils.merge(this.geometry, mesh); //       this.geometry.window.push(mesh);
     };
 
     this.generateBedGeometry = function (x, y, z, c) {
@@ -707,8 +715,8 @@ function Level(game) {
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
         game.objects[ry][rz][rx].push(mesh);
-        game.scene.add(mesh);
-        THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
+        //game.scene.add(mesh);
+        //THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
     }
 
     var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, COLUMN_MATERIAL,
@@ -737,8 +745,8 @@ function Level(game) {
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
         game.objects[ry][rz][rx].push(mesh);
-        game.scene.add(mesh);
-        THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.column.push(mesh);
+        //game.scene.add(mesh);
+        //THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.column.push(mesh);
     }
 
 
