@@ -607,8 +607,7 @@ function Level(game) {
 
     // Generate wall geometry
     // --------------------------------
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, WALL_MATERIAL,
-            { px: false, nx: false, py: false, ny: false, pz: true, nz: true }),//thin wall, only two sides are drawn
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
         WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
 
     this.generateWallGeometry = function (x, y, z, c) {
