@@ -301,7 +301,7 @@ function Level(game) {
     };
 
     // Generate floor geometry 
-    var PLANE_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE),
+    var PLANE_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE, 10, 10),
         FLOOR_MATERIAL = new THREE.MeshPhongMaterial({ map: FLOOR_TEXTURE });
 
     this.generateFloorGeometry = function (x, y, z) {
@@ -415,7 +415,7 @@ function Level(game) {
 
 
     // Generate stair geometry
-    var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(2) * CELL_SIZE);
+    var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(2) * CELL_SIZE, 10, 10);
 
     var TRIANGLE_GEOMETRY_L = new THREE.Geometry();
     var v0 = new THREE.Vector3(CELL_SIZE / 2, -CELL_SIZE / 2, 0);
@@ -446,7 +446,7 @@ function Level(game) {
     new THREE.UV(0, 1)
     ]);
 
-    var BACK_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE);
+    var BACK_GEOMETRY = PLANE_GEOMETRY;
 
     var STAIR_MATERIAL = new THREE.MeshPhongMaterial({ map: STAIR_TEXTURE });
     this.generateStairGeometry = function (x, y, z, c) {
@@ -518,7 +518,7 @@ function Level(game) {
         //THREE.GeometryUtils.merge(this.geometry, mesh4); //this.geometry.stair.push(mesh4);
     };
 
-    var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
+    var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1),
     WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: WINDOW_WALL_TEXTURE });
     WINDOW_MATERIAL.transparent = true;
 
@@ -687,7 +687,7 @@ function Level(game) {
 
     // Generate wall geometry
     // --------------------------------
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1);
         WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
 
     this.generateWallGeometry = function (x, y, z, c) {
@@ -719,7 +719,7 @@ function Level(game) {
         //THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
     }
 
-    var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 1, 1, COLUMN_MATERIAL,
+    var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 15, 1, COLUMN_MATERIAL,
             { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),//column
         COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
 

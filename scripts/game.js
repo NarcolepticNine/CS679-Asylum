@@ -64,7 +64,7 @@ function Game(renderer, canvas) {
     var FOV = 67,
         ASPECT = canvas.width / canvas.height,
         NEAR = .01,
-        FAR = 2000;
+        FAR = 1.5 * CELL_SIZE;
 
     // ------------------------------------------------------------------------
     // Game Methods -----------------------------------------------------------
@@ -145,6 +145,9 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
+        if (this.player !== null) {
+            console.log(this.player.flashlight);
+        }
         if (this.initialized == false) {
             this.init(input);
         }

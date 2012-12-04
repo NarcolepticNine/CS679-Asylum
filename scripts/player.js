@@ -43,12 +43,7 @@ function Player() {
             new THREE.MeshPhongMaterial({ color: 0x00ff00 })
 		);
 
-        this.flashlight = new THREE.SpotLight(0xfffed9, 5, 1.5 * CELL_SIZE);
-        this.flashlight.castShadow = true;
-        this.flashlight.shadowCameraNear = 0;
-        this.flashlight.shadowCameraFar = 5;
-        this.flashlight.shadowCameraVisible = true;
-
+        this.flashlight = new THREE.SpotLight(0xfffed9, 10, 1.5 * CELL_SIZE);
         scene.add(this.mesh);
         scene.add(this.flashlight);
 
