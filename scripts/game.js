@@ -145,18 +145,15 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
-        if (this.player !== null) {
-            console.log(this.player.flashlight);
-        }
         if (this.initialized == false) {
             this.init(input);
         }
 
         this.level.update();
         this.player.update(input);
-        this.warden.update(this.player.getPosVec(),
-        					this.player.sound,
-        					this.player.lightOn);
+        //this.warden.update(this.player.getPosVec(),
+        //					this.player.sound,
+        //					this.player.lightOn);
 
         updateOperation(this, input);
         updatePlayerInformation(this, input);
@@ -285,6 +282,11 @@ function updateCollisionSet(game) {
                 for (var o = 0; o < game.objects[ry][z][x].length; o++) {
                     game.collisionSet.push(game.objects[ry][z][x][o]);
                 }
+                if (ry != game.old.y && game.old.x != -1) {
+                    for (var o = 0; o < game.objects[game.old.y][z][x].length; o++) {
+                        game.collisionSet.push(game.objects[game.old.y][z][x][o]);
+                    }
+                }
             }
         }
         return true;
@@ -306,19 +308,24 @@ function updateScene(game) {
         var oz = game.old.z;
         var oy = game.old.y;
 
-        for (var z = oz - 3; z <= oz + 3; z++) {
-            if (z < 0 || z >= NUM_CELLS.z) {
+        for (var y = oy - 1; y <= oy + 1; y++) {
+            if (y < 0 || y >= NUM_CELLS.y) {
                 continue;
             }
-            for (var x = ox - 3; x <= ox + 3; x++) {
-                if (x < 0 || x >= NUM_CELLS.x) {
+            for (var z = oz - 3; z <= oz + 3; z++) {
+                if (z < 0 || z >= NUM_CELLS.z) {
                     continue;
                 }
-                for (var o = 0; o < game.objects[oy][z][x].length; o++) {
-                    game.scene.remove(game.objects[oy][z][x][o]);
-                }
-                for (var o = 0; o < game.models[oy][z][x].length; o++) {
-                    game.scene.remove(game.models[oy][z][x][o]);
+                for (var x = ox - 3; x <= ox + 3; x++) {
+                    if (x < 0 || x >= NUM_CELLS.x) {
+                        continue;
+                    }
+                    for (var o = 0; o < game.objects[y][z][x].length; o++) {
+                        game.scene.remove(game.objects[y][z][x][o]);
+                    }
+                    for (var o = 0; o < game.models[oy][z][x].length; o++) {
+                        game.scene.remove(game.models[y][z][x][o]);
+                    }
                 }
             }
         }
@@ -341,6 +348,14 @@ function updateScene(game) {
             }
             for (var o = 0; o < game.models[ry][z][x].length; o++) {
                 game.scene.add(game.models[ry][z][x][o]);
+            }
+            if (ry != game.old.y && game.old.x != -1) {
+                for (var o = 0; o < game.objects[game.old.y][z][x].length; o++) {
+                    game.scene.add(game.objects[game.old.y][z][x][o]);
+                }
+                for (var o = 0; o < game.models[game.old.y][z][x].length; o++) {
+                    game.scene.add(game.models[game.old.y][z][x][o]);
+                }
             }
         }
     }

@@ -302,23 +302,28 @@ function Level(game) {
 
     // Generate floor geometry 
     var PLANE_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE, 10, 10),
+        BOUND_PLANE_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, CELL_SIZE),
         FLOOR_MATERIAL = new THREE.MeshPhongMaterial({ map: FLOOR_TEXTURE });
 
     this.generateFloorGeometry = function (x, y, z) {
-        var mesh = new THREE.Mesh(PLANE_GEOMETRY, FLOOR_MATERIAL);
+        var mesh = new THREE.Mesh(PLANE_GEOMETRY, FLOOR_MATERIAL)
         mesh.rotation.x = -Math.PI / 2;
         mesh.position.set(x, y, z);
-        mesh.name = 'floor';
+        var mesh2 = new THREE.Mesh(BOUND_PLANE_GEOMETRY, TRANSPARENT_MATERIAL)
+        mesh2.rotation.x = -Math.PI / 2;
+        mesh2.position.set(x, y, z);
+        mesh2.name = 'floor';
         var rx = x / CELL_SIZE;
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
-        game.objects[ry][rz][rx].push(mesh);
+        game.models[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh2);
         //game.scene.add(mesh);
         //THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.floor.push(mesh);
     };
 
 
-    var TRANSPARENT_MATERIAL = new THREE.MeshBasicMaterial({ map: TRANSPARENT_TEXTURE });
+    var TRANSPARENT_MATERIAL = new THREE.MeshPhongMaterial({ map: TRANSPARENT_TEXTURE });
     TRANSPARENT_MATERIAL.transparent = true;
     // Generate Obj geometyr
     this.generateObjGeometry = function (x, y, z, scalex, scaley, scalez, rot, obj, tmap, name) {
@@ -398,11 +403,15 @@ function Level(game) {
         var mesh = new THREE.Mesh(PLANE_GEOMETRY, CEIL_MATERIAL);
         mesh.rotation.x = Math.PI / 2;
         mesh.position.set(x, y + CELL_SIZE, z);
-        mesh.name = 'ceiling';
+        var mesh2 = new THREE.Mesh(BOUND_PLANE_GEOMETRY, TRANSPARENT_MATERIAL);
+        mesh2.rotation.x = Math.PI / 2;
+        mesh2.position.set(x, y + CELL_SIZE, z);
+        mesh2.name = 'ceiling';
         var rx = x / CELL_SIZE;
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
-        game.objects[ry][rz][rx].push(mesh);
+        game.models[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh2);
         //game.scene.add(mesh);
         //THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.ceil.push(mesh);
     };
@@ -519,6 +528,7 @@ function Level(game) {
     };
 
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1),
+        BOUND_CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
     WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: WINDOW_WALL_TEXTURE });
     WINDOW_MATERIAL.transparent = true;
 
@@ -545,11 +555,31 @@ function Level(game) {
                 mesh.rotation.y = -Math.PI / 2;
                 break;
         }
-        mesh.name = 'window';
+        TRANSPARENT_MATERIAL.transparent = true;
+        var mesh2 = new THREE.Mesh(BOUND_CUBOID_GEOMETRY, TRANSPARENT_MATERIAL);//replace with real texture later
+        switch (c) {
+            case 's':
+                mesh2.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                mesh2.rotation.y = Math.PI;              
+                break;
+            case 'n':
+                mesh2.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                break;
+            case 'w':
+                mesh2.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh2.rotation.y = Math.PI / 2;
+                break;
+            case 'e':
+                mesh2.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh2.rotation.y = -Math.PI / 2;
+                break;
+        }
+        mesh2.name = 'window';        
         var rx = x / CELL_SIZE;
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
-        game.objects[ry][rz][rx].push(mesh);
+        game.models[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh2);
         //game.scene.add(mesh);
         //THREE.GeometryUtils.merge(this.geometry, mesh); //       this.geometry.window.push(mesh);
     };
@@ -687,7 +717,8 @@ function Level(game) {
 
     // Generate wall geometry
     // --------------------------------
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1);
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1),
+        BOUND_CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
         WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
 
     this.generateWallGeometry = function (x, y, z, c) {
@@ -710,11 +741,33 @@ function Level(game) {
                 break;
         }
 
-        mesh.name = 'wall';
+        var mesh2 = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
+        switch (c) {
+            case 's':
+                mesh2.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                mesh2.rotation.y = Math.PI;
+                break;
+            case 'n':
+                mesh2.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                break;
+            case 'w':
+                mesh2.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh2.rotation.y = Math.PI / 2;
+                break;
+            case 'e':
+                mesh2.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
+                mesh2.rotation.y = -Math.PI / 2;
+                break;
+        }
+
+        mesh2.name = 'wall';
+
+
         var rx = x / CELL_SIZE;
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
-        game.objects[ry][rz][rx].push(mesh);
+        game.models[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh2);
         //game.scene.add(mesh);
         //THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
     }
