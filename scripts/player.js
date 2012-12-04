@@ -91,8 +91,10 @@ function Player() {
 		
 		
 		if( movement ){
-			//footsteps eventually based on walk speed.  
-			timeout = 1000 - ( 500 * speed ); 
+			
+			//step sound clips are around 300-400 ms, so need to stay above that
+			// in order for them to sound regular. 
+			timeout = 1250 - ( 500 * speed ); 
 			if( start - this.laststep > timeout ){
 				
 				//selected random from one of the footstep sounds
@@ -249,7 +251,7 @@ function Player() {
         look.add(this.camera.position, input.f);
         this.camera.lookAt(look);
 
-        return (AD + WS != 0);
+        return (AD != 0 ) || ( WS != 0);
 
     }
 
