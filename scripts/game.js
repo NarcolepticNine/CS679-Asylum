@@ -299,15 +299,15 @@ function updateScene(game) {
         game.again = false;
     }
     if (game.old.x !== -1) {
-        var ox = Math.floor(Math.floor(game.old.x) / CELL_SIZE + 1 / 2);
-        var oz = Math.floor(Math.floor(game.old.z) / CELL_SIZE + 1 / 2);
-        var oy = Math.floor(Math.floor(game.old.y) / CELL_SIZE);
+        var ox = game.old.x;
+        var oz = game.old.z;
+        var oy = game.old.y;
 
-        for (var z = oz - 2; z <= oz + 2; z++) {
+        for (var z = oz - 3; z <= oz + 3; z++) {
             if (z < 0 || z >= NUM_CELLS.z) {
                 continue;
             }
-            for (var x = ox - 2; x <= ox + 2; x++) {
+            for (var x = ox - 3; x <= ox + 3; x++) {
                 if (x < 0 || x >= NUM_CELLS.x) {
                     continue;
                 }
@@ -325,11 +325,11 @@ function updateScene(game) {
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
     var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
 
-    for (var z = rz - 2; z <= rz + 2; z++) {
+    for (var z = rz - 3; z <= rz + 3; z++) {
         if (z < 0 || z >= NUM_CELLS.z) {
             continue;
         }
-        for (var x = rx - 2; x <= rx + 2; x++) {
+        for (var x = rx - 3; x <= rx + 3; x++) {
             if (x < 0 || x >= NUM_CELLS.x) {
                 continue;
             }
@@ -341,6 +341,7 @@ function updateScene(game) {
             }
         }
     }
+
     game.old.x = rx;
     game.old.y = ry;
     game.old.z = rz;
