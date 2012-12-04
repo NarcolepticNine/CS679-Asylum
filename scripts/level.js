@@ -10,6 +10,8 @@ var CELL_TYPES = {
     bookcase: 'a',
     clock: 'l',
     picture: 'u',
+    bulletin: 'n',
+    desk: 'e',
     start: 's',
     key: 'k',
     warden: 'W',
@@ -142,8 +144,15 @@ function Level(game) {
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.picture + rows[y][t + 1][z].charAt(x)));
                                 t++;
                                 break;
+                            case CELL_TYPES.bulletin:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.bulletin + rows[y][t + 1][z].charAt(x)));
+                                t++;
+                                break;
                             case CELL_TYPES.ceil:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.ceil));
+                                break;
+                            case CELL_TYPES.desk:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.desk));
                                 break;
                             case CELL_TYPES.warden:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
@@ -236,6 +245,9 @@ function Level(game) {
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz);
                         }
+                        else if (cell.type.charAt(0) === CELL_TYPES.desk) {
+                            this.generateDeskGeometry(xx, yy, zz);
+                        }
                         else if (cell.type.charAt(0) === CELL_TYPES.stair) {
                             this.generateStairGeometry(xx, yy, zz, cell.type.charAt(1));
                         }
@@ -263,6 +275,12 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.picture) {
                             this.generatePictureGeometry(xx, yy, zz, cell.type.charAt(1));
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.clock) {
+                            this.generateClockGeometry(xx, yy, zz, cell.type.charAt(1));
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.bulletin) {
+                            this.generateBulletinGeometry(xx, yy, zz, cell.type.charAt(1));
                         }
                     }
                 }
@@ -372,6 +390,13 @@ function Level(game) {
         game.scene.add(mesh);
         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.ceil.push(mesh);
     };
+
+    this.generateDeskGeometry = function (x, y, z) {
+        this.generateObjGeometry(x, y + CELL_SIZE / 4, z, 1, 1, 1, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');    
+    }
+
+
+
 
     // Generate stair geometry
     var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(2) * CELL_SIZE);
@@ -606,6 +631,40 @@ function Level(game) {
                 break;
             case 'w':
                 this.generateObjGeometry(x - CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/picture.js', 'obj/picture.jpg', 'picture');
+                break;
+        }
+    };
+
+    this.generateClockGeometry = function (x, y, z, c) {
+        switch (c) {
+            case 'n':
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 5.5 / 12, .5, .5, .5, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                break;
+            case 's':
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 5.5 / 12, .5, .5, .5, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                break;
+            case 'e':
+                this.generateObjGeometry(x + CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                break;
+            case 'w':
+                this.generateObjGeometry(x - CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                break;
+        }
+    };
+
+    this.generateBulletinGeometry = function (x, y, z, c) {
+        switch (c) {
+            case 'n':
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 5.5 / 12, .5, .5, .5, -Math.PI / 2, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
+                break;
+            case 's':
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 5.5 / 12, .5, .5, .5, Math.PI / 2, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
+                break;
+            case 'e':
+                this.generateObjGeometry(x + CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
+                break;
+            case 'w':
+                this.generateObjGeometry(x - CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
                 break;
         }
     };
