@@ -16,6 +16,8 @@ function Warden() {
 	
 	
 	//patrol Variables
+	this.vX 	 = 0;
+	this.vZ      = 0;  
 	this.pDir    = true; //direction of patrol
 	this.nextPt  = 0; 
 	this.pt      = null; 
@@ -126,21 +128,28 @@ function Warden() {
 				
 			} else {
 				//keep going towards current point
-				this.mesh.position.x += (this.currSpd * ( dX / d ));
-			    this.mesh.position.z += (this.currSpd * ( dZ / d ));	
+				this.mesh.position.x += ( this.vX = ( this.currSpd * ( dX / d )) );
+			    this.mesh.position.z += ( this.vZ = ( this.currSpd * ( dZ / d )) );	
 				 
 			}
 		 } else {
+		 	
 		 	//if awareness too high, warden sprints
 		 	this.currSpd = ( this.awareness >= 60 ) ? this.speed * 2 : this.speed; 		 	
-		 	this.mesh.position.x += (this.currSpd * ( dX / d ));
-		    this.mesh.position.z += (this.currSpd * ( dZ / d )); 
 		 	
+		 	this.mesh.position.x += ( this.vX = ( this.currSpd * ( dX / d )) );
+			this.mesh.position.z += ( this.vZ = ( this.currSpd * ( dZ / d )) );	
+				
 		 }	
 		 
 		 //update light position and direction
-		 
-		 this.flashlight.position = this.mesh.position; 
+		 var meshPos = this.mesh.position; 
+		 this.flashlight.position = meshPos; 
+		 this.flashlight.target.position.set( 
+		 		meshPos.x + this.vX, 
+		 		meshPos.y,
+		 		meshPos.z + this.vZ 
+		 	);
 		 
 	}
 	
