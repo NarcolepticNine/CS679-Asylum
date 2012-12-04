@@ -528,16 +528,16 @@ function Level(game) {
     this.generateFdoorGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x - CELL_SIZE / 5, y + CELL_SIZE / 8, z + CELL_SIZE * 5.999 / 12, 3, 3, 3, Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x - CELL_SIZE / 5, y + CELL_SIZE / 2, z + CELL_SIZE * 5.999 / 12, 2.5, 1.75, 2.5, Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'n':
-                this.generateObjGeometry(x + CELL_SIZE / 5, y + CELL_SIZE / 8, z - CELL_SIZE * 5.999 / 12, 3, 3, 3, -Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x + CELL_SIZE / 5, y + CELL_SIZE / 2, z - CELL_SIZE * 5.999 / 12, 2.5, 1.75, 2.5, -Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 5.999 / 12, y + CELL_SIZE / 8, z - CELL_SIZE / 5, 3, 3, 3, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x - CELL_SIZE / 2.25, y + CELL_SIZE / 2.1, z - CELL_SIZE / 5, 2.5, 1.7, 2.5, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 5.999 / 12, y + CELL_SIZE / 8, z + CELL_SIZE / 5, 3, 3, 3, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x + CELL_SIZE * 5.999 / 12, y + CELL_SIZE / 2, z + CELL_SIZE / 5, 2.5, 1.75, 2.5, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
         }
     };
