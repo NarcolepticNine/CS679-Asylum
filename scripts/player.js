@@ -39,7 +39,7 @@ function Player() {
         this.soundManager = game.soundManager; 
 
         this.mesh = new THREE.Mesh(
-			new THREE.CubeGeometry(9, 30, 3.5),
+			new THREE.CubeGeometry(9, 20, 3.5),
             new THREE.MeshPhongMaterial({ color: 0x00ff00 })
 		);
 
@@ -63,7 +63,7 @@ function Player() {
     //pass in level.startPos
     this.setStartPos = function (vec3) {
 
-        var x = vec3.x, y = vec3.y + 15, z = vec3.z;
+        var x = vec3.x, y = vec3.y + 10, z = vec3.z;
 
         this.mesh.position.set(x, y, z);
         this.flashlight.position.set(x, y, z);

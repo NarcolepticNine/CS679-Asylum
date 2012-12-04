@@ -142,9 +142,9 @@ function Game(renderer, canvas) {
         }
         this.level.update();
         this.player.update(input);
-        //this.warden.update(this.player.getPosVec(),
-        //					this.player.sound,
-        //					this.player.lightOn);
+        this.warden.update(this.player.getPosVec(),
+        					this.player.sound,
+        					this.player.lightOn);
 
         updateOperation(this, input);
         updatePlayerInformation(this, input);
@@ -542,6 +542,7 @@ function handleCollisions(game, input) {
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
                     if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
                                                     || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
+                        console.log(selected.name);
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;

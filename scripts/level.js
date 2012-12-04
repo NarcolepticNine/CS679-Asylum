@@ -2,6 +2,7 @@ var CELL_TYPES = {
     nothing: ' ',
     floor: 'f',
     ceil: 'c',
+    f_nc: 'F',//floor without ceiling
     stair: 't',
     wall: 'w',
     column: 'o',
@@ -111,6 +112,9 @@ function Level(game) {
                                 break;
                             case CELL_TYPES.floor:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
+                                break;
+                            case CELL_TYPES.f_nc:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.f_nc));
                                 break;
                             case CELL_TYPES.stair:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.stair + rows[y][t + 1][z].charAt(x)));
@@ -236,6 +240,10 @@ function Level(game) {
                         if (cell.type.charAt(0) === CELL_TYPES.nothing) {
                             continue;
                         } else if (cell.type.charAt(0) === CELL_TYPES.floor) {
+                            this.generateFloorGeometry(xx, yy, zz);
+                            this.generateCeilingGeometry(xx, yy, zz);
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.floor) {
                             this.generateFloorGeometry(xx, yy, zz);
                             this.generateCeilingGeometry(xx, yy, zz);
                         } else if (cell.type.charAt(0) === CELL_TYPES.key) {
@@ -491,13 +499,13 @@ function Level(game) {
         game.objects[ry][rz][rx].push(mesh);
         game.scene.add(mesh);
         THREE.GeometryUtils.merge(this.geometry, mesh); //this.geometry.stair.push(mesh);
-        game.objects[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh2);
         game.scene.add(mesh2);
         THREE.GeometryUtils.merge(this.geometry, mesh2); //this.geometry.stair.push(mesh2);
-        game.objects[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh3);
         game.scene.add(mesh3);
         THREE.GeometryUtils.merge(this.geometry, mesh3); //this.geometry.stair.push(mesh3);
-        game.objects[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh4);
         game.scene.add(mesh4);
         THREE.GeometryUtils.merge(this.geometry, mesh4); //this.geometry.stair.push(mesh4);
     };
