@@ -143,16 +143,21 @@ function Player() {
 		var X  = this.mesh.position.x; 
 		var Z  = this.mesh.position.z;
 		
-		var warPos = this.game.warden.mesh.position;
-		
-		var dX = warPos.x - X; 
-		var dZ = warPos.z - Z; 
-		
-		var d = Math.sqrt(dX*dX+dZ*dZ); 
-		
-		
-        this.sound = this.updateMovement(input);
-        this.playSounds( d, this.sound, this.currSpd ); 
+		this.sound = this.updateMovement(input);
+	    
+	    if ( this.game.warden.mesh ) {
+			var warPos = this.game.warden.mesh.position;
+			
+			var dX = warPos.x - X; 
+			var dZ = warPos.z - Z; 
+			
+			var d = Math.sqrt(dX*dX+dZ*dZ); 
+			this.playSounds( d, this.sound, this.currSpd );
+	        
+        } else {
+        	this.playSounds( 1000, this.sound, this.currSpd ); 
+        } 
+        
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;
 
@@ -167,7 +172,7 @@ function Player() {
         input.viewRay = new THREE.Ray(
             playPos,                             // origin
             rayVec.subSelf(playPos).normalize(), // direction
-            0, 1000                                           // near, far
+            0, 1000                              // near, far
         );
     }
 
