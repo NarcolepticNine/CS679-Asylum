@@ -74,7 +74,7 @@ function Level(game) {
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
     COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
-    STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/red.png"),
+    STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
@@ -369,7 +369,11 @@ function Level(game) {
         var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
         game.models[ry][rz][rx].push(objMesh);
         var boundingBox = null;
-        if (name !== 'mstair') {
+        if (name == 'mstair') {
+            console.log(z + scalez * minZ);
+            console.log(scalez * (maxZ - minZ));
+        }
+        if (1) {
             if (name !== 'key') {
                 boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
             }
@@ -486,7 +490,7 @@ function Level(game) {
                 mesh4.position.set(x, y + CELL_SIZE / 4, z + CELL_SIZE / 2);
                 break;
             case 'n':
-                this.generateObjGeometry(x, y, z, 3.6275010, 1.6922263, 3.2553060, Math.PI / 2, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
+                this.generateObjGeometry(x - 0.01 * CELL_SIZE, y + 0.026017979 * CELL_SIZE, z + 0.37 * CELL_SIZE, 3.6275010, 1.6922263, 3.2663060, Math.PI / 2, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -Math.atan(2);
                 mesh.position.set(x, y + CELL_SIZE / 4, z);
                 mesh2.rotation.y = Math.PI / 2;
