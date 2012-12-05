@@ -102,7 +102,7 @@ function Game(renderer, canvas) {
         // Setup scene
 
 
-        this.scene.add(new THREE.AmbientLight(0xaaaaaa));
+        //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
         //this.scene.add(new THREE.AmbientLight(0x272727));
 

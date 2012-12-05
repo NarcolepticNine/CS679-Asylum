@@ -106,7 +106,7 @@ function Warden() {
 		
 		this.checkPlayer( d, playerSound, lightOn ); 	
 		
-		if( d < 10 && Y == posVec.y ){
+		if( d < 10 && ( Y >= posVec.y - 10 && Y <= posVec.y + 10 ) ){
 			this.caught = true;
 			this.game.end = 1; 
 		}  

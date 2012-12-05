@@ -6,22 +6,22 @@ function Player() {
     this.input = null;
     this.camera = null;
     this.flashlight = null;
-    
+
     //general sounds
-    this.soundManager; 
-    this.countAssets = 4 ; // number of sound files to be loaded
-    
+    this.soundManager;
+    this.countAssets = 4; // number of sound files to be loaded
+
     //heartbeat variables
-	this.lastbeat = 0; 
-	this.heartbeat  = "./sounds/heartbeat.mp3";
-	
-	//footstep variables
-	this.laststep = 0; 
-	this.footsteps = new Array(); 
-	this.footsteps[0] = "./sounds/step1.mp3";
-	this.footsteps[1] = "./sounds/step2.mp3"; 
-	this.footsteps[2] = "./sounds/step3.mp3";  
-	
+    this.lastbeat = 0;
+    this.heartbeat = "./sounds/heartbeat.mp3";
+
+    //footstep variables
+    this.laststep = 0;
+    this.footsteps = new Array();
+    this.footsteps[0] = "./sounds/step1.mp3";
+    this.footsteps[1] = "./sounds/step2.mp3";
+    this.footsteps[2] = "./sounds/step3.mp3";
+
 
     //mechanic variables
     var speed = 0.5;
@@ -31,28 +31,35 @@ function Player() {
     this.vY = 0;
     this.lightTog = false;
     this.lightOn = true;
+    this.crouch = 0;
 
     this.init = function (game, scene, camera, startPos) {
 
         this.camera = camera;
         this.game = game;
-        this.soundManager = game.soundManager; 
+        this.soundManager = game.soundManager;
 
-        this.mesh = new THREE.Mesh(
-			new THREE.CubeGeometry(9, 20, 3.5),
-            new THREE.MeshPhongMaterial({ color: 0x00ff00 })
+        this.standMesh = new THREE.Mesh(
+			new THREE.CubeGeometry(5, 20, 5),
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
 		);
+
+
+        this.mesh = new THREE.Mesh( 
+        	new THREE.CubeGeometry( 5, 20, 5 ),
+        	new THREE.MeshBasicMaterial( { color: 0x00ff00 } )
+        );
 
         this.flashlight = new THREE.SpotLight(0xfffed9, 10, 1.5 * CELL_SIZE);
         scene.add(this.mesh);
         scene.add(this.flashlight);
 
         this.setStartPos(startPos);
-        
-        game.soundManager.loadSound( this.heartbeat ); 
-        game.soundManager.loadSound( this.footsteps[0]  ); 
-        game.soundManager.loadSound( this.footsteps[1]  );
-        game.soundManager.loadSound( this.footsteps[2]  );
+
+        game.soundManager.loadSound(this.heartbeat);
+        game.soundManager.loadSound(this.footsteps[0]);
+        game.soundManager.loadSound(this.footsteps[1]);
+        game.soundManager.loadSound(this.footsteps[2]);
     }
 
     //pass in level.startPos
@@ -69,6 +76,7 @@ function Player() {
     this.getPosVec = function () {
         return this.mesh.position;
     }
+
 
 	this.soundLoaded = function ( distance, movement, speed ) {
 		
@@ -157,7 +165,7 @@ function Player() {
         } else {
         	this.playSounds( 1000, this.sound, this.currSpd ); 
         } 
-        
+
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;
 
@@ -176,22 +184,32 @@ function Player() {
         );
     }
 
-    this.updateMovement = function (input) {
+    this.updateMovement = function (input, scene) {
 
         //adjust for running or crouching, or neither: 
         this.currSpd = speed;
         if (input.trigger.run) {
             this.currSpd *= 2;
         }
-        if (input.trigger.crouch) {
+        if (this.crouch) {
             this.currSpd /= 2;
         }
 
         if (input.trigger.crouch) {
-            this.mesh.rotation.x = Math.PI / 2;
-        }
-        else {
-            this.mesh.rotation.x = 0;            
+            input.trigger.crouch = 0;
+            this.crouch = 1 - this.crouch;
+            if (input.hold === 1) {
+                if (this.crouch) {
+                   //rather than switching between two meshes, 
+                   //  why not scale the existing?
+                   this.mesh.scale.set( 1, 0.25, 1 ); 
+                   
+                }
+                else {
+                	
+                	this.mesh.scale.set( 1, 1, 1 ); 
+                }
+            }
         }
 
         //correct for mouse cursor not being locked.  
@@ -223,7 +241,7 @@ function Player() {
         // handle player jump
         if (input.hold === 1) {
             input.Jump = 0;
-            if (input.trigger.Jump === 1) {
+            if (input.trigger.Jump === 1 && this.crouch === 0) {
                 input.Jump = 1;
                 input.v = jumpVel;
                 input.trigger.Jump = 0;
@@ -249,7 +267,7 @@ function Player() {
             this.currSpd * (WS * input.f.z - AD * input.f.x / xzNorm);
 
         // Update camera position/lookat
-        if (input.trigger.crouch === 0) {
+        if (this.crouch === 0) {
             this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 10, 0));
         }
         else {

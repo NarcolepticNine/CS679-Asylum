@@ -414,7 +414,7 @@ function Level(game) {
     };
 
     this.generateDeskGeometry = function (x, y, z) {
-        this.generateObjGeometry(x, y + CELL_SIZE / 4, z, 1, 1, 1, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');    
+        this.generateObjGeometry(x, y + CELL_SIZE / 3, z, 1.25, 1.25, 1.25, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');    
     }
 
 
