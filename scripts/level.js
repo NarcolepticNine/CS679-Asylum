@@ -74,7 +74,7 @@ function Level(game) {
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
     COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
-    STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
+    STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/red.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
