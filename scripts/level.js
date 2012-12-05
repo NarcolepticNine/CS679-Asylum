@@ -75,7 +75,6 @@ function Level(game) {
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
     COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
     STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/red.png"),
-    WINDOW_WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/window_wall.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
@@ -248,7 +247,7 @@ function Level(game) {
                             this.generateCeilingGeometry(xx, yy, zz,'ceil');
                         }
                        else if (cell.type.charAt(0) === CELL_TYPES.key) {
-                            this.generateObjGeometry(xx, yy + 8, zz, .5, .5, .5, 0, 'obj/key.js', 'obj/key.jpg', 'key');
+                            this.generateObjGeometry(xx, yy + 8, zz, 1, 1, 1, 0, 'obj/key.js', 'obj/key.jpg', 'key');
                             game.nextGoal[0].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
                             game.nextGoal[0].push('Find Key');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
@@ -327,8 +326,6 @@ function Level(game) {
         game.numCheck++;
         var loader = new THREE.JSONLoader();
         var modelNum = game.modelNum;
-        var AA = game.numCheck;
-
         loader.load(obj, function (geometry) { createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name); modelNum.number++;});
     };
 
@@ -337,9 +334,6 @@ function Level(game) {
         objMesh.rotation.y = rot;
         objMesh.position.set(x, y, z);
         objMesh.scale.set(scalex, scaley, scalez);
-        var rx = Math.floor(Math.floor(x) / CELL_SIZE + 1 / 2);
-        var rz = Math.floor(Math.floor(z) / CELL_SIZE + 1 / 2);
-        var ry = Math.floor(Math.floor(y) / CELL_SIZE);
         var maxX = geometry.vertices[0].x;
         var minX = geometry.vertices[0].x;
         var maxY = geometry.vertices[0].y;
@@ -367,16 +361,28 @@ function Level(game) {
                 minZ = geometry.vertices[v].z;
             }
         }
-        var boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
+        var boundingBox = null;
+        if (name !== 'key') {
+            boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
+        }
+        else {
+            boundingBox = new THREE.Mesh(new THREE.CubeGeometry(8 * scalex * (maxX - minX), 4 * scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
+        }
+
         boundingBox.name = name;
         boundingBox.rotation.y = rot;
         boundingBox.position.set(x + scalex * (maxX + minX) / 2, y + scaley * (maxY + minY) / 2, z + scalez * (maxZ + minZ) / 2);
+        var rx = Math.floor(Math.floor(x + scalex * (maxX + minX) / 2) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(z + scalez * (maxZ + minZ) / 2) / CELL_SIZE + 1 / 2);
+        var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
 
         game.models[ry][rz][rx].push(objMesh);
-        if (name !== 'window' && name !== 'picture' && name !== 'bulletin') {
+        if (name !== 'picture' && name !== 'bulletin' && name !== 'clock') {
             game.objects[ry][rz][rx].push(boundingBox);
             //game.scene.add(boundingBox);
         }
+
+        boundingBox.model = objMesh;
         if (name === 'door') {
             boundingBox.canToggle = true;
             boundingBox.doorState = 'closed';
@@ -389,9 +395,10 @@ function Level(game) {
             }
             boundingBox.canToggle = true;
             boundingBox.doorState = 'closed';
-            boundingBox.model = objMesh;
+            
             boundingBox.halfsize = scalez * (maxZ - minZ) / 2;
         }
+
     }
 
     // Generate ceiling geometry
@@ -414,12 +421,8 @@ function Level(game) {
     };
 
     this.generateDeskGeometry = function (x, y, z) {
-        this.generateObjGeometry(x, y + CELL_SIZE / 3, z, 1.25, 1.25, 1.25, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');    
+        this.generateObjGeometry(x, y + CELL_SIZE * 0.3408594, z, 1.25, 1.25, 1.25, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');    
     }
-
-
-
-
 
     // Generate stair geometry
     var STAIR_GEOMETRY = new THREE.PlaneGeometry(CELL_SIZE, Math.sqrt(5) * CELL_SIZE / 2);
@@ -604,75 +607,38 @@ function Level(game) {
     };
 
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1),
-        BOUND_CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16),
-    WINDOW_MATERIAL = new THREE.MeshPhongMaterial({ map: WINDOW_WALL_TEXTURE });
-    WINDOW_MATERIAL.transparent = true;
+        BOUND_CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
 
-    this.generateWindowGeometry = function (x, y, z, c) {
-        var mesh = new THREE.Mesh(CUBOID_GEOMETRY, WINDOW_MATERIAL);//replace with real texture later
+    this.generateWindowGeometry = function (x, y, z, c) {        
         switch (c) {
             case 's':
-                mesh.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
-                mesh.rotation.y = Math.PI;
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z + CELL_SIZE * 5.7 / 12, .5, .5, .5, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806222, z + CELL_SIZE * 15 / 32, 0.3354368, 0.3354368, 0.4923198, Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
             case 'n':
-                mesh.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
-                this.generateObjGeometry(x, y + CELL_SIZE * 2 / 3, z - CELL_SIZE * 5.7 / 12, .5, .5, .5, Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806222, z - CELL_SIZE * 15 / 32, 0.3354368, 0.3354368, 0.4923198, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
             case 'w':
-                mesh.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                this.generateObjGeometry(x - CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, .5, .5, Math.PI, 'obj/window.js', 'obj/window.jpg', 'window');
-                mesh.rotation.y = Math.PI / 2;
+                this.generateObjGeometry(x - CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806222, z, 0.3354368, 0.3354368, 0.4923198, 0, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
-            case 'e':
-                mesh.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                this.generateObjGeometry(x + CELL_SIZE * 5.7 / 12, y + CELL_SIZE * 2 / 3, z, .5, .5, .5, 0, 'obj/window.js', 'obj/window.jpg', 'window');
-                mesh.rotation.y = -Math.PI / 2;
+            case 'e':      
+                this.generateObjGeometry(x + CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806222, z, 0.3354368, 0.3354368, 0.4923198, Math.PI, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
         }
-        TRANSPARENT_MATERIAL.transparent = true;
-        var mesh2 = new THREE.Mesh(BOUND_CUBOID_GEOMETRY, TRANSPARENT_MATERIAL);//replace with real texture later
-        switch (c) {
-            case 's':
-                mesh2.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
-                mesh2.rotation.y = Math.PI;              
-                break;
-            case 'n':
-                mesh2.position.set(x, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
-                break;
-            case 'w':
-                mesh2.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                mesh2.rotation.y = Math.PI / 2;
-                break;
-            case 'e':
-                mesh2.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z);
-                mesh2.rotation.y = -Math.PI / 2;
-                break;
-        }
-        mesh2.name = 'window';        
-        var rx = x / CELL_SIZE;
-        var rz = z / CELL_SIZE;
-        var ry = y / CELL_SIZE;
-        game.models[ry][rz][rx].push(mesh);
-        game.objects[ry][rz][rx].push(mesh2);
-        //game.scene.add(mesh);
-        //THREE.GeometryUtils.merge(this.geometry, mesh); //       this.geometry.window.push(mesh);
     };
 
     this.generateBedGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE / 8, z + CELL_SIZE / 4, 2, 2, 2, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.1583751, z + CELL_SIZE / 4, 2, 2, 2, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE / 8, z - CELL_SIZE / 4, 2, 2, 2, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.1583751, z - CELL_SIZE / 4, 2, 2, 2, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, 2, 2, Math.PI, 'obj/bed.js', 'obj/bed.jpg', 'model');
+                this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE * 0.1583751, z, 2, 2, 2, Math.PI, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE / 8, z, 2, 2, 2, 0, 'obj/bed.js', 'obj/bed.jpg', 'model');
+                this.generateObjGeometry(x + CELL_SIZE / 4, y + CELL_SIZE * 0.1583751, z, 2, 2, 2, 0, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
         }
     };
@@ -680,16 +646,16 @@ function Level(game) {
     this.generateFdoorGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x - CELL_SIZE / 5, y + CELL_SIZE / 2.1, z + CELL_SIZE / 2.25, 2.5, 1.7, 2.5, Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x - CELL_SIZE * 0.2311265, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.499653, 0.6531679, 1.6916896, 1.8976392, Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'n':
-                this.generateObjGeometry(x + CELL_SIZE / 5, y + CELL_SIZE / 2.1, z - CELL_SIZE / 2.25, 2.5, 1.7, 2.5, -Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x + CELL_SIZE * 0.2311265, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.499653, 0.6531679, 1.6916896, 1.8976392, -Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE / 2.25, y + CELL_SIZE / 2.1, z - CELL_SIZE / 5, 2.5, 1.7, 2.5, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x - CELL_SIZE * 0.499653, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 2.25, y + CELL_SIZE / 2.1, z + CELL_SIZE / 5, 2.5, 1.7, 2.5, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x + CELL_SIZE * 0.499653, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
         }
     };
@@ -697,28 +663,28 @@ function Level(game) {
     this.generateDoorGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x + CELL_SIZE / 32, y + CELL_SIZE / 2, z + CELL_SIZE * 5.999 / 12, 2.5, 1.75, 4.1, -Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x + CELL_SIZE / 32, y + CELL_SIZE * 0.5, z + CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, -Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case 'n':
-                this.generateObjGeometry(x - CELL_SIZE / 32, y + CELL_SIZE / 2, z - CELL_SIZE * 5.999 / 12, 2.5, 1.75, 4.1, Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x - CELL_SIZE / 32, y + CELL_SIZE * 0.5, z - CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 5.999 / 12, y + CELL_SIZE / 2, z + CELL_SIZE / 32, 2.5, 1.75, 4.1, Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 0.5, z + CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 5.999 / 12, y + CELL_SIZE / 2, z - CELL_SIZE / 32, 2.5, 1.75, 4.1, 0, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE* 0.5, z - CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 0, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '2':
-                this.generateObjGeometry(x - CELL_SIZE / 32, y + CELL_SIZE / 2, z + CELL_SIZE * 5.999 / 12, 2.5, 1.75, 4.1, 4 * Math.PI + Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x - CELL_SIZE / 32, y + CELL_SIZE * 0.5, z + CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI + Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '4':
-                this.generateObjGeometry(x + CELL_SIZE / 32, y + CELL_SIZE / 2, z - CELL_SIZE * 5.999 / 12, 2.5, 1.75, 4.1, 4 * Math.PI - Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x + CELL_SIZE / 32, y + CELL_SIZE * 0.5, z - CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI - Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '3':
-                this.generateObjGeometry(x - CELL_SIZE * 5.999 / 12, y + CELL_SIZE / 2, z - CELL_SIZE / 32, 2.5, 1.75, 4.1, 4 * Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 0.5, z - CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '1':
-                this.generateObjGeometry(x + CELL_SIZE * 5.999 / 12, y + CELL_SIZE / 2, z + CELL_SIZE / 32, 2.5, 1.75, 4.1, 4 * Math.PI + Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE * 0.5, z + CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI + Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
         }
     };
@@ -726,16 +692,16 @@ function Level(game) {
     this.generateBookCaseGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE / 2, z - CELL_SIZE / 3, 3, 3, 3, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
+                this.generateObjGeometry(x, y + CELL_SIZE / 2, z - CELL_SIZE * 0.349875, 3, 3.1256105, 3, -Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE / 2, z + CELL_SIZE / 3, 3, 3, 3, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
+                this.generateObjGeometry(x, y + CELL_SIZE / 2, z + CELL_SIZE * 0.349875, 3, 3.1256105, 3, Math.PI / 2, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, 3, 3, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
+                this.generateObjGeometry(x + CELL_SIZE * 0.349875, y + CELL_SIZE / 2, z, 3, 3.1256105, 3, Math.PI, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE / 3, y + CELL_SIZE / 2, z, 3, 3, 3, 0, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
+                this.generateObjGeometry(x - CELL_SIZE * 0.349875, y + CELL_SIZE / 2, z, 3, 3.1256105, 3, 0, 'obj/bookcase.js', 'obj/bookcase.jpg', 'model');
                 break;
         }
     };
@@ -743,16 +709,16 @@ function Level(game) {
     this.generatePictureGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 5.5 / 12, .5, .5, .5, -Math.PI / 2, 'obj/picture.js', 'obj/picture.jpg', 'picture');
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 0.4528906, .5, .5, .5, -Math.PI / 2, 'obj/picture.js', 'obj/picture.jpg', 'picture');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 5.5 / 12, .5, .5, .5, Math.PI / 2, 'obj/picture.js', 'obj/picture.jpg', 'picture');
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 0.4528906, .5, .5, .5, Math.PI / 2, 'obj/picture.js', 'obj/picture.jpg', 'picture');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/picture.js', 'obj/picture.jpg', 'picture');
+                this.generateObjGeometry(x + CELL_SIZE * 0.4528906, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/picture.js', 'obj/picture.jpg', 'picture');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/picture.js', 'obj/picture.jpg', 'picture');
+                this.generateObjGeometry(x - CELL_SIZE * 0.4528906, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/picture.js', 'obj/picture.jpg', 'picture');
                 break;
         }
     };
@@ -760,16 +726,16 @@ function Level(game) {
     this.generateClockGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 5.5 / 12, .5, .5, .5, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 0.4562187, .5, .5, .5, -Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'clock');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 5.5 / 12, .5, .5, .5, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 0.4562187, .5, .5, .5, Math.PI / 2, 'obj/clock.js', 'obj/clock.jpg', 'clock');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                this.generateObjGeometry(x + CELL_SIZE * 0.4562187, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/clock.js', 'obj/clock.jpg', 'clock');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/clock.js', 'obj/clock.jpg', 'clock');
+                this.generateObjGeometry(x - CELL_SIZE * 0.4562187, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/clock.js', 'obj/clock.jpg', 'clock');
                 break;
         }
     };
@@ -777,16 +743,16 @@ function Level(game) {
     this.generateBulletinGeometry = function (x, y, z, c) {
         switch (c) {
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 5.5 / 12, .5, .5, .5, -Math.PI / 2, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z - CELL_SIZE * 0.4492656, .5, .5, .5, -Math.PI / 2, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
                 break;
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 5.5 / 12, .5, .5, .5, Math.PI / 2, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
+                this.generateObjGeometry(x, y + CELL_SIZE * 1.5 / 2.5, z + CELL_SIZE * 0.4492656, .5, .5, .5, Math.PI / 2, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
+                this.generateObjGeometry(x + CELL_SIZE * 0.4492656, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, Math.PI, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 5.5 / 12, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
+                this.generateObjGeometry(x - CELL_SIZE * 0.4492656, y + CELL_SIZE * 1.5 / 2.5, z, .5, .5, .5, 0, 'obj/bulletin-board.js', 'obj/bulletin-board.jpg', 'bulletin');
                 break;
         }
     };
@@ -817,7 +783,7 @@ function Level(game) {
                 break;
         }
 
-        var mesh2 = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
+        var mesh2 = new THREE.Mesh(BOUND_CUBE_GEOMETRY, TRANSPARENT_MATERIAL);
         switch (c) {
             case 's':
                 mesh2.position.set(x, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
@@ -848,8 +814,8 @@ function Level(game) {
         //THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
     }
 
-    var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 15, 1, COLUMN_MATERIAL,
-            { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),//column
+    var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 15, 1),
+        BOUND_COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16),
         COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
 
     this.generateColumnGeometry = function (x, y, z, c) {
@@ -869,11 +835,28 @@ function Level(game) {
                 break;
         }
 
-        mesh.name = 'column';
+        var mesh2 = new THREE.Mesh(BOUND_COLUMN_GEOMETRY, TRANSPARENT_MATERIAL);
+        switch (c) {
+            case '1':
+                mesh2.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                break;
+            case '2':
+                mesh2.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z - CELL_SIZE / 2);
+                break;
+            case '3':
+                mesh2.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 2, z + CELL_SIZE / 2);
+                break;
+            case '4':
+                mesh2.position.set(x + CELL_SIZE / 2, y + CELL_SIZE / 2, z + CELL_SIZE / 2)
+                break;
+        }
+
+        mesh2.name = 'column';
         var rx = x / CELL_SIZE;
         var rz = z / CELL_SIZE;
         var ry = y / CELL_SIZE;
-        game.objects[ry][rz][rx].push(mesh);
+        game.models[ry][rz][rx].push(mesh);
+        game.objects[ry][rz][rx].push(mesh2);
         //game.scene.add(mesh);
         //THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.column.push(mesh);
     }

@@ -41,12 +41,12 @@ function Player() {
 
         standMesh = new THREE.Mesh(
 			new THREE.CubeGeometry(5, 20, 5),
-            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            new THREE.MeshBasicMaterial()
 		);
 
         creepMesh = new THREE.Mesh(
 			new THREE.CubeGeometry(5, 5, 5),
-            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            new THREE.MeshBasicMaterial()
 		);
 
         this.mesh = standMesh;
@@ -70,7 +70,7 @@ function Player() {
 
         this.mesh.position.set(x, y, z);
         this.flashlight.position.set(x, y, z);
-        this.camera.position.set(x, y + 10, z);
+        this.camera.position.set(x, y + 9, z);
 
     }
 
@@ -269,10 +269,10 @@ function Player() {
 
         // Update camera position/lookat
         if (this.crouch === 0) {
-            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 10, 0));
+            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 9, 0));
         }
         else {
-            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 1.75, 0));
+            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 2.25, 0));
         }
 
         var look = new THREE.Vector3();
