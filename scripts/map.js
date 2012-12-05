@@ -11,8 +11,8 @@ Map[0].push(
 "..............offfff\n" +
 "..............offfff\n" +
 ".........o.o.oofffff\n" +
-"........offfffffffff\n" +
-".oooooooofFfffffffff\n" +
+"........oFFfffffffff\n" +
+".ooooooooFFfffffffff\n" +
 "fffffffffffffffpffff\n" +
 "ffffffffffpfffffffff\n" +
 "ffffffffffffffffffff\n" +
@@ -72,7 +72,7 @@ Map[0].push(
 "...............u...o\n" +
 "...............u...o\n" +
 ".........wowowo....o\n" +
-"........4..w.w.w...w\n" +
+"........4t.w.w.w...w\n" +
 "w.uu...........oo..w\n" +
 "...................o\n" +
 "w.....ooooooooooooow\n" +
@@ -92,7 +92,7 @@ Map[0].push(
 "...............w...4\n" +
 "...............w...4\n" +
 ".........w4w4w4....4\n" +
-"...........w.w.w...e\n" +
+".........2.w.w.w...e\n" +
 "w.nn...........22..e\n" +
 "...................2\n" +
 "w.....3333333333333e\n" +
@@ -111,7 +111,7 @@ Map[0].push(
 "....................\n" +
 "...................u\n" +
 "...................u\n" +
-"...........aaaa.....\n" +
+".........ttaaaa.....\n" +
 "...............a....\n" +
 "....................\n" +
 "...................o\n" +
@@ -131,7 +131,7 @@ Map[0].push(
 "....................\n" +
 "...................e\n" +
 "...................e\n" +
-"...........nnnn.....\n" +
+".........55nnnn.....\n" +
 "...............w....\n" +
 "....................\n" +
 "...................4\n" +
@@ -193,8 +193,8 @@ Map[1].push(
 "..............offfff\n" +
 "..............offfff\n" +
 ".........o.o.oofffff\n" +
-"........offfffffffff\n" +
-".oooooooofcfffffffff\n" +
+"........occfffffffff\n" +
+".ooooooooccfffffffff\n" +
 "ffffffffffffffffffff\n" +
 "ffffffffffffffffffff\n" +
 "ffffffffffffffffffff\n" +

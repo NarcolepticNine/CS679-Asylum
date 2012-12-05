@@ -164,9 +164,6 @@ function Game(renderer, canvas) {
                 ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
             return false;
         }
-        if (updateCollisionSet(this) || this.again === true) {
-            updateScene(this);
-        }
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
@@ -176,6 +173,9 @@ function Game(renderer, canvas) {
                     handleCollisions(this, input);
                 }
             }
+        }
+        if (updateCollisionSet(this) || this.again === true) {
+            updateScene(this);
         }
         TWEEN.update();
         return true;
@@ -269,8 +269,11 @@ function updateCollisionSet(game) {
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
     var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
+        if (game.collisionSet !== null) {
+        }
         game.collisionSet = [];
 
+        var append = false;
         for (var z = rz - 1; z <= rz + 1; z++) {
             if (z < 0 || z >= NUM_CELLS.z) {
                 continue;
@@ -279,12 +282,33 @@ function updateCollisionSet(game) {
                 if (x < 0 || x >= NUM_CELLS.x) {
                     continue;
                 }
+
+
                 for (var o = 0; o < game.objects[ry][z][x].length; o++) {
                     game.collisionSet.push(game.objects[ry][z][x][o]);
+                    if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2') {
+                        append = true;
+                    }
                 }
-                if (ry != game.old.y && game.old.x != -1) {
-                    for (var o = 0; o < game.objects[game.old.y][z][x].length; o++) {
-                        game.collisionSet.push(game.objects[game.old.y][z][x][o]);
+            }
+        }
+
+        if (append === true) {
+            for (var z = rz - 1; z <= rz + 1; z++) {
+                if (z < 0 || z >= NUM_CELLS.z) {
+                    continue;
+                }
+                for (var x = rx - 1; x <= rx + 1; x++) {
+                    if (x < 0 || x >= NUM_CELLS.x) {
+                        continue;
+                    }
+                    for (var y = ry - 1; y <= ry + 1; y += 2) {
+                        if (y < 0 || y >= NUM_CELLS.y) {
+                            continue;
+                        }
+                        for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                            game.collisionSet.push(game.objects[y][z][x][o]);
+                        }
                     }
                 }
             }
@@ -312,18 +336,19 @@ function updateScene(game) {
             if (y < 0 || y >= NUM_CELLS.y) {
                 continue;
             }
-            for (var z = oz - 3; z <= oz + 3; z++) {
+            for (var z = oz - 2; z <= oz + 2; z++) {
                 if (z < 0 || z >= NUM_CELLS.z) {
                     continue;
                 }
-                for (var x = ox - 3; x <= ox + 3; x++) {
+                for (var x = ox - 2; x <= ox + 2; x++) {
                     if (x < 0 || x >= NUM_CELLS.x) {
                         continue;
                     }
                     for (var o = 0; o < game.objects[y][z][x].length; o++) {
                         game.scene.remove(game.objects[y][z][x][o]);
                     }
-                    for (var o = 0; o < game.models[oy][z][x].length; o++) {
+
+                    for (var o = 0; o < game.models[y][z][x].length; o++) {
                         game.scene.remove(game.models[y][z][x][o]);
                     }
                 }
@@ -335,31 +360,53 @@ function updateScene(game) {
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
     var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
 
-    for (var z = rz - 3; z <= rz + 3; z++) {
+    var append = false;
+    for (var z = rz - 2; z <= rz + 2; z++) {
         if (z < 0 || z >= NUM_CELLS.z) {
             continue;
         }
-        for (var x = rx - 3; x <= rx + 3; x++) {
+        for (var x = rx - 2; x <= rx + 2; x++) {
             if (x < 0 || x >= NUM_CELLS.x) {
                 continue;
             }
+
             for (var o = 0; o < game.objects[ry][z][x].length; o++) {
                 game.scene.add(game.objects[ry][z][x][o]);
+                if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2') {
+                    append = true;
+                }
             }
+
             for (var o = 0; o < game.models[ry][z][x].length; o++) {
                 game.scene.add(game.models[ry][z][x][o]);
-            }
-            if (ry != game.old.y && game.old.x != -1) {
-                for (var o = 0; o < game.objects[game.old.y][z][x].length; o++) {
-                    game.scene.add(game.objects[game.old.y][z][x][o]);
-                }
-                for (var o = 0; o < game.models[game.old.y][z][x].length; o++) {
-                    game.scene.add(game.models[game.old.y][z][x][o]);
-                }
             }
         }
     }
 
+    if (append === true) {
+        for (var z = rz - 2; z <= rz + 2; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
+                continue;
+            }
+            for (var x = rx - 2; x <= rx + 2; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+                for (var y = ry - 1; y <= ry + 1; y += 2) {
+                    if (y < 0 || y >= NUM_CELLS.y) {
+                        continue;
+                    }
+                    for (var o = 0; o < game.objects[y][z][x].length; o++) {
+                        game.scene.add(game.objects[y][z][x][o]);
+                    }
+
+                    for (var o = 0; o < game.models[y][z][x].length; o++) {
+                        game.scene.add(game.models[y][z][x][o]);
+                    }
+                }
+            }
+        }
+    }
     game.old.x = rx;
     game.old.y = ry;
     game.old.z = rz;
@@ -622,8 +669,8 @@ function handleCollisions(game, input) {
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
-                    if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
-                                                    || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
+                    if (selected.name === 'ceil' || selected.name === 'ceil2' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'support' ||
+                        selected.name === 'column' || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;
