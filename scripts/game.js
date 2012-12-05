@@ -145,13 +145,17 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
+        if (this.player !== null) {
+            console.log(this.player.mesh.position.y);
+            console.log(this.camera.position.y);
+        }
         if (this.initialized == false) {
             this.init(input);
         }
 
         this.level.update();
 
-        this.player.update(input);
+        this.player.update(input, this.scene);
         this.warden.update(this.player.getPosVec(),
         					this.player.sound,
         					this.player.lightOn);
@@ -650,7 +654,6 @@ function bumpBack(collisionResults, directionVector, game) {
     }
 
     game.player.mesh.position.add(game.oldplayer, new THREE.Vector3(i, j, k));
-    game.camera.position.set(game.player.mesh.position.x, game.player.mesh.position.y, game.player.mesh.position.z);
     return bumpy;
 }
 

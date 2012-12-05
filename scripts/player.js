@@ -39,7 +39,7 @@ function Player() {
         this.game = game;
         this.soundManager = game.soundManager;
 
-        this.standMesh = new THREE.Mesh(
+        standMesh = new THREE.Mesh(
 			new THREE.CubeGeometry(5, 20, 5),
             new THREE.MeshBasicMaterial()
 		);
@@ -49,10 +49,7 @@ function Player() {
             new THREE.MeshBasicMaterial()
 		);
 
-        this.mesh = new THREE.Mesh( 
-        	new THREE.CubeGeometry( 5, 20, 5 ),
-        	new THREE.MeshBasicMaterial( { color: 0x00ff00 } )
-        );
+        this.mesh = standMesh;
 
         this.flashlight = new THREE.SpotLight(0xfffed9, 10, 1.5 * CELL_SIZE);
         scene.add(this.mesh);
@@ -148,14 +145,14 @@ function Player() {
 	//  code to play the sounds.   
 	this.playSounds = this.soundLoad; 
 
-    this.update = function (input) {
+    this.update = function (input, scene) {
 
 
 		//current position.
 		var X  = this.mesh.position.x; 
 		var Z  = this.mesh.position.z;
 		
-		this.sound = this.updateMovement(input);
+		this.sound = this.updateMovement(input, scene);
 	    
 	    if ( this.game.warden.mesh ) {
 			var warPos = this.game.warden.mesh.position;
@@ -205,13 +202,27 @@ function Player() {
             if (input.hold === 1) {
                 if (this.crouch) {
                    //rather than switching between two meshes, 
-                   //  why not scale the existing?
-                   this.mesh.scale.set( 1, 0.25, 1 ); 
-                   
+                    //  why not scale the existing?
+                    var oldx = this.mesh.position.x;
+                    var oldy = this.mesh.position.y;
+                    var oldz = this.mesh.position.z;
+                    scene.remove(this.mesh);
+                    this.mesh = creepMesh;
+                    scene.add(this.mesh);
+                    this.mesh.position.set(oldx, oldy - 7.5, oldz);
+                    console.log(this.mesh.position);
+                    //this.mesh.scale.set(1, 0.25, 1);
+                    
                 }
                 else {
-                	
-                	this.mesh.scale.set( 1, 1, 1 ); 
+                    var oldx = this.mesh.position.x;
+                    var oldy = this.mesh.position.y;
+                    var oldz = this.mesh.position.z;
+                    scene.remove(this.mesh);
+                    this.mesh = standMesh;
+                    scene.add(this.mesh);
+                    this.mesh.position.set(oldx, oldy + 7.5, oldz);
+                    //this.mesh.scale.set(1, 1, 1);
                 }
             }
         }
