@@ -63,7 +63,7 @@ function Game(renderer, canvas) {
     // ------------------------------------------------------------------------
     var FOV = 67,
         ASPECT = canvas.width / canvas.height,
-        NEAR = .01,
+        NEAR = 2.6,
         FAR = 1.5 * CELL_SIZE;
 
     // ------------------------------------------------------------------------
@@ -141,7 +141,6 @@ function Game(renderer, canvas) {
     // Update everything in the scene
     // ------------------------------------------------------------------------
 
-
     var loaded = false;
     var once = true;
     this.update = function (input) {
@@ -150,12 +149,15 @@ function Game(renderer, canvas) {
         }
 
         this.level.update();
-        this.player.update(input);
+        this.player.update(input, this.scene);
         this.warden.update(this.player.getPosVec(),
         					this.player.sound,
         					this.player.lightOn);
 
         updateOperation(this, input);
+        if (updateCollisionSet(this) || this.again === true) {
+            updateScene(this);
+        }
         updatePlayerInformation(this, input);
         if (this.end === 1) {
             if (this.warden.caught)
@@ -164,6 +166,7 @@ function Game(renderer, canvas) {
                 ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
             return false;
         }
+
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
@@ -174,9 +177,8 @@ function Game(renderer, canvas) {
                 }
             }
         }
-        if (updateCollisionSet(this) || this.again === true) {
-            updateScene(this);
-        }
+
+   
         TWEEN.update();
         return true;
     };
@@ -282,7 +284,6 @@ function updateCollisionSet(game) {
                 if (x < 0 || x >= NUM_CELLS.x) {
                     continue;
                 }
-
 
                 for (var o = 0; o < game.objects[ry][z][x].length; o++) {
                     game.collisionSet.push(game.objects[ry][z][x][o]);
@@ -642,7 +643,6 @@ function bumpBack(collisionResults, directionVector, game) {
     }
 
     game.player.mesh.position.add(game.oldplayer, new THREE.Vector3(i, j, k));
-    game.camera.position.set(game.player.mesh.position.x, game.player.mesh.position.y, game.player.mesh.position.z);
     return bumpy;
 }
 

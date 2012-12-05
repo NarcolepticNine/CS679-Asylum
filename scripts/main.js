@@ -144,7 +144,7 @@ function setupInput(data, game) {
             case 83: data.trigger.S = 1; break;
             case 65: data.trigger.A = 1; break;
             case 68: data.trigger.D = 1; break;
-            case 67: data.trigger.crouch = 1 - data.trigger.crouch; break;
+            case 67: data.trigger.crouch = 1; break;
             case 70: data.trigger.light  = 1; break; 
             case 16: data.trigger.run = 1; break;  
             case 32: data.trigger.Jump = 1; break;
