@@ -62,7 +62,8 @@ function Player() {
 
         this.mesh.position.set(x, y, z);
         this.flashlight.position.set(x, y, z);
-        this.camera.position.set(x, y, z);
+        console.log(y);
+        this.camera.position.set(x, y + 10, z);
 
     }
 
@@ -239,7 +240,7 @@ function Player() {
             this.currSpd * (WS * input.f.z - AD * input.f.x / xzNorm);
 
         // Update camera position/lookat 
-        this.camera.position = this.mesh.position;
+        this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 10, 0));
         var look = new THREE.Vector3();
         look.add(this.camera.position, input.f);
         this.camera.lookAt(look);
