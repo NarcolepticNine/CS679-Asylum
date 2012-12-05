@@ -62,7 +62,6 @@ function Player() {
 
         this.mesh.position.set(x, y, z);
         this.flashlight.position.set(x, y, z);
-        console.log(y);
         this.camera.position.set(x, y + 10, z);
 
     }
@@ -175,14 +174,19 @@ function Player() {
     this.updateMovement = function (input) {
 
         //adjust for running or crouching, or neither: 
-        if (input.trigger.run || input.trigger.crouch) {
+        this.currSpd = speed;
+        if (input.trigger.run) {
+            this.currSpd *= 2;
+        }
+        if (input.trigger.crouch) {
+            this.currSpd /= 2;
+        }
 
-            this.currSpd = (input.trigger.run) ? speed * 2 : speed / 2;
-
-        } else {
-
-            this.currSpd = speed;
-
+        if (input.trigger.crouch) {
+            this.mesh.rotation.x = Math.PI / 2;
+        }
+        else {
+            this.mesh.rotation.x = 0;            
         }
 
         //correct for mouse cursor not being locked.  
@@ -239,8 +243,14 @@ function Player() {
         this.mesh.position.z +=
             this.currSpd * (WS * input.f.z - AD * input.f.x / xzNorm);
 
-        // Update camera position/lookat 
-        this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 10, 0));
+        // Update camera position/lookat
+        if (input.trigger.crouch === 0) {
+            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 10, 0));
+        }
+        else {
+            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 1.75, 0));
+        }
+
         var look = new THREE.Vector3();
         look.add(this.camera.position, input.f);
         this.camera.lookAt(look);
