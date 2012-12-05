@@ -98,16 +98,13 @@ function updateDebug( info, game ){
 		
 		info.innerHTML += " Key: " + game.key + "<br / ><br />";
 		
-		info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
-		info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
-		info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
+		if( warden.mesh ){
+			info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
+			info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
+			info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
+		}
 		info.innerHTML += " vX: " + warden.vX.toFixed(2) + " vZ: " + warden.vZ.toFixed(2) + "<br />";
-		
-		var lTarget = warden.flashlight.target.position; 
-		info.innerHTML += "Target x: " + lTarget.x.toFixed(2); 
-		info.innerHTML += " y: " + lTarget.y.toFixed(2);
-		info.innerHTML += " z: " + lTarget.z.toFixed(2) + "<br/>";
-		 
+				 
 		info.innerHTML += " currSpd: " + warden.currSpd; 
 		info.innerHTML += " Awareness: " + warden.awareness.toFixed(2);
 		info.innerHTML += " Next Pt: " + warden.nextPt + "<br / >";

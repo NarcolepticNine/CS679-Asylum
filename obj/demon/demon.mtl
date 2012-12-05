@@ -1,0 +1,16 @@
+# Blender MTL File: 'demon-RIG.blend'
+# Material Count: 1
+newmtl Material
+Ns 0.000000
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.172727 0.172727 0.172727
+Ni 1.000000
+d 1.000000
+illum 2
+map_Ns specularMap.png
+map_Ks specularMap.png
+map_Bump normalMap.png
+map_Kd colorMap.png
+
+

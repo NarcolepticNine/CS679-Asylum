@@ -900,10 +900,6 @@ function Level(game) {
         pz = Math.floor(game.player.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
         ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
 
-        wx = Math.floor(game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-        wz = Math.floor(game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-        wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
-
         // Clear the map
         mapContext.save();
         mapContext.setTransform(1, 0, 0, 1, 0, 0);
@@ -949,12 +945,18 @@ function Level(game) {
         mapContext.arc(px, pz, 3, 0, 2 * Math.PI, false);
         mapContext.stroke();
 
-        //draw the warden
-        mapContext.beginPath();
-        mapContext.strokeStyle = "#00ff00";
-        mapContext.lineWidth = 3;
-        mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
-        mapContext.stroke();
+
+		if( game.warden.mesh != null ){
+	        wx = Math.floor(game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+	        wz = Math.floor(game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+	        wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
+			//draw the warden
+	        mapContext.beginPath();
+	        mapContext.strokeStyle = "#00ff00";
+	        mapContext.lineWidth = 3;
+	        mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
+	        mapContext.stroke();
+       }
     };
 
     // Update this level

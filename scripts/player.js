@@ -39,7 +39,7 @@ function Player() {
         this.game = game;
         this.soundManager = game.soundManager;
 
-        standMesh = new THREE.Mesh(
+        this.standMesh = new THREE.Mesh(
 			new THREE.CubeGeometry(5, 20, 5),
             new THREE.MeshBasicMaterial()
 		);
@@ -49,7 +49,10 @@ function Player() {
             new THREE.MeshBasicMaterial()
 		);
 
-        this.mesh = standMesh;
+        this.mesh = new THREE.Mesh( 
+        	new THREE.CubeGeometry( 5, 20, 5 ),
+        	new THREE.MeshBasicMaterial( { color: 0x00ff00 } )
+        );
 
         this.flashlight = new THREE.SpotLight(0xfffed9, 10, 1.5 * CELL_SIZE);
         scene.add(this.mesh);
@@ -78,87 +81,95 @@ function Player() {
         return this.mesh.position;
     }
 
-    this.soundLoaded = function (distance, movement, speed) {
 
-        var start = new Date().getTime();
+	this.soundLoaded = function ( distance, movement, speed ) {
+		
+		var start   =  new Date().getTime();
+		
+		//heartbeat
+		//base rate of .5 seconds, and can go as high as 5 seconds
+		var timeout = 500 + ( distance * 5 );
+		timeout = ( timeout > 5000 ) ? 5000 : timeout;  
+		
+		if( start - this.lastbeat > timeout ){
+			this.soundManager.playSound( this.heartbeat, 0 );
+			this.lastbeat = start; 
+		} 
+		
+		
+		if( movement ){
+			//footsteps eventually based on walk speed.  
+			timeout = 1000 - ( 500 * speed ); 
+			if( start - this.laststep > timeout ){
+				
+				//selected random from one of the footstep sounds
+				var step = Math.floor( Math.random() * this.footsteps.length  );
+				this.soundManager.playSound( this.footsteps[step], 0 );
+				this.laststep = start; 
+			}
+		} else {
+			//so steps start right away on movement
+			this.laststep = 0; 
+		}
+		
+	}
 
-        //heartbeat
-        //base rate of .5 seconds, and can go as high as 5 seconds
-        var timeout = 500 + (distance * 5);
-        timeout = (timeout > 5000) ? 5000 : timeout;
+	this.soundLoad  = function( distance, movement, speed ) {
+		
+		var loadHelper = function( player, soundmanager, variable ){
+			var tempBuff; 
+			
+			if( ( tempBuff = soundmanager.returnBuffer( variable ) ) ){
+				console.log( "Sound Ready: " + variable + " CountAssets: " + player.countAssets );
+				variable = tempBuff; 
+				player.countAssets--; 
+			}
+			
+			return variable;	
+		}
+		
+		// for more player sounds, expand here. 
+		this.heartbeat    = loadHelper( this, this.soundManager, this.heartbeat );
+		this.footsteps[0] = loadHelper( this, this.soundManager, this.footsteps[0] );
+		this.footsteps[1] = loadHelper( this, this.soundManager, this.footsteps[1] );	
+		this.footsteps[2] = loadHelper( this, this.soundManager, this.footsteps[2] );
+				
+		if( this.countAssets == 0 ) {
+			console.log( "All Loaded, switching to playing sounds" );
+			this.playSounds = this.soundLoaded; 
+			return true; 	
+		}else {
+			return false; 
+		}	
+	}
+	
+	//playSounds is a meta function, first it points out soundLoad, then after
+	//  soundLoad has done its thing, it switches to soundLoaded, which has the
+	//  code to play the sounds.   
+	this.playSounds = this.soundLoad; 
 
-        if (start - this.lastbeat > timeout) {
-            this.soundManager.playSound(this.heartbeat, 0);
-            this.lastbeat = start;
-        }
+    this.update = function (input) {
 
 
-        if (movement) {
-            //footsteps eventually based on walk speed.  
-            timeout = 1000 - (500 * speed);
-            if (start - this.laststep > timeout) {
-
-                //selected random from one of the footstep sounds
-                var step = Math.floor(Math.random() * this.footsteps.length);
-                this.soundManager.playSound(this.footsteps[step], 0);
-                this.laststep = start;
-            }
+		//current position.
+		var X  = this.mesh.position.x; 
+		var Z  = this.mesh.position.z;
+		
+		this.sound = this.updateMovement(input);
+	    
+	    if ( this.game.warden.mesh ) {
+			var warPos = this.game.warden.mesh.position;
+			
+			var dX = warPos.x - X; 
+			var dZ = warPos.z - Z; 
+			
+			var d = Math.sqrt(dX*dX+dZ*dZ); 
+			this.playSounds( d, this.sound, this.currSpd );
+	        
         } else {
-            //so steps start right away on movement
-            this.laststep = 0;
-        }
+        	this.playSounds( 1000, this.sound, this.currSpd ); 
+        } 
 
-    }
-
-    this.soundLoad = function (distance, movement, speed) {
-
-        var loadHelper = function (player, soundmanager, variable) {
-            var tempBuff;
-
-            if ((tempBuff = soundmanager.returnBuffer(variable))) {
-                console.log("Sound Ready: " + variable + " CountAssets: " + player.countAssets);
-                variable = tempBuff;
-                player.countAssets--;
-            }
-
-            return variable;
-        }
-
-        // for more player sounds, expand here. 
-        this.heartbeat = loadHelper(this, this.soundManager, this.heartbeat);
-        this.footsteps[0] = loadHelper(this, this.soundManager, this.footsteps[0]);
-        this.footsteps[1] = loadHelper(this, this.soundManager, this.footsteps[1]);
-        this.footsteps[2] = loadHelper(this, this.soundManager, this.footsteps[2]);
-
-        if (this.countAssets == 0) {
-            console.log("All Loaded, switching to playing sounds");
-            this.playSounds = this.soundLoaded;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    //playSounds is a meta function, first it points out soundLoad, then after
-    //  soundLoad has done its thing, it switches to soundLoaded, which has the
-    //  code to play the sounds.   
-    this.playSounds = this.soundLoad;
-
-    this.update = function (input, scene) {
-        //current position.
-        var X = this.mesh.position.x;
-        var Z = this.mesh.position.z;
-
-        var warPos = this.game.warden.mesh.position;
-
-        var dX = warPos.x - X;
-        var dZ = warPos.z - Z;
-
-        var d = Math.sqrt(dX * dX + dZ * dZ);
-
-
-        this.sound = this.updateMovement(input, scene);
-        this.playSounds(d, this.sound, this.currSpd);
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;
 
@@ -173,7 +184,7 @@ function Player() {
         input.viewRay = new THREE.Ray(
             playPos,                             // origin
             rayVec.subSelf(playPos).normalize(), // direction
-            0, 1000                                           // near, far
+            0, 1000                              // near, far
         );
     }
 
@@ -193,22 +204,14 @@ function Player() {
             this.crouch = 1 - this.crouch;
             if (input.hold === 1) {
                 if (this.crouch) {
-                    var oldx = this.mesh.position.x;
-                    var oldy = this.mesh.position.y;
-                    var oldz = this.mesh.position.z;
-                    scene.remove(this.mesh);
-                    this.mesh = creepMesh;
-                    scene.add(this.mesh);
-                    this.mesh.position.set(oldx, oldy - 7.5, oldz);
+                   //rather than switching between two meshes, 
+                   //  why not scale the existing?
+                   this.mesh.scale.set( 1, 0.25, 1 ); 
+                   
                 }
                 else {
-                    var oldx = this.mesh.position.x;
-                    var oldy = this.mesh.position.y;
-                    var oldz = this.mesh.position.z;
-                    scene.remove(this.mesh);
-                    this.mesh = standMesh;
-                    scene.add(this.mesh);
-                    this.mesh.position.set(oldx, oldy + 7.5, oldz);
+                	
+                	this.mesh.scale.set( 1, 1, 1 ); 
                 }
             }
         }
