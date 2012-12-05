@@ -151,9 +151,9 @@ function Game(renderer, canvas) {
 
         this.level.update();
         this.player.update(input);
-        //this.warden.update(this.player.getPosVec(),
-        //					this.player.sound,
-        //					this.player.lightOn);
+        this.warden.update(this.player.getPosVec(),
+        					this.player.sound,
+        					this.player.lightOn);
 
         updateOperation(this, input);
         updatePlayerInformation(this, input);
