@@ -74,7 +74,7 @@ function Level(game) {
     CEIL_TEXTURE = THREE.ImageUtils.loadTexture("images/ceiling_tiles.jpg"),
     WALL_TEXTURE = THREE.ImageUtils.loadTexture("images/wall.jpg"),
     COLUMN_TEXTURE = THREE.ImageUtils.loadTexture("images/column.jpg"),
-    STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/red.png"),
+    STAIR_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
     TRANSPARENT_TEXTURE = THREE.ImageUtils.loadTexture("images/transparent.png"),
 
     FLOOR_TEXTURE.repeat = new THREE.Vector2(2, 2);
@@ -244,14 +244,17 @@ function Level(game) {
                             continue;
                         } else if (cell.type.charAt(0) === CELL_TYPES.floor) {
                             this.generateFloorGeometry(xx, yy, zz);
-                            this.generateCeilingGeometry(xx, yy, zz,'ceil');
+                            this.generateCeilingGeometry(xx, yy, zz, 'ceil');
                         }
-                       else if (cell.type.charAt(0) === CELL_TYPES.key) {
+                        else if (cell.type.charAt(0) === CELL_TYPES.f_nc) {
+                            this.generateFloorGeometry(xx, yy, zz);
+                        }
+                        else if (cell.type.charAt(0) === CELL_TYPES.key) {
                             this.generateObjGeometry(xx, yy + 8, zz, 1, 1, 1, 0, 'obj/key.js', 'obj/key.jpg', 'key');
                             game.nextGoal[0].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
                             game.nextGoal[0].push('Find Key');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
-                            this.generateCeilingGeometry(xx, yy, zz,'ceil2');
+                            this.generateCeilingGeometry(xx, yy, zz, 'ceil2');
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.desk) {
                             this.generateDeskGeometry(xx, yy, zz);
@@ -326,7 +329,7 @@ function Level(game) {
         game.numCheck++;
         var loader = new THREE.JSONLoader();
         var modelNum = game.modelNum;
-        loader.load(obj, function (geometry) { createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name); modelNum.number++;});
+        loader.load(obj, function (geometry) { createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name); modelNum.number++; });
     };
 
     function createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) {
@@ -361,43 +364,42 @@ function Level(game) {
                 minZ = geometry.vertices[v].z;
             }
         }
-        var boundingBox = null;
-        if (name !== 'key') {
-            boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
-        }
-        else {
-            boundingBox = new THREE.Mesh(new THREE.CubeGeometry(8 * scalex * (maxX - minX), 4 * scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
-        }
-
-        boundingBox.name = name;
-        boundingBox.rotation.y = rot;
-        boundingBox.position.set(x + scalex * (maxX + minX) / 2, y + scaley * (maxY + minY) / 2, z + scalez * (maxZ + minZ) / 2);
         var rx = Math.floor(Math.floor(x + scalex * (maxX + minX) / 2) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(z + scalez * (maxZ + minZ) / 2) / CELL_SIZE + 1 / 2);
         var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
-
         game.models[ry][rz][rx].push(objMesh);
-        if (name !== 'picture' && name !== 'bulletin' && name !== 'clock') {
-            game.objects[ry][rz][rx].push(boundingBox);
-            //game.scene.add(boundingBox);
-        }
-
-        boundingBox.model = objMesh;
-        if (name === 'door') {
-            boundingBox.canToggle = true;
-            boundingBox.doorState = 'closed';
-            boundingBox.beginRot = rot;
-            if (rot > 2 * Math.PI) {
-                boundingBox.endRot = rot + Math.PI / 2;
+        var boundingBox = null;
+        if (name !== 'mstair') {
+            if (name !== 'key') {
+                boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
             }
             else {
-                boundingBox.endRot = rot - Math.PI / 2;
+                boundingBox = new THREE.Mesh(new THREE.CubeGeometry(8 * scalex * (maxX - minX), 4 * scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
             }
-            boundingBox.canToggle = true;
-            boundingBox.doorState = 'closed';
-            
-            boundingBox.halfsize = scalez * (maxZ - minZ) / 2;
+
+            boundingBox.name = name;
+            boundingBox.rotation.y = rot;
+            boundingBox.position.set(x + scalex * (maxX + minX) / 2, y + scaley * (maxY + minY) / 2, z + scalez * (maxZ + minZ) / 2);
+            boundingBox.model = objMesh;
+            if (name === 'door') {
+                boundingBox.canToggle = true;
+                boundingBox.doorState = 'closed';
+                boundingBox.beginRot = rot;
+                if (rot > 2 * Math.PI) {
+                    boundingBox.endRot = rot + Math.PI / 2;
+                }
+                else {
+                    boundingBox.endRot = rot - Math.PI / 2;
+                }
+                boundingBox.canToggle = true;
+                boundingBox.doorState = 'closed';
+                boundingBox.halfsize = scalez * (maxZ - minZ) / 2;
+            }
+            if (name !== 'picture' && name !== 'bulletin' && name !== 'clock') {
+                game.objects[ry][rz][rx].push(boundingBox);
+            }
         }
+
 
     }
 
@@ -421,7 +423,7 @@ function Level(game) {
     };
 
     this.generateDeskGeometry = function (x, y, z) {
-        this.generateObjGeometry(x, y + CELL_SIZE * 0.3408594, z, 1.25, 1.25, 1.25, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');    
+        this.generateObjGeometry(x, y + CELL_SIZE * 0.3408594, z, 1.25, 1.25, 1.25, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');
     }
 
     // Generate stair geometry
@@ -462,6 +464,7 @@ function Level(game) {
 
 
     var STAIR_MATERIAL = new THREE.MeshPhongMaterial({ map: STAIR_TEXTURE });
+    STAIR_MATERIAL.transparent = true;
     this.generateStairGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(STAIR_GEOMETRY, STAIR_MATERIAL);//replace with real texture later
         var mesh2 = new THREE.Mesh(TRIANGLE_GEOMETRY_L, STAIR_MATERIAL);//replace with real texture later
@@ -472,6 +475,7 @@ function Level(game) {
         var mesh6 = null; //replace with real texture later
         switch (c) {
             case 's':
+                this.generateObjGeometry(x, y, z, 3.6275010, 1.6922263, 3.2553060, -Math.PI / 2, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -(Math.PI - Math.atan(2));
                 mesh.rotation.z = Math.PI;
                 mesh.position.set(x, y + CELL_SIZE / 4, z);
@@ -482,6 +486,7 @@ function Level(game) {
                 mesh4.position.set(x, y + CELL_SIZE / 4, z + CELL_SIZE / 2);
                 break;
             case 'n':
+                this.generateObjGeometry(x, y, z, 3.6275010, 1.6922263, 3.2553060, Math.PI / 2, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -Math.atan(2);
                 mesh.position.set(x, y + CELL_SIZE / 4, z);
                 mesh2.rotation.y = Math.PI / 2;
@@ -492,6 +497,7 @@ function Level(game) {
                 mesh4.position.set(x, y + CELL_SIZE / 4, z - CELL_SIZE / 2);
                 break;
             case 'w':
+                this.generateObjGeometry(x, y, z, 3.6275010, 1.6922263, 3.2553060, Math.PI, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.rotation.y = Math.PI / 2 - Math.atan(2);
                 mesh.position.set(x, y + CELL_SIZE / 4, z);
@@ -503,6 +509,7 @@ function Level(game) {
                 mesh4.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 4, z);
                 break;
             case 'e':
+                this.generateObjGeometry(x, y, z, 3.6275010, 1.6922263, 3.2553060, 0, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.rotation.y = -(Math.PI / 2 - Math.atan(2));
                 mesh.rotation.z = -Math.PI / 2;
@@ -609,7 +616,7 @@ function Level(game) {
     var CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1),
         BOUND_CUBOID_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
 
-    this.generateWindowGeometry = function (x, y, z, c) {        
+    this.generateWindowGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
                 this.generateObjGeometry(x, y + CELL_SIZE * 0.6806222, z + CELL_SIZE * 15 / 32, 0.3354368, 0.3354368, 0.4923198, Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
@@ -620,7 +627,7 @@ function Level(game) {
             case 'w':
                 this.generateObjGeometry(x - CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806222, z, 0.3354368, 0.3354368, 0.4923198, 0, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
-            case 'e':      
+            case 'e':
                 this.generateObjGeometry(x + CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806222, z, 0.3354368, 0.3354368, 0.4923198, Math.PI, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
         }
@@ -672,7 +679,7 @@ function Level(game) {
                 this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 0.5, z + CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE* 0.5, z - CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 0, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE * 0.5, z - CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 0, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '2':
                 this.generateObjGeometry(x - CELL_SIZE / 32, y + CELL_SIZE * 0.5, z + CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI + Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
@@ -761,7 +768,7 @@ function Level(game) {
     // --------------------------------
     var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1),
         BOUND_CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
-        WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
+    WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
 
     this.generateWallGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
@@ -946,17 +953,17 @@ function Level(game) {
         mapContext.stroke();
 
 
-		if( game.warden.mesh != null ){
-	        wx = Math.floor(game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-	        wz = Math.floor(game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-	        wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
-			//draw the warden
-	        mapContext.beginPath();
-	        mapContext.strokeStyle = "#00ff00";
-	        mapContext.lineWidth = 3;
-	        mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
-	        mapContext.stroke();
-       }
+        if (game.warden.mesh != null) {
+            wx = Math.floor(game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+            wz = Math.floor(game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+            wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
+            //draw the warden
+            mapContext.beginPath();
+            mapContext.strokeStyle = "#00ff00";
+            mapContext.lineWidth = 3;
+            mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
+            mapContext.stroke();
+        }
     };
 
     // Update this level

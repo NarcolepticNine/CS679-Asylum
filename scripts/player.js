@@ -210,7 +210,6 @@ function Player() {
                     this.mesh = creepMesh;
                     scene.add(this.mesh);
                     this.mesh.position.set(oldx, oldy - 7.5, oldz);
-                    console.log(this.mesh.position);
                     //this.mesh.scale.set(1, 0.25, 1);
                     
                 }

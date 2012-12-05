@@ -145,10 +145,9 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
-        if (this.player !== null) {
-            console.log(this.player.mesh.position.y);
-            console.log(this.camera.position.y);
-        }
+        //if (this.player !== null) {
+        //    console.log(this.player.mesh.position.y);
+        //}
         if (this.initialized == false) {
             this.init(input);
         }
@@ -156,9 +155,9 @@ function Game(renderer, canvas) {
         this.level.update();
 
         this.player.update(input, this.scene);
-        this.warden.update(this.player.getPosVec(),
-        					this.player.sound,
-        					this.player.lightOn);
+        //this.warden.update(this.player.getPosVec(),
+        //					this.player.sound,
+        //					this.player.lightOn);
 
         updateOperation(this, input);
         updatePlayerInformation(this, input);
@@ -275,6 +274,9 @@ function updateCollisionSet(game) {
     var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
         if (game.collisionSet !== null) {
+            console.log('AA:' + game.collisionSet.length);
+        }
+        if (game.collisionSet !== null) {
         }
         game.collisionSet = [];
 
@@ -311,13 +313,14 @@ function updateCollisionSet(game) {
                         if (y < 0 || y >= NUM_CELLS.y) {
                             continue;
                         }
-                        for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                        for (var o = 0; o < game.objects[y][z][x].length; o++) {
                             game.collisionSet.push(game.objects[y][z][x][o]);
                         }
                     }
                 }
             }
         }
+        console.log('BB:' + game.collisionSet.length);
         return true;
     }
     else {
