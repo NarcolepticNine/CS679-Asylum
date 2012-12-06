@@ -329,11 +329,6 @@ function updateCollisionSet(game) {
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
     var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
-        if (game.collisionSet !== null) {
-            console.log('AA:' + game.collisionSet.length);
-        }
-        if (game.collisionSet !== null) {
-        }
         game.collisionSet = [];
 
         var append = false;
@@ -376,7 +371,6 @@ function updateCollisionSet(game) {
                 }
             }
         }
-        console.log('BB:' + game.collisionSet.length);
         return true;
     }
     else {

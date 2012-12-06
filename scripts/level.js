@@ -369,7 +369,7 @@ function Level(game) {
         var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
         game.models[ry][rz][rx].push(objMesh);
         var boundingBox = null;
-        if (name == 'mstair') {
+        if (name == 'window-wall') {
             console.log(z + scalez * minZ);
             console.log(scalez * (maxZ - minZ));
         }
@@ -623,16 +623,16 @@ function Level(game) {
     this.generateWindowGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806222, z + CELL_SIZE * 15 / 32, 0.3354368, 0.3354368, 0.4923198, Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z + CELL_SIZE * 15 / 32, 0.7323325, 0.3354368, 0.3582517, Math.PI / 2, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
                 break;
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806222, z - CELL_SIZE * 15 / 32, 0.3354368, 0.3354368, 0.4923198, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z - CELL_SIZE * 15 / 32, 0.7323325, 0.3354368, 0.3582517, -Math.PI / 2, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806222, z, 0.3354368, 0.3354368, 0.4923198, 0, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x - CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.3806223, z, 0.7323325, 0.3354368, 0.3582517, 0, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806222, z, 0.3354368, 0.3354368, 0.4923198, Math.PI, 'obj/window.js', 'obj/window.jpg', 'window');
+                    this.generateObjGeometry(x + CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806223, z, 0.7323325, 0.3354368, 0.3582517, Math.PI, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
                 break;
         }
     };
