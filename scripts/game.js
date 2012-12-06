@@ -173,9 +173,6 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
-        //if (this.player !== null) {
-        //    console.log(this.player.mesh.position.y);
-        //}
         if (this.initialized == false) {
             this.init(input);
         }
