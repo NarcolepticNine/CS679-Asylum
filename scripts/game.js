@@ -57,6 +57,26 @@ function Game(renderer, canvas) {
     this.playerInfo.style.bottom = 0;
     this.playerInfo.style.right = 0;
     document.getElementById("container").appendChild(this.playerInfo);
+    
+    this.hints = document.createElement("canvas");
+    this.hints.id = "hints";
+    this.hints.width = canvas.width;
+    this.hints.height = 100;
+    this.hints.style.position = "absolute";
+    this.hints.style.bottom = 0;
+    this.hints.backgroundColor = "#000000";
+    document.getElementById("container").appendChild(this.hints);
+    
+    this.hintIndex = 0;
+    this.textHints = ['Use the WASD keys to move',
+    				  'Use the mouse cursor to look around',
+    				  'Press F to turn your flashlight on and off',
+    				  'Press spacebar to jump',
+    				  'Click to open doors and pick up items',
+    				  'Pick up the key from the warden\'s office and find the locked door to escape',
+    				  'Your heart beat indicates how close you are to being caught',
+    				  'If your heart is beating fast, the warden is close. Stop moving and turn off your flashlight to hide',
+    				  'Walk around carefully, good luck!'];
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -118,6 +138,14 @@ function Game(renderer, canvas) {
         this.soundManager.init();
 
         this.skybox = new Skybox(this);
+        
+        // which element in the textHints array to display
+        // start at -1 because the function updates
+        this.hintIndex = 0;
+        // set interval handles passing this weird, so you need to make a copy
+        var _this = this;
+        // update the hint every 5 seconds
+        this.hintTimer = setInterval(function(){hintTimerFunc(_this)}, 5000);
 
         // Setup player
         this.player = new Player();
@@ -168,6 +196,7 @@ function Game(renderer, canvas) {
                 ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
             return false;
         }
+        
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
@@ -206,6 +235,33 @@ function ending(game, message) {
     Ending.textAlign = 'center';
     Ending.fillStyle = '#00ff00';
     Ending.fillText(message, game.endingInfo.width / 2, game.endingInfo.height / 2);
+}
+
+function hints(game, message) {
+    var hint = game.endingInfo.getContext("2d");
+    // Clear
+    hint.save();
+    hint.setTransform(1, 0, 0, 1, 0, 0);
+    hint.clearRect(0, 0, game.hints.width, game.hints.height);
+    hint.restore();
+
+    hint.font = '20px Arial';
+    hint.textBaseline = 'bottom';
+    hint.textAlign = 'center';
+    hint.fillStyle = '#ffffff';
+    hint.backgroundColor = '#000';
+    hint.fillText(message, game.hints.width / 2, game.hints.height - 40);
+}
+
+function hintTimerFunc(game){
+	if (game.hintIndex < game.textHints.length){
+		hints(game, game.textHints[game.hintIndex]);
+	}
+	else {
+		hints(game, "");
+		clearInterval(game.hintTimer);
+	}
+	game.hintIndex++;
 }
 
 function updatePlayerInformation(game, input) {
