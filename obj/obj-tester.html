@@ -80,7 +80,7 @@
 					callbackFinalDoor = function( geometry ) { createScene( geometry, 150, 0, 150, 10, "door.jpg" ) };
 					callbackBulletinBoard = function( geometry ) { createScene( geometry, 150, 0, -150, 3, "bulletin-board.jpg" ) };
 					callbackPicture = function( geometry ) { createScene( geometry, -150, 0, 150, 5, "picture.jpg" ) };
-					callbackWindow = function( geometry ) { createScene( geometry, -150, 0, -150, 3, "window.jpg" ) };
+					callbackWindow = function( geometry ) { createScene( geometry, -150, 0, -150, 100, "demon/colorMap.png" ) };
 
 				loader.load( "key.js", callbackKey );
 				loader.load( "flashlight.js", callbackFlashlight );
@@ -91,7 +91,7 @@
 				loader.load( "final-door.js", callbackFinalDoor );
 				loader.load( "bulletin-board.js", callbackBulletinBoard );
 				loader.load( "picture.js", callbackPicture );
-				loader.load( "window.js", callbackWindow );
+				loader.load( "demon/demon.js", callbackWindow );
 
 				window.addEventListener( 'resize', onWindowResize, false );
 

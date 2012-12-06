@@ -52,7 +52,7 @@ function Warden() {
 		
 		var callback = function ( geometry, scalex, scaley, scalez, tmap ) {
 			console.log( "Demon Loaded" ); 
-			var tempMesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap) }) ); 
+			var tempMesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture("./obj/demon/colorMap.png") }) ); 
 			tempMesh.scale.set( scalex, scaley, scalez ); 
 			warden.mesh = tempMesh; 
 				
