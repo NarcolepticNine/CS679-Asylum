@@ -251,8 +251,8 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.key) {
                             this.generateObjGeometry(xx, yy + 8, zz, 1, 1, 1, 0, 'obj/key.js', 'obj/key.jpg', 'key');
-                            game.nextGoal[0].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                            game.nextGoal[0].push('Find Key');
+                            game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                            game.nextGoal[1].push('Find Key');
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz, 'ceil2');
                         }
@@ -275,11 +275,15 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Fdoor) {
                             this.generateFdoorGeometry(xx, yy, zz, cell.type.charAt(1));
-                            game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                            game.nextGoal[1].push('Escape');
+                            game.nextGoal[2].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                            game.nextGoal[2].push('Escape');
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Door) {
                             this.generateDoorGeometry(xx, yy, zz, cell.type.charAt(1));
+                            if (cell.type.charAt(1) === 'q') {
+                                game.nextGoal[0].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                                game.nextGoal[0].push('Open Door');
+                            }
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.bookcase) {
                             this.generateBookCaseGeometry(xx, yy, zz, cell.type.charAt(1));
@@ -683,6 +687,7 @@ function Level(game) {
                 this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 0.5, z + CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case 'e':
+            case 'q':
                 this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE * 0.5, z - CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 0, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '2':

@@ -32,6 +32,7 @@ function Player() {
     this.lightTog = false;
     this.lightOn = true;
     this.crouch = 0;
+    this.toggleCrouch = false;
 
     this.init = function (game, scene, camera, startPos) {
 
@@ -41,12 +42,12 @@ function Player() {
 
         standMesh = new THREE.Mesh(
 			new THREE.CubeGeometry(5, 20, 5),
-            new THREE.MeshBasicMaterial()
+            new THREE.MeshBasicMaterial({ map: TRANSPARENT_TEXTURE })
 		);
 
         creepMesh = new THREE.Mesh(
 			new THREE.CubeGeometry(5, 5, 5),
-            new THREE.MeshBasicMaterial()
+            new THREE.MeshBasicMaterial({ map: TRANSPARENT_TEXTURE })
 		);
 
         this.mesh = standMesh;
@@ -79,95 +80,95 @@ function Player() {
     }
 
 
-	this.soundLoaded = function ( distance, movement, speed ) {
-		
-		var start   =  new Date().getTime();
-		
-		//heartbeat
-		//base rate of .5 seconds, and can go as high as 5 seconds
-		var timeout = 500 + ( distance * 5 );
-		timeout = ( timeout > 5000 ) ? 5000 : timeout;  
-		
-		if( start - this.lastbeat > timeout ){
-			this.soundManager.playSound( this.heartbeat, 0 );
-			this.lastbeat = start; 
-		} 
-		
-		
-		if( movement ){
-			
-			//step sound clips are around 300-400 ms, so need to stay above that
-			// in order for them to sound regular. 
-			timeout = 1250 - ( 500 * speed ); 
-			if( start - this.laststep > timeout ){
-				
-				//selected random from one of the footstep sounds
-				var step = Math.floor( Math.random() * this.footsteps.length  );
-				this.soundManager.playSound( this.footsteps[step], 0 );
-				this.laststep = start; 
-			}
-		} else {
-			//so steps start right away on movement
-			this.laststep = 0; 
-		}
-		
-	}
+    this.soundLoaded = function (distance, movement, speed) {
 
-	this.soundLoad  = function( distance, movement, speed ) {
-		
-		var loadHelper = function( player, soundmanager, variable ){
-			var tempBuff; 
-			
-			if( ( tempBuff = soundmanager.returnBuffer( variable ) ) ){
-				console.log( "Sound Ready: " + variable + " CountAssets: " + player.countAssets );
-				variable = tempBuff; 
-				player.countAssets--; 
-			}
-			
-			return variable;	
-		}
-		
-		// for more player sounds, expand here. 
-		this.heartbeat    = loadHelper( this, this.soundManager, this.heartbeat );
-		this.footsteps[0] = loadHelper( this, this.soundManager, this.footsteps[0] );
-		this.footsteps[1] = loadHelper( this, this.soundManager, this.footsteps[1] );	
-		this.footsteps[2] = loadHelper( this, this.soundManager, this.footsteps[2] );
-				
-		if( this.countAssets == 0 ) {
-			console.log( "All Loaded, switching to playing sounds" );
-			this.playSounds = this.soundLoaded; 
-			return true; 	
-		}else {
-			return false; 
-		}	
-	}
-	
-	//playSounds is a meta function, first it points out soundLoad, then after
-	//  soundLoad has done its thing, it switches to soundLoaded, which has the
-	//  code to play the sounds.   
-	this.playSounds = this.soundLoad; 
+        var start = new Date().getTime();
+
+        //heartbeat
+        //base rate of .5 seconds, and can go as high as 5 seconds
+        var timeout = 500 + (distance * 5);
+        timeout = (timeout > 5000) ? 5000 : timeout;
+
+        if (start - this.lastbeat > timeout) {
+            this.soundManager.playSound(this.heartbeat, 0);
+            this.lastbeat = start;
+        }
+
+
+        if (movement) {
+
+            //step sound clips are around 300-400 ms, so need to stay above that
+            // in order for them to sound regular. 
+            timeout = 1250 - (500 * speed);
+            if (start - this.laststep > timeout) {
+
+                //selected random from one of the footstep sounds
+                var step = Math.floor(Math.random() * this.footsteps.length);
+                this.soundManager.playSound(this.footsteps[step], 0);
+                this.laststep = start;
+            }
+        } else {
+            //so steps start right away on movement
+            this.laststep = 0;
+        }
+
+    }
+
+    this.soundLoad = function (distance, movement, speed) {
+
+        var loadHelper = function (player, soundmanager, variable) {
+            var tempBuff;
+
+            if ((tempBuff = soundmanager.returnBuffer(variable))) {
+                console.log("Sound Ready: " + variable + " CountAssets: " + player.countAssets);
+                variable = tempBuff;
+                player.countAssets--;
+            }
+
+            return variable;
+        }
+
+        // for more player sounds, expand here. 
+        this.heartbeat = loadHelper(this, this.soundManager, this.heartbeat);
+        this.footsteps[0] = loadHelper(this, this.soundManager, this.footsteps[0]);
+        this.footsteps[1] = loadHelper(this, this.soundManager, this.footsteps[1]);
+        this.footsteps[2] = loadHelper(this, this.soundManager, this.footsteps[2]);
+
+        if (this.countAssets == 0) {
+            console.log("All Loaded, switching to playing sounds");
+            this.playSounds = this.soundLoaded;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //playSounds is a meta function, first it points out soundLoad, then after
+    //  soundLoad has done its thing, it switches to soundLoaded, which has the
+    //  code to play the sounds.   
+    this.playSounds = this.soundLoad;
 
     this.update = function (input, scene) {
 
 
-		//current position.
-		var X  = this.mesh.position.x; 
-		var Z  = this.mesh.position.z;
-		
-		this.sound = this.updateMovement(input, scene);
-	    
-	    if ( this.game.warden.mesh ) {
-			var warPos = this.game.warden.mesh.position;
-			
-			var dX = warPos.x - X; 
-			var dZ = warPos.z - Z; 
-			
-			var d = Math.sqrt(dX*dX+dZ*dZ); 
-			this.playSounds( d, this.sound, this.currSpd );
-	        
+        //current position.
+        var X = this.mesh.position.x;
+        var Z = this.mesh.position.z;
+
+        this.sound = this.updateMovement(input, scene);
+
+        if (this.game.warden.mesh) {
+            var warPos = this.game.warden.mesh.position;
+
+            var dX = warPos.x - X;
+            var dZ = warPos.z - Z;
+
+            var d = Math.sqrt(dX * dX + dZ * dZ);
+            this.playSounds(d, this.sound, this.currSpd);
+
         } else {
-        	this.playSounds( 1000, this.sound, this.currSpd ); 
-        } 
+            this.playSounds(1000, this.sound, this.currSpd);
+        }
 
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;
@@ -199,33 +200,39 @@ function Player() {
         }
 
         if (input.trigger.crouch) {
-            input.trigger.crouch = 0;
-            this.crouch = 1 - this.crouch;
-            if (input.hold === 1) {
-                if (this.crouch) {
-                   //rather than switching between two meshes, 
-                    //  why not scale the existing?
-                    var oldx = this.mesh.position.x;
-                    var oldy = this.mesh.position.y;
-                    var oldz = this.mesh.position.z;
-                    scene.remove(this.mesh);
-                    this.mesh = creepMesh;
-                    scene.add(this.mesh);
-                    this.mesh.position.set(oldx, oldy - 7.5, oldz);
-                    //this.mesh.scale.set(1, 0.25, 1);
-                    
-                }
-                else {
-                    var oldx = this.mesh.position.x;
-                    var oldy = this.mesh.position.y;
-                    var oldz = this.mesh.position.z;
-                    scene.remove(this.mesh);
-                    this.mesh = standMesh;
-                    scene.add(this.mesh);
-                    this.mesh.position.set(oldx, oldy + 7.5, oldz);
-                    //this.mesh.scale.set(1, 1, 1);
+            if (!this.toggleCrouch) {
+                this.crouch = 1 - this.crouch;
+                this.toggleCrouch = true;
+
+                if (input.hold === 1) {
+                    if (this.crouch) {
+                        //rather than switching between two meshes, 
+                        //  why not scale the existing?
+                        var oldx = this.mesh.position.x;
+                        var oldy = this.mesh.position.y;
+                        var oldz = this.mesh.position.z;
+                        scene.remove(this.mesh);
+                        this.mesh = creepMesh;
+                        scene.add(this.mesh);
+                        this.mesh.position.set(oldx, oldy - 7.5, oldz);
+                        //this.mesh.scale.set(1, 0.25, 1);
+
+                    }
+                    else {
+                        var oldx = this.mesh.position.x;
+                        var oldy = this.mesh.position.y;
+                        var oldz = this.mesh.position.z;
+                        scene.remove(this.mesh);
+                        this.mesh = standMesh;
+                        scene.add(this.mesh);
+                        this.mesh.position.set(oldx, oldy + 7.5, oldz);
+                        //this.mesh.scale.set(1, 1, 1);
+                    }
                 }
             }
+        }
+        else {
+            this.toggleCrouch = false;
         }
 
         //correct for mouse cursor not being locked.  
@@ -260,7 +267,6 @@ function Player() {
             if (input.trigger.Jump === 1 && this.crouch === 0) {
                 input.Jump = 1;
                 input.v = jumpVel;
-                input.trigger.Jump = 0;
                 input.hold = 0;
                 input.v -= 0.4;
                 this.mesh.position.y += input.v;
@@ -294,7 +300,7 @@ function Player() {
         look.add(this.camera.position, input.f);
         this.camera.lookAt(look);
 
-        return (AD != 0 ) || ( WS != 0);
+        return (AD != 0) || (WS != 0);
 
     }
 

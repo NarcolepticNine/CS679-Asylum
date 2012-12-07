@@ -62,23 +62,51 @@ function Game(renderer, canvas) {
     this.hints = document.createElement("canvas");
     this.hints.id = "hints";
     this.hints.width = canvas.width;
-    this.hints.height = 100;
+    this.hints.height = canvas.height;
     this.hints.style.position = "absolute";
     this.hints.style.bottom = 0;
-    this.hints.backgroundColor = "#000000";
+    this.hints.style.right = 0;
     document.getElementById("container").appendChild(this.hints);
 
     this.hintIndex = 0;
     this.textHints = ['Click to enable pointer lock',
                       'Use the WASD keys to move',
     				  'Use the mouse cursor to look around',
-    				  'Press F to turn your flashlight on and off',
-    				  'Press spacebar to jump',
-    				  'Click to open doors and pick up items',
-    				  'Pick up the key from the warden\'s office and find the locked door to escape',
+                      'Press C to crouch and stand up@Crouch lower your speed, but can hide you better',
+    				  'Press F to turn your flashlight on and off@Light can attract warden\'s attention',                      
+                      'Press spacebar to jump@You can\'t jump when you crouch',
+                      'Press shift and WSAD to run when you stand up@Run can attract warden\'s attention',
+                      'Yellow bar on the bottom right shows your destination@The longer it is, the closer you are to your destination@Now move to the closest door and click to open it',
+                      'Great Job!',
+                      'Great Job!',
+                      'Great Job!',
+                      'Great Job!',
+                      'Great Job!',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
+                      'Be careful! The warden is very dangerous',
+                      'Be careful! The warden is very dangerous',
+                      'Be careful! The warden is very dangerous',
+                      'Be careful! The warden is very dangerous',
+                      'Be careful! The warden is very dangerous',
     				  'Your heart beat indicates how close you are to being caught',
-    				  'If your heart is beating fast, the warden is close. Stop moving and turn off your flashlight to hide',
-    				  'Walk around carefully, good luck!'];
+                      'Your heart beat indicates how close you are to being caught',
+                      'Your heart beat indicates how close you are to being caught',
+                      'Your heart beat indicates how close you are to being caught',
+                      'Your heart beat indicates how close you are to being caught',
+    				  'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
+                      'Good luck!',
+                      'Good luck!',
+                      'Good luck!',
+                      'Good luck!',
+                      'Good luck!'];
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -114,15 +142,16 @@ function Game(renderer, canvas) {
         this.key = 0;
         this.end = 0;
         //goal list
-        this.nextGoal = new Array(2);
+        this.nextGoal = new Array(3);
         this.nextGoal[0] = [];
         this.nextGoal[1] = [];
+        this.nextGoal[2] = [];
         this.gindex = 0;
         this.numCheck = 0;
         this.modelNum = { number: 0 };
         this.again = false;
         this.box = null;
-        this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0};
+        this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0, jump: 0, crouch1: 0, crouch2: 0, run: 0};
         // Setup scene
 
 
@@ -237,7 +266,7 @@ function ending(game, message) {
 }
 
 function hints(game, message) {
-    var hint = game.endingInfo.getContext("2d");
+    var hint = game.hints.getContext("2d");
     // Clear
     hint.save();
     hint.setTransform(1, 0, 0, 1, 0, 0);
@@ -248,8 +277,10 @@ function hints(game, message) {
     hint.textBaseline = 'bottom';
     hint.textAlign = 'center';
     hint.fillStyle = '#ffffff';
-    hint.backgroundColor = '#000';
-    hint.fillText(message, game.hints.width / 2, game.hints.height - 40);
+    var allmessage = message.split('@');
+    for (var i = 0; i < allmessage.length; i++) {
+        hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 8 + 1 / 16 * i));
+    }
 }
 
 function hintTimerFunc(game) {
@@ -263,7 +294,12 @@ function hintTimerFunc(game) {
     if ((game.learning.click === 1 && game.hintIndex === 0) ||
         (game.learning.W === 1 && game.learning.S === 1 && game.learning.A === 1 && game.learning.D === 1 && game.hintIndex === 1) ||
         (game.learning.X1 === 1 && game.learning.X2 === 1 && game.learning.Y1 === 1 && game.learning.Y2 === 1 && game.hintIndex === 2) ||
-        (game.learning.light1 === 1 && game.learning.light2 === 1 && game.hintIndex === 3)
+        (game.learning.crouch1 === 1 && game.learning.crouch2 === 1 && game.hintIndex === 3) ||
+        (game.learning.light1 === 1 && game.learning.light2 === 1 && game.hintIndex === 4) ||
+        (game.learning.jump === 1 && game.hintIndex === 5) ||
+        (game.learning.run === 1 && game.hintIndex === 6) ||
+        (game.gindex === 1 && game.hintIndex === 7) ||
+        (game.hintIndex >= 8)
         ) {
         game.hintIndex++;
     }
@@ -520,9 +556,8 @@ function updateScene(game) {
 
 var DOOR_TIMEOUT = 750; // milliseconds between door toggles
 function updateOperation(game, input) {
-
-    if (input.click === 1) {
-        if (game.hintIndex === 0) {
+    if (game.hintIndex === 0) {
+        if (input.click === 1) {
             game.learning.click = 1;
         }
     }
@@ -556,6 +591,14 @@ function updateOperation(game, input) {
         }
     }
     if (game.hintIndex === 3) {
+        if (input.trigger.crouch === 1 && game.player.crouch === 0) {
+            game.learning.crouch1 = 1;
+        }
+        if (input.trigger.crouch === 1 && game.player.crouch === 1) {
+            game.learning.crouch2 = 1;
+        }
+    }
+    if (game.hintIndex === 4) {
         if (input.trigger.light === 1 && game.player.lightOn === true) {
             game.learning.light1 = 1;
         }
@@ -563,8 +606,20 @@ function updateOperation(game, input) {
             game.learning.light2 = 1;
         }
     }
+    if (game.hintIndex === 5) {
+        if (input.trigger.Jump === 1 && game.player.crouch === 0) {
+            game.learning.jump = 1;
+        }
+    }
+
+    if (game.hintIndex === 6) {
+        if (input.trigger.run === 1 && (input.trigger.W === 1 || input.trigger.S === 1 || input.trigger.A === 1 || input.trigger.D === 1)) {
+            game.learning.run = 1;
+        }
+    }
 
 
+    
 
     if (input.click === 1) {
         input.click = 0;
@@ -584,6 +639,9 @@ function updateOperation(game, input) {
                 if (collision.length > 0) {
                     switch (collision[0].object.name) {
                         case 'door':
+                            if (game.gindex === 0) {
+                                game.gindex++;
+                            }
                             var door = collision[0].object, tween;
                             var ob = door.model;
                             if (door.doorState === "closed" && door.canToggle) {
@@ -650,9 +708,6 @@ function updateOperation(game, input) {
                                     break;
                                 }
                             }
-                            game.old.x = -1;
-                            game.old.y = -1;
-                            game.old.z = -1;
                             game.key = 1;
                             game.gindex++;
                             break;
