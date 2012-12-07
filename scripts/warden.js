@@ -8,7 +8,7 @@ function Warden() {
     this.flashlight1 = null;
 
     //Mechanic Variables 
-    this.speed = 0.4;
+    this.speed = 0.6;
     this.currSpd = this.speed;
     this.awareThres = 1;
     this.angerThres = 60;
