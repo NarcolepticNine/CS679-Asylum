@@ -65,13 +65,13 @@
     (function mainLoop() {
     	
     	setTimeout( function () {
-	        stats.begin();
+	        if( this.debug ) stats.begin();
 	        if (game.update(inputData) === false) {
 	            return;
 	        }
 	        game.render(inputData);
 	        updateDebug( info, game ); 
-	        stats.end();
+	        if( this.debug ) stats.end();
 	        requestFrame(mainLoop);
      	}, 1000/35 );
      	
