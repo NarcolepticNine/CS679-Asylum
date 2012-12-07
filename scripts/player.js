@@ -24,7 +24,7 @@ function Player() {
 
 
     //mechanic variables
-    var speed = 0.5;
+    var speed = 0.7;
     var jumpVel = 4;
     this.currSpd = speed;
     this.sound = 0;
