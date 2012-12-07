@@ -70,8 +70,10 @@
 	            return;
 	        }
 	        game.render(inputData);
-	        updateDebug( info, game ); 
-	        if( this.debug ) stats.end();
+	        if( this.debug ) {
+	        	updateDebug( info, game ); 
+	        	stats.end() 
+	        };
 	        requestFrame(mainLoop);
      	}, 1000/35 );
      	
