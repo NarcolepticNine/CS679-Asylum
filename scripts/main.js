@@ -14,7 +14,7 @@
         }),
         inputData = {},
         game = null,
-        debug = true; 
+        debug = false; 
     	
     requestFrame = window.requestAnimationFrame
                 || window.webkitRequestAnimationFrame
