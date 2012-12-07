@@ -9,14 +9,35 @@ function Warden() {
 	this.flashlight = null; 
 	
 	//Mechanic Variables 
-	this.speed   = 0.6; 
-	this.currSpd = this.speed;
+	this.speed      = 0.6; 
+	this.currSpd    = this.speed;
+	this.awareThres = 30; 
+	this.angerThres = 60; 
 	
 	//general Sound variables - Warden Sounds require nodes for positions. 
 	//  Needs research
-	//this.soundManager; 
-	//this.countAssets = 0; 
+	this.soundManager; 
+	this.countAssets = 8; 
+	this.lastVoice   = 0;
+	this.timeout = 0; 
+	this.lastSource  = null; //used to cut off a scream if changing to loseScream.mp3 
 	
+	//screams played on random interval greater than 5 seconds while warden is
+	// agrivated
+	this.screams     = new Array();
+	this.screams[0]  = "./sounds/scream1.mp3";
+	this.screams[1]  = "./sounds/scream2.mp3";
+	this.screams[2]  = "./sounds/scream3.mp3";
+	this.screams[3]  = "./sounds/scream4.mp3";
+	
+	//growls played randomly while walking
+	this.growls      = new Array();
+	this.growls[0]    = "./sounds/growl1.mp3";
+	this.growls[1]    = "./sounds/moan1.mp3";
+	this.growls[2]    = "./sounds/moan2.mp3"; 
+	 
+	//played upon catching the player.   
+	this.finalscream = "./sounds/loseScream.mp3";
 	
 	//patrol Variables
 	this.vX 	 = 0;
@@ -44,10 +65,10 @@ function Warden() {
 	
 	this.init = function( scene, startPos, patrolArr, game ){
 		
-		this.game 		= game; 
-		this.startPos 	= startPos; 
-		//TODO Improved Warden Mesh
-		
+		this.game 		  = game; 
+		this.soundManager = game.soundManager; 
+		this.startPos 	  = startPos; 
+				
 		var warden = this; 
 		
 		var callback = function ( geometry, scalex, scaley, scalez, tmap ) {
@@ -61,8 +82,17 @@ function Warden() {
         var loader = new THREE.JSONLoader(); 
        	loader.load( this.meshURL, function( geometry ){ callback( geometry, 10,10,10, this.textureURL ); } )
         
-
-		//Warden Flashlight
+        //load warden sounds:
+        
+        for( var i = 0; i < this.growls.length; i ++ )
+			this.soundManager.loadSound( this.growls[i]);
+			
+		for( var i = 0; i < this.screams.length; i ++ )
+			this.soundManager.loadSound( this.screams[i]); 
+		
+		this.soundManager.loadSound( this.finalscream );
+		 
+       //Warden Flashlight
 		this.flashlight = new THREE.SpotLight(0xfffed9, 5, 50);
         this.flashlight.castShadow = true;
         this.flashlight.shadowCameraNear = 0;
@@ -107,11 +137,12 @@ function Warden() {
 		this.checkPlayer( d, playerSound, lightOn ); 	
 		
 		if( d < 10 && ( Y >= posVec.y - 10 && Y <= posVec.y + 10 ) ){
+			this.playFinalScream(); 
 			this.caught = true;
 			this.game.end = 1; 
 		}  
 		
-		if( this.awareness < 30 ) {
+		if( this.awareness < this.awareThres ) {
 			
 			if( this.pt == null ){
 				this.pt = this.patrols[ this.nextPt ];
@@ -141,7 +172,7 @@ function Warden() {
 		 } else {
 		 	
 		 	//if awareness too high, warden sprints
-		 	this.currSpd = ( this.awareness >= 60 ) ? this.speed * 2 : this.speed; 		 	
+		 	this.currSpd = ( this.awareness >= this.angerThres ) ? this.speed * 2 : this.speed; 		 	
 		 	
 		 	this.mesh.position.x += ( this.vX = ( this.currSpd * ( dX / d )) );
 			this.mesh.position.z += ( this.vZ = ( this.currSpd * ( dZ / d )) );	
@@ -157,6 +188,8 @@ function Warden() {
 		 		meshPos.z + this.vZ 
 		 	);
 		 
+		 this.playSounds(); 
+		 
 	}
 	
 	this.updateLoad = function ( posVec, playerSound, lightOn ){
@@ -171,6 +204,83 @@ function Warden() {
 		}
 	}
 
+	this.playFinalScream = function(){
+		
+		if( typeof this.finalscream != "string" ){
+			
+			console.log( "Final Scream "); 
+			//mute last scream if any
+			this.lastSource.disconnect(0); 
+			this.soundManager.playSound( this.finalscream, 0 ); 
+			
+		}
+		
+	}
+
+	this.soundLoaded = function(  ){
+		var start = new Date().getTime();
+		
+		if( this.awareness < this.awareThres ){
+			//growl
+			if( start - this.lastVoice > this.timeout ){
+				var growl = Math.floor( Math.random() * this.growls.length ); 
+				this.lastSource = this.soundManager.playSound( this.growls[ growl ], 0 ); 
+				this.lastVoice  = start; 
+				this.timeout    = 10000 + ( 20000 * Math.random() );
+			}
+		
+		} else {
+			//scream
+			if( this.timeout > 20000 ) this.timeout = 5000 + ( 10000 * Math.random() );
+			
+			if( start - this.lastVoice > this.timeout ){
+				var scream = Math.floor( Math.random() * this.screams.length ); 
+				this.lastSource = this.soundManager.playSound( this.screams[scream], 0 ); 
+				this.lastVoice  = start; 
+				this.timeout    = 5000 + ( 3000 * Math.random() );
+			}
+			
+		}
+	}
+
+	this.soundLoad  = function(  ) {
+		
+		var loadHelper = function( player, soundmanager, variable ){
+			var tempBuff; 
+			
+			if( ( tempBuff = soundmanager.returnBuffer( variable ) ) ){
+				console.log( "Warden Sound Ready: " + variable + " CountAssets: " + player.countAssets );
+				variable = tempBuff; 
+				player.countAssets--; 
+			}
+			
+			return variable;	
+		}
+		
+		//TODO add footsteps
+		//foreach growl, scream
+		for( var i = 0; i < this.growls.length; i ++ )
+			this.growls[i] = loadHelper( this, this.soundManager, this.growls[i] ); 
+		
+		for( var i = 0; i < this.screams.length; i ++ )
+			this.screams[i] = loadHelper( this, this.soundManager, this.screams[i] ); 
+		
+		this.finalscream = loadHelper( this, this.soundManager, this.finalscream ); 
+						
+		if( this.countAssets == 0 ) {
+			console.log( "All Loaded, switching to playing sounds" );
+			this.playSounds = this.soundLoaded; 
+			return true; 	
+		}else {
+			return false; 
+		}	
+	}
+	
+	//playSounds is a meta function, first it points out soundLoad, then after
+	//  soundLoad has done its thing, it switches to soundLoaded, which has the
+	//  code to play the sounds.   
+	this.playSounds = this.soundLoad; 
+	
 	
 	
 }

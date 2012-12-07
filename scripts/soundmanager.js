@@ -1,21 +1,28 @@
 function SoundManager(){
 	
 	var context; //there can only be one audio context
-	this.buffers = new Array(); 
+	this.buffers     = new Array(); 
+	this.masterGain  = null;  
+	this.volumeLevel = 1.0; 
+	
 	
 	this.init = function() {
 		
 		if (typeof AudioContext == "function") {
 			console.log( "Straight Up Audio " ); 
 		    context = new AudioContext();
-		    window.soundBuffers = this.buffers; 
 		} else if (typeof webkitAudioContext == "function") {
 		    console.log( "WebKit Audio ");
 		    context = new webkitAudioContext();
-		    window.soundBuffers = this.buffers; 
+		    
 		} else {
 		    throw new Error('AudioContext not ');
 		}
+		
+		window.soundBuffers = this.buffers; 
+		this.masterGain = context.createGainNode();
+		this.masterGain.connect( context.destination ); 
+		this.masterGain.gain.value = this.volumeLevel;
 		
 	}
 	
@@ -48,9 +55,9 @@ function SoundManager(){
 		
 		var source = context.createBufferSource();
     	source.buffer = buffer;
-    	source.connect(context.destination);
+    	source.connect( this.masterGain );
     	source.noteOn(time);		
-	
+		return source; 
 	}
 	
 	this.returnBuffer = function ( url ) {
