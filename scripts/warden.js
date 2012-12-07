@@ -3,6 +3,7 @@ function Warden() {
 	//Warden Definition
 	this.game       = null; 
 	this.startPos   = null; 
+	this.level      = null; 
 	this.mesh       = null;
 	this.meshURL    = "./obj/demon/demon.js";
 	this.textureURL = "./obj/demon/colorMap.png"; 
@@ -11,7 +12,7 @@ function Warden() {
 	//Mechanic Variables 
 	this.speed   = 0.6; 
 	this.currSpd = this.speed;
-	
+		
 	//general Sound variables - Warden Sounds require nodes for positions. 
 	//  Needs research
 	//this.soundManager; 
@@ -25,6 +26,11 @@ function Warden() {
 	this.nextPt  = 0; 
 	this.pt      = null; 
 	this.patrols = new Array(); 
+	
+	this.oldPath    = null; 
+	this.lastCenter = new THREE.Vector3( 0, 0, 0 ); 
+	this.neighbors  = new Array(); //array of arrays of grid cells
+	
 		
 	/*Awareness determines how hard it is to hide from the Warden.  
 	 * If the player is heard, or spotted within a certain amount of time,
@@ -39,15 +45,14 @@ function Warden() {
 	//pass in level.startPos
 	this.setStartPos = function ( vec3  ){
 		this.mesh.position.set( vec3.x, vec3.y, vec3.z ); 	
-		
 	}
 	
 	this.init = function( scene, startPos, patrolArr, game ){
 		
-		this.game 		= game; 
+		this.game 		= game;
+		this.level      = game.level;  
 		this.startPos 	= startPos; 
-		//TODO Improved Warden Mesh
-		
+			
 		var warden = this; 
 		
 		var callback = function ( geometry, scalex, scaley, scalez, tmap ) {
@@ -80,7 +85,7 @@ function Warden() {
 			console.log( this.patrols[i].x + " " + this.patrols[i].z );
 		}
 	
-		//basic update function that idles until mesh is loaded ( eventually ); 
+		//basic update function that idles until mesh is loaded ( eventually ) 
 		this.update  = this.updateLoad; 
 	
 	}
@@ -91,6 +96,34 @@ function Warden() {
 		this.awareness = ( playerSound > d ) ? this.awareness += 5 : this.awareness -= 5 ; 
 		this.awareness = ( this.awareness < 0 ) ? 0 : ( ( this.awareness > 100 ) ? 100 : this.awareness ); 		
 	} 
+	
+	
+	//get an array of the cells around the player and return it.  
+	this.updateNeighbors = function ( x, y, z ){
+		var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+    	var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+    	var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+		
+		if( ry != this.lastCenter.y || rx != this.lastCenter.x || rz != this.lastCenter.z ){
+			//get all cells on current level 
+			for( var i = 0; i < 3; i ++ ){
+				
+				for( var j = 0; j < 3; j++ )					
+					this.neighbor[i][j] = this.level.grid[ ry ][ rz + ( j - 1 ) ][ rx + ( i - 1 ) ];
+				
+			}
+			
+		} 		
+		
+	} 
+	
+	this.pathFind = function ( collisionSet, oldPath, targetPoint ){
+		
+		
+		return targetPoint; 
+		
+	}
+	
 	
 	this.updateLoaded = function( posVec, playerSound, lightOn ){
 		

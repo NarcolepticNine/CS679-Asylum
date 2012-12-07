@@ -21,7 +21,7 @@
                 || window.mozRequestAnimationFrame
                 || window.oRequestAnimationFrame
                 || window.msRequestAnimationFrame
-                || function (callback) { window.setTimeout(callback, 1000 / 60); };
+                || function (callback) { window.setTimeout(callback, 1000 / 30); };
 
     // Style html a bit
     document.getElementsByTagName("body")[0].style.margin = "0";
@@ -73,7 +73,7 @@
 	        updateDebug( info, game ); 
 	        stats.end();
 	        requestFrame(mainLoop);
-     	}, 1000/35 );
+     	}, 1000/30 );
      	
     })();
 
