@@ -65,7 +65,7 @@ function Level(game) {
     this.startPos = new THREE.Vector3();
     this.wardenPos = new THREE.Vector3();
 
-    this.patrolPos = new Array();
+    this.patrolPos = new Array(3);
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -165,8 +165,8 @@ function Level(game) {
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.nothing));
                                 break;
                             case CELL_TYPES.patrol:
-                                this.patrolPos.push(new THREE.Vector3(x * CELL_SIZE, y, z * CELL_SIZE));
-                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
+                                this.patrolPos[rows[y][t + 1][z].charAt(x) - '0'] = new THREE.Vector3(x * CELL_SIZE, y, z * CELL_SIZE);
+                                t++;
                                 break;
                             case CELL_TYPES.stop:
                                 stop = 1;

@@ -27,6 +27,8 @@ function Game(renderer, canvas) {
     this.modelNum = null;
     this.again = false;
     this.box = 0;
+    this.urgent = 0;
+    this.learning = null;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -69,44 +71,51 @@ function Game(renderer, canvas) {
     document.getElementById("container").appendChild(this.hints);
 
     this.hintIndex = 0;
-    this.textHints = ['Click to enable pointer lock',
-                      'Use the WASD keys to move',
-    				  'Use the mouse cursor to look around',
-                      'Press C to crouch and stand up@Crouch lower your speed, but can hide you better',
-    				  'Press F to turn your flashlight on and off@Light can attract warden\'s attention',                      
-                      'Press spacebar to jump@You can\'t jump when you crouch',
-                      'Press shift and WSAD to run when you stand up@Run can attract warden\'s attention',
-                      'Yellow bar on the bottom right shows your destination@The longer it is, the closer you are to your destination@Now move to the closest door and click to open it',
-                      'Great Job!',
-                      'Great Job!',
-                      'Great Job!',
-                      'Great Job!',
-                      'Great Job!',
-                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
-                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
-                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
-                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
-                      'Your goal is to click and pick up the key in the room and find the locked door to escape',
-                      'Be careful! The warden is very dangerous',
-                      'Be careful! The warden is very dangerous',
-                      'Be careful! The warden is very dangerous',
-                      'Be careful! The warden is very dangerous',
-                      'Be careful! The warden is very dangerous',
-    				  'Your heart beat indicates how close you are to being caught',
-                      'Your heart beat indicates how close you are to being caught',
-                      'Your heart beat indicates how close you are to being caught',
-                      'Your heart beat indicates how close you are to being caught',
-                      'Your heart beat indicates how close you are to being caught',
-    				  'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
-                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
-                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
-                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
-                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide',
-                      'Good luck!',
-                      'Good luck!',
-                      'Good luck!',
-                      'Good luck!',
+    this.textHints = ['Click to enable pointer lock@(Press E to skip tutorial)',
+                      'Use the WASD keys to move@(Press E to skip tutorial)',
+    				  'Use the mouse cursor to look around@(Press E to skip tutorial)',
+                      'Press C to crouch and stand up@Crouch lower your speed, but can hide you better@(Press E to skip tutorial)',
+    				  'Press F to turn your flashlight on and off@Light can attract warden\'s attention@(Press E to skip tutorial)',
+                      'Press spacebar to jump@You can\'t jump when you crouch@(Press E to skip tutorial)',
+                      'Press shift and WSAD to run@Run can attract warden\'s attention@(Press E to skip tutorial)',
+                      'Yellow bar on the bottom right shows your destination@The longer it is, the closer you are to your destination@Now move to the closest door and click to open it@(Press E to skip tutorial)',
+                      'Great Job!@(Press E to skip tutorial)',
+                      'Great Job!@(Press E to skip tutorial)',
+                      'Great Job!@(Press E to skip tutorial)',
+                      'Great Job!@(Press E to skip tutorial)',
+                      'Great Job!@(Press E to skip tutorial)',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Be careful! The warden is very dangerous@(Press E to skip tutorial)',
+                      'Be careful! The warden is very dangerous@(Press E to skip tutorial)',
+                      'Be careful! The warden is very dangerous@(Press E to skip tutorial)',
+                      'Be careful! The warden is very dangerous@(Press E to skip tutorial)',
+                      'Be careful! The warden is very dangerous@(Press E to skip tutorial)',
+    				  'Your heart beat indicates how close you are to being caught@(Press E to skip tutorial)',
+                      'Your heart beat indicates how close you are to being caught@(Press E to skip tutorial)',
+                      'Your heart beat indicates how close you are to being caught@(Press E to skip tutorial)',
+                      'Your heart beat indicates how close you are to being caught@(Press E to skip tutorial)',
+                      'Your heart beat indicates how close you are to being caught@(Press E to skip tutorial)',
+    				  'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide@(Press E to skip tutorial)',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide@(Press E to skip tutorial)',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide@(Press E to skip tutorial)',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide@(Press E to skip tutorial)',
+                      'If your heart is beating fast, the warden is close@Stop moving, crouch or turn off your flashlight to hide@(Press E to skip tutorial)',
+                      'Good luck!@(Press E to skip tutorial)',
+                      'Good luck!@(Press E to skip tutorial)',
+                      'Good luck!@(Press E to skip tutorial)',
+                      'Good luck!@(Press E to skip tutorial)',
                       'Good luck!'];
+
+    this.playHints = ['',
+                      'Turn off the flashlight(Press F) or Crouch(Press C)@Stop Running',
+                      'Turn off the flashligth(Press F) and Crouch(Press C)@Stop Running',
+                      'Stand up and Run',
+                      ''];
+                      
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -121,7 +130,6 @@ function Game(renderer, canvas) {
     // ------------------------------------------------------------------------
 
     this.init = function (input) {
-        console.log("Game initializing...");
         this.initialized = true;
         this.scene = new THREE.Scene();
         this.camera = null;
@@ -151,6 +159,7 @@ function Game(renderer, canvas) {
         this.modelNum = { number: 0 };
         this.again = false;
         this.box = null;
+        this.urgent = 0;
         this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0, jump: 0, crouch1: 0, crouch2: 0, run: 0};
         // Setup scene
 
@@ -212,11 +221,11 @@ function Game(renderer, canvas) {
         this.level.update();
 
         this.player.update(input, this.scene);
-        this.warden.update(this.player.getPosVec(),
-        					this.player.sound,
-        					this.player.lightOn);
+
+        this.warden.update(this, input);
 
         updateOperation(this, input);
+        updateDistance(this);
         updatePlayerInformation(this, input);
         if (this.end === 1) {
             if (this.warden.caught)
@@ -288,8 +297,7 @@ function hintTimerFunc(game) {
         hints(game, game.textHints[game.hintIndex]);
     }
     else {
-        hints(game, "");
-        clearInterval(game.hintTimer);
+        hints(game, game.playHints[game.urgent]);
     }
     if ((game.learning.click === 1 && game.hintIndex === 0) ||
         (game.learning.W === 1 && game.learning.S === 1 && game.learning.A === 1 && game.learning.D === 1 && game.hintIndex === 1) ||
@@ -433,18 +441,10 @@ function updateScene(game) {
         game.again = false;
     }
 
-    var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
-    var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-    var ty;
-    if (game.player.crouch) {
-        ty = game.player.mesh.position.y - 2.5;
-    }
-    else {
-        ty = game.player.mesh.position.y - 10;
-    }
-    var ry = Math.floor(ty / CELL_SIZE + 1 / 2);
-
     if (need === true) {
+        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
         for (var z = 0; z < NUM_CELLS.z; z++) {
             for (var x = 0; x < NUM_CELLS.x; x++) {
                 var append = false;
@@ -481,21 +481,48 @@ function updateScene(game) {
                         }
                     }
                 }
-
             }
         }
+        game.old.x = rx;
+        game.old.y = ry;
+        game.old.z = rz;
     }
     else {
+        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        var stairRegion = false;
+        for (var o = 0; o < game.objects[ry][rz][rx].length; o++) {
+            if (game.objects[ry][rz][rx][o].name === 'stair' || game.objects[ry][rz][rx][o].name === 'side' || game.objects[ry][rz][rx][o].name === 'support' || game.objects[ry][rz][rx][o].name === 'ceil2' || game.objects[ry][rz][rx][o].name === 'stairfloor') {
+                stairRegion = true;
+                break;
+            }
+        }
+        if (stairRegion === false) {
+            return;
+        }
+
+        var ty;
+        if (game.player.crouch) {
+            ty = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ty = game.player.mesh.position.y - 10;
+        }
+
         if (ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) > 0.11 && ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) < 0.89) {
             game.scene.remove(game.box);
         }
         else {
             game.scene.add(game.box);
         }
-        if (ry != game.old.y) {
+
+        ty = Math.floor(ty / CELL_SIZE + 1 / 2);
+
+        if (ty != game.old.y) {
             for (var z = 0; z < NUM_CELLS.z; z++) {
                 for (var x = 0; x < NUM_CELLS.x; x++) {
-                    for (var y = ry - 2; y <= ry + 2; y++) {
+                    for (var y = ty - 2; y <= ty + 2; y++) {
                         if (y < 0 || y >= NUM_CELLS.y) {
                             continue;
                         }
@@ -512,14 +539,14 @@ function updateScene(game) {
             for (var z = 0; z < NUM_CELLS.z; z++) {
                 for (var x = 0; x < NUM_CELLS.x; x++) {
                     var append = false;
-                    for (var o = 0; o < game.objects[ry][z][x].length; o++) {
-                        if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2' || game.objects[ry][z][x][o].name === 'stairfloor') {
+                    for (var o = 0; o < game.objects[ty][z][x].length; o++) {
+                        if (game.objects[ty][z][x][o].name === 'stair' || game.objects[ty][z][x][o].name === 'side' || game.objects[ty][z][x][o].name === 'support' || game.objects[ty][z][x][o].name === 'ceil2' || game.objects[ty][z][x][o].name === 'stairfloor') {
                             append = true;
                         }
-                        game.scene.add(game.objects[ry][z][x][o]);
+                        game.scene.add(game.objects[ty][z][x][o]);
                     }
-                    for (var o = 0; o < game.models[ry][z][x].length; o++) {
-                        game.scene.add(game.models[ry][z][x][o]);
+                    for (var o = 0; o < game.models[ty][z][x].length; o++) {
+                        game.scene.add(game.models[ty][z][x][o]);
                     }
                     if (append === true) {
                         for (var dx = x - 1; dx <= x + 1; dx++) {
@@ -530,7 +557,7 @@ function updateScene(game) {
                                 if (dz < 0 || dz >= NUM_CELLS.z) {
                                     continue;
                                 }
-                                for (var y = ry - 1; y <= ry + 1; y += 2) {
+                                for (var y = ty - 1; y <= ty + 1; y += 2) {
                                     if (y < 0 || y >= NUM_CELLS.y) {
                                         continue;
                                     }
@@ -548,14 +575,19 @@ function updateScene(game) {
                 }
             }
         }
+        game.old.x = rx;
+        game.old.y = ty;
+        game.old.z = rz;
     }
-    game.old.x = rx;
-    game.old.y = ry;
-    game.old.z = rz;
 }
 
 var DOOR_TIMEOUT = 750; // milliseconds between door toggles
 function updateOperation(game, input) {
+    if (input.Escape === 1) {
+        if (game.hintIndex < game.textHints.length - 1) {
+            game.hintIndex = game.textHints.length - 1;
+        }
+    }
     if (game.hintIndex === 0) {
         if (input.click === 1) {
             game.learning.click = 1;
@@ -718,6 +750,50 @@ function updateOperation(game, input) {
                             break;
                     }
                 }
+            }
+        }
+    }
+}
+
+function updateDistance(game) {
+    if (game.player.mesh !== null && game.warden.mesh !== null && (game.warden.vX != 0 || game.warden.vZ != 0)) {        
+        var z1 = game.player.mesh.position.z - game.warden.mesh.position.z;
+        var x1 = game.player.mesh.position.x - game.warden.mesh.position.x;
+        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        var my = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
+        if (ry != my) {
+            game.urgent = 0;
+        }
+        else {
+            var dotProduct = z1 * game.warden.vZ + x1 * game.warden.vX;
+            var length1 = Math.sqrt(x1 * x1 + z1 * z1);
+            var length2 = Math.sqrt(game.warden.vZ * game.warden.vZ + game.warden.vX * game.warden.vX);
+            var angle;
+            if (dotProduct >= length1 * length2) {
+                angle = 0;
+            }
+            else {
+                angle = Math.acos(dotProduct / (length1 * length2));
+            }
+            if (angle < Math.PI / 6) {
+                if (length1 < 8 * CELL_SIZE) {
+                    game.urgent = 1;
+                    if (length1 < 5 * CELL_SIZE) {
+                        game.urgent = 2;
+                        if (length1 < 2 * CELL_SIZE) {
+                            game.urgent = 3;
+                            if (length1 < 10) {
+                                game.urgent = 4;
+                            }
+                        }
+                    }
+                }
+                else {
+                    game.urgent = 0;
+                }
+            }
+            else {
+                game.urgent = 0;
             }
         }
     }

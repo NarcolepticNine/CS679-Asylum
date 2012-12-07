@@ -13,28 +13,28 @@ Map[0].push(
 ".........o.o.oofffff.\n" +
 "........oFFfffffffff.\n" +
 ".ooooooooFFfffffffff.\n" +
-"fffffffffffffffpffff.\n" +
-"ffffffffffpfffffffff.\n" +
 "ffffffffffffffffffff.\n" +
-".fffpf\n" +
+"ffffffffffffffffffff.\n" +
+"ffffffffffffffffffff.\n" +
 ".fffff\n" +
 ".fffff\n" +
-".ffpff\n" +
 ".fffff\n" +
-".ffpff\n" +
+".fffff\n" +
+".fffff\n" +
+".fffff\n" +
 ".fffff\n" +
 ".sffff\n" +
 ".fffff");
 
 Map[0].push(
 "...............sssss.\n" +
-"..............4ia.ai.\n" +
-"..............4w.W.w.\n" +
+"..............4iaWai.\n" +
+"..............4w...w.\n" +
 ".........4.4.44w.k.w.\n" +
 "........4wwwwwww...w.\n" +
 ".33333333wtwdwdw..dw.\n" +
 "wiwwiwwww.o.o.owwwow.\n" +
-"D..................w.\n" +
+"D....p...........p.w.\n" +
 "wo...owwwiwiwiwiiwww.\n" +
 ".wwdwi\n" +
 ".w..wi\n" +
@@ -54,7 +54,7 @@ Map[0].push(
 ".........nnnnnnw...e.\n" +
 "........owns2s2w..2e.\n" +
 "nnnnnnnnn.2.2.2nnn2n.\n" +
-"w..................e.\n" +
+"w....1...........0.e.\n" +
 "s3...3ssssssssssssss.\n" +
 ".nn4ne\n" +
 ".w..ee\n" +
@@ -123,7 +123,7 @@ Map[0].push(
 ".o....\n" +
 ".....o\n" +
 "..eoao\n" +
-".o....\n" +
+".o...p\n" +
 ".b..oo");
 
 Map[0].push(
@@ -143,7 +143,7 @@ Map[0].push(
 ".3....\n" +
 ".....3\n" +
 "...2e3\n" +
-".3....\n" +
+".3...2\n" +
 ".n..33");
 
 Map[0].push(
