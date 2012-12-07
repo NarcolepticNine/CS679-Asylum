@@ -150,17 +150,18 @@ function Game(renderer, canvas) {
         this.key = 0;
         this.end = 0;
         //goal list
-        this.nextGoal = new Array(3);
+        this.nextGoal = new Array(4);
         this.nextGoal[0] = [];
         this.nextGoal[1] = [];
         this.nextGoal[2] = [];
+        this.nextGoal[3] = [];
         this.gindex = 0;
         this.numCheck = 0;
         this.modelNum = { number: 0 };
         this.again = false;
         this.box = null;
         this.urgent = 0;
-        this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0, jump: 0, crouch1: 0, crouch2: 0, run: 0};
+        this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0, jump: 0, crouch1: 0, crouch2: 0, run: 0 };
         // Setup scene
 
 
@@ -345,6 +346,9 @@ function updatePlayerInformation(game, input) {
     var dis = Math.sqrt((game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) * (game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) +
                         (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z) * (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z));
 
+    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+    var gy = game.nextGoal[game.gindex][0].y;
+
     var angle = 0;
     if (dis < CELL_SIZE) {
         angle = 2 * Math.PI;
@@ -369,6 +373,55 @@ function updatePlayerInformation(game, input) {
         playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, 0, angle, true);
     }
     playerContext.stroke();
+
+    playerContext.beginPath();
+    playerContext.strokeStyle = "#ffffff";
+    playerContext.lineWidth = 1;
+    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height * 0.41, game.playerInfo.height * 0.025, 0, Math.PI * 2, true);
+    playerContext.stroke();
+
+
+
+
+    playerContext.strokeStyle = "#ffff00";
+    if (gy > ry) {
+        playerContext.beginPath();
+        playerContext.lineWidth = 3;
+        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+        playerContext.lineTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+        playerContext.stroke();
+        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+        playerContext.lineTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+        playerContext.stroke();
+        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+        playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+        playerContext.stroke();
+    }
+    else {
+        if (gy < ry) {
+            playerContext.beginPath();
+            playerContext.lineWidth = 3;
+            playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+            playerContext.lineTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+            playerContext.stroke();
+            playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+            playerContext.lineTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+            playerContext.stroke();
+            playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+            playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+            playerContext.stroke();
+        }
+        else {
+            playerContext.beginPath();
+            playerContext.lineWidth = 3;
+            playerContext.moveTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+            playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+            playerContext.stroke();
+
+
+        }
+    }
+
 }
 
 

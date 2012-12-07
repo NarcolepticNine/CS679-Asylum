@@ -107,7 +107,8 @@ function Level(game) {
                                 this.addStartPosition(x, y, z);
                                 break;
                             case CELL_TYPES.key:
-                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.key));
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.key + rows[y][t + 1][z].charAt(x)));
+                                t++;
                                 break;
                             case CELL_TYPES.floor:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
@@ -251,8 +252,15 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.key) {
                             this.generateObjGeometry(xx, yy + 8, zz, 1, 1, 1, 0, 'obj/key.js', 'obj/key.jpg', 'key');
-                            game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                            game.nextGoal[1].push('Find Key');
+                            console.log(cell.type.charAt(1));
+                            if (cell.type.charAt(1) === '0') {
+                                game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                                game.nextGoal[1].push('Find Key 1');
+                            }
+                            else {
+                                game.nextGoal[2].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                                game.nextGoal[2].push('Find Key 2');
+                            }
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz, 'ceil2');
                         }
@@ -275,8 +283,8 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Fdoor) {
                             this.generateFdoorGeometry(xx, yy, zz, cell.type.charAt(1));
-                            game.nextGoal[2].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                            game.nextGoal[2].push('Escape');
+                            game.nextGoal[3].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                            game.nextGoal[3].push('Escape');
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Door) {
                             this.generateDoorGeometry(xx, yy, zz, cell.type.charAt(1));
