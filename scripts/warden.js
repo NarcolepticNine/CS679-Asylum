@@ -46,7 +46,7 @@ function Warden() {
 	this.nextPt  = 0; 
 	this.pt      = null; 
 	this.patrols = new Array(); 
-		
+			
 	/*Awareness determines how hard it is to hide from the Warden.  
 	 * If the player is heard, or spotted within a certain amount of time,
 	 * awareness goes up.  If the player is able to hide, awareness will drop.
@@ -103,8 +103,6 @@ function Warden() {
 		//Warden Patrol points
 		this.patrols = patrolArr; 
 	
-	
-	
 		console.log( "Patrol Points: ");
 		for( var i = 0; i < this.patrols.length ; i++ ){
 			console.log( this.patrols[i].x + " " + this.patrols[i].z );
@@ -134,8 +132,10 @@ function Warden() {
 		
 		var d = Math.sqrt(dX*dX+dZ*dZ);    		
 		
+		//updates awareness
 		this.checkPlayer( d, playerSound, lightOn ); 	
 		
+		//player loses
 		if( d < 10 && ( Y >= posVec.y - 10 && Y <= posVec.y + 10 ) ){
 			this.playFinalScream(); 
 			this.caught = true;
@@ -149,15 +149,17 @@ function Warden() {
 				this.nextPt = ( ++this.nextPt == this.patrols.length ) ? 0 : this.nextPt;  
 			}
 			
-			//target position
-			var pX = this.pt.x; 
-			var pZ = this.pt.z; 
+			
+			var pathPt = this.pathfind( this.mesh.position, this.pt ); 
+			
+			var pX = pathPt.x; 
+			var pZ = pathPt.z; 
 			
 			dX = pX - X; 
 			dZ = pZ - Z; 
 			d = Math.sqrt(dX*dX+dZ*dZ);
 			
-			if( d < 10 ){
+			if( d < 20 ){
 				//select new current point.  
 				this.pt = this.patrols[ this.nextPt ];
 				this.nextPt = ( this.pDir ) ? this.nextPt + 1 : this.nextPt - 1 ;  
@@ -173,7 +175,17 @@ function Warden() {
 		 } else {
 		 	
 		 	//if awareness too high, warden sprints
-		 	this.currSpd = ( this.awareness >= this.angerThres ) ? this.speed * 0.5 : this.speed * 0.4; 		 	
+		 	this.currSpd = ( this.awareness >= this.angerThres ) ? this.speed * 2: this.speed;
+		 	
+		 	var pathPt = this.pathfind( this.mesh.position, posVec ); 
+			
+			var pX = pathPt.x; 
+			var pZ = pathPt.z; 
+			
+			dX = pX - X; 
+			dZ = pZ - Z; 
+			d = Math.sqrt(dX*dX+dZ*dZ);
+			
 		 	this.mesh.position.x += ( this.vX = ( this.currSpd * ( dX / d )) );
 		 	this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
 		 	this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;				
@@ -281,6 +293,96 @@ function Warden() {
 	//  code to play the sounds.   
 	this.playSounds = this.soundLoad; 
 	
+	/* meshPos is a short hand for the warden's mesh
+	 * targetPos is either the player's position, or a patrol position.
+	 */
+	this.pathfind = function( meshPos, targetPos ) {
+		var rx = Math.floor(Math.floor( meshPos.x) / CELL_SIZE + 1 / 2);
+	    var rz = Math.floor(Math.floor( meshPos.z) / CELL_SIZE + 1 / 2);
+	    var ry = Math.floor(Math.floor( meshPos.y) / CELL_SIZE);
+			
+		
+		var levelGrid = this.game.level.grid[ry]; 
+		
+		var direction = new Array();
+		for( var i = 0; i < 3; i++ ) direction[i] = new Array();  
+		var center = null;
+		var centerWalls = new Array();   
+		
+		for( var i = 0; i < 3 ; i++ ){
+			
+			for( var j = 0; j < 3; j++ ){
+				var cell = levelGrid[ rz + ( j - 1 )][ rx + ( i - 1 ) ];
+				if( i == 1 && j == 1 ){
+					center = cell; 
+				} else {
+					
+					for (var o = 0; o < cell.length; o++){
+						
+						if ( cell[o].type.charAt(0) === CELL_TYPES.wall) {
+				    		
+				    		switch( cell[o].type.charAt(1) ){
+				    		
+				    			//for any direction, set the variable to false for 
+				    			// the outer cells
+				    			case 'n':
+				    			case 's':
+				    			case 'e':
+				    			case 'w':
+				    				direction[ i ][ j ] = true; 
+				    				break;
+				    			
+				    		}
+						}
+					}
+				}
+			}
+		}
+		
+		//check center
+		for (var o = 0; o < center.length; o++){
+						
+			if ( center[o].type.charAt(0) === CELL_TYPES.wall) {
+	    		
+	    		switch( center[o].type.charAt(1) ){
+	    		
+	    			case 'n':
+	    			case 's':
+	    			case 'e':
+	    			case 'w':
+	    				centerWalls[center[o].type.charAt(1)] = true;
+	    				break;
+	    			
+	    		}
+			}
+		}
+		
+		//determine which direction based on target direction. 
+		var ret = new THREE.Vector2();
+		ret.x = meshPos.x, ret.z = meshPos.z; 
+		/*
+		if( targetPos.x > meshPos.x ) {
+			
+			
+			ret.x = ( rx + 1 ) * CELL_SIZE ; 
+			
+			
+		} else if ( targetPos.x < meshPos.x ){
+			
+			
+			ret.x = ( rx - 1 ) * CELL_SIZE ;
+			
+			 
+		} else{
+			
+			ret.x = targetPos.x;
+			 
+		}
+			*/
+			
+		//return ret;
+		return targetPos;  
+	}
 	
 	
 }
