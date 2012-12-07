@@ -45,6 +45,7 @@ function Warden() {
     this.nextPt = 0;
     this.pt = null;
     this.patrols = new Array();
+    this.targetPt = null; 
 
     /*Awareness determines how hard it is to hide from the Warden.  
 	 * If the player is heard, or spotted within a certain amount of time,
@@ -317,94 +318,40 @@ function Warden() {
     //  code to play the sounds.   
     this.playSounds = this.soundLoad;
 
+	this.cellWalls  = function ( cell ) {
+		var ret = new Array();
+		for (var o = 0; o < cell.length; o++){
+						
+	        if ( cell[o].type.charAt(0) === CELL_TYPES.wall) {
+		    		
+	            switch( cell[o].type.charAt(1) ){
+		    		
+	                case 'n':
+	                case 's':
+	                case 'e':
+	                case 'w':
+	                    ret[cell[o].type.charAt(1)] = true;
+	                    break;
+		    			
+    			}
+    		}
+    	}	
+		
+		
+	} 
+
     /* meshPos is a short hand for the warden's mesh
  * targetPos is either the player's position, or a patrol position.
  */
 this.pathfind = function( meshPos, targetPos ) {
-    var rx = Math.floor(Math.floor( meshPos.x) / CELL_SIZE + 1 / 2);
-    var rz = Math.floor(Math.floor( meshPos.z) / CELL_SIZE + 1 / 2);
-    var ry = Math.floor(Math.floor( meshPos.y) / CELL_SIZE);
-			
-		
-    var levelGrid = this.game.level.grid[ry]; 
-		
-    var direction = new Array();
-    for( var i = 0; i < 3; i++ ) direction[i] = new Array();  
-    var center = null;
-    var centerWalls = new Array();   
-		
-    for( var i = 0; i < 3 ; i++ ){
-			
-        for( var j = 0; j < 3; j++ ){
-            var cell = levelGrid[ rz + ( j - 1 )][ rx + ( i - 1 ) ];
-            if( i == 1 && j == 1 ){
-                center = cell; 
+    
+    if( this.targetPt != this.targetPt || this.targetPt == null ){
+    
+    	
+    	
     } else {
-					
-                for (var o = 0; o < cell.length; o++){
-						
-                    if ( cell[o].type.charAt(0) === CELL_TYPES.wall) {
-				    		
-                        switch( cell[o].type.charAt(1) ){
-				    		
-        //for any direction, set the variable to false for 
-        // the outer cells
-                            case 'n':
-                            case 's':
-                            case 'e':
-                            case 'w':
-                                direction[ i ][ j ] = true; 
-                                break;
-				    			
+    	
     }
-    }
-    }
-    }
-    }
-    }
-		
-        //check center
-    for (var o = 0; o < center.length; o++){
-						
-        if ( center[o].type.charAt(0) === CELL_TYPES.wall) {
-	    		
-            switch( center[o].type.charAt(1) ){
-	    		
-                case 'n':
-                case 's':
-                case 'e':
-                case 'w':
-                    centerWalls[center[o].type.charAt(1)] = true;
-                    break;
-	    			
-    }
-    }
-    }
-		
-        //determine which direction based on target direction. 
-    var ret = new THREE.Vector2();
-    ret.x = meshPos.x, ret.z = meshPos.z; 
-        /*
-        if( targetPos.x > meshPos.x ) {
-            
-            
-            ret.x = ( rx + 1 ) * CELL_SIZE ; 
-            
-            
-        } else if ( targetPos.x < meshPos.x ){
-            
-            
-            ret.x = ( rx - 1 ) * CELL_SIZE ;
-            
-             
-        } else{
-            
-            ret.x = targetPos.x;
-             
-        }
-            */
-			
-        //return ret;
-    return targetPos;  
-    }       
+    
+    
 }
