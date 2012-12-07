@@ -379,8 +379,8 @@ function Level(game) {
 
             boundingBox.name = name;
             boundingBox.rotation.y = rot;
-            var realX = (maxX + minX) / 2 * Math.cos(rot) - (maxZ + minZ) / 2 * Math.sin(rot);
-            var realZ = -(maxX + minX) / 2 * Math.sin(rot) + (maxZ + minZ) / 2 * Math.cos(rot);
+            var realX = scalex * (maxX + minX) / 2 * Math.cos(rot) - scalez * (maxZ + minZ) / 2 * Math.sin(rot);
+            var realZ = -scalex * (maxX + minX) / 2 * Math.sin(rot) + scalez * (maxZ + minZ) / 2 * Math.cos(rot);
             boundingBox.position.set(x + realX, y + scaley * (maxY + minY) / 2, z + realZ);
             boundingBox.model = objMesh;
             if (name === 'door') {
@@ -663,10 +663,10 @@ function Level(game) {
                 this.generateObjGeometry(x + CELL_SIZE * 0.2311265, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.5101853, 0.6531679, 1.6916896, 1.8976392, Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 0.5101853, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x - CELL_SIZE * 0.5101853, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 0.5101853, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x + CELL_SIZE * 0.5101853, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
         }
     };

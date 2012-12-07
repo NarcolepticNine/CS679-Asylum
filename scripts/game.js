@@ -69,7 +69,8 @@ function Game(renderer, canvas) {
     document.getElementById("container").appendChild(this.hints);
 
     this.hintIndex = 0;
-    this.textHints = ['Use the WASD keys to move',
+    this.textHints = ['Click to enable pointer lock',
+                      'Use the WASD keys to move',
     				  'Use the mouse cursor to look around',
     				  'Press F to turn your flashlight on and off',
     				  'Press spacebar to jump',
@@ -121,6 +122,7 @@ function Game(renderer, canvas) {
         this.modelNum = { number: 0 };
         this.again = false;
         this.box = null;
+        this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0};
         // Setup scene
 
 
@@ -146,7 +148,7 @@ function Game(renderer, canvas) {
         // set interval handles passing this weird, so you need to make a copy
         var _this = this;
         // update the hint every 5 seconds
-        this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 5000);
+        this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
 
         // Setup player
         this.player = new Player();
@@ -258,7 +260,14 @@ function hintTimerFunc(game) {
         hints(game, "");
         clearInterval(game.hintTimer);
     }
-    game.hintIndex++;
+    if ((game.learning.click === 1 && game.hintIndex === 0) ||
+        (game.learning.W === 1 && game.learning.S === 1 && game.learning.A === 1 && game.learning.D === 1 && game.hintIndex === 1) ||
+        (game.learning.X1 === 1 && game.learning.X2 === 1 && game.learning.Y1 === 1 && game.learning.Y2 === 1 && game.hintIndex === 2) ||
+        (game.learning.light1 === 1 && game.learning.light2 === 1 && game.hintIndex === 3)
+        ) {
+        game.hintIndex++;
+    }
+
 }
 
 function updatePlayerInformation(game, input) {
@@ -511,6 +520,52 @@ function updateScene(game) {
 
 var DOOR_TIMEOUT = 750; // milliseconds between door toggles
 function updateOperation(game, input) {
+
+    if (input.click === 1) {
+        if (game.hintIndex === 0) {
+            game.learning.click = 1;
+        }
+    }
+    if (game.hintIndex === 1) {
+        if (input.trigger.W === 1) {
+            game.learning.W = 1;
+        }
+
+        if (input.trigger.S === 1) {
+            game.learning.S = 1;
+        }
+        if (input.trigger.A === 1) {
+            game.learning.A = 1;
+        }
+        if (input.trigger.D === 1) {
+            game.learning.D = 1;
+        }
+    }
+    if (game.hintIndex === 2) {
+        if (input.X > 0) {
+            game.learning.X1 = 1;
+        }
+        if (input.X < 0) {
+            game.learning.X2 = 1;
+        }
+        if (input.Y > 0) {
+            game.learning.Y1 = 1;
+        }
+        if (input.Y < 0) {
+            game.learning.Y2 = 1;
+        }
+    }
+    if (game.hintIndex === 3) {
+        if (input.trigger.light === 1 && game.player.lightOn === true) {
+            game.learning.light1 = 1;
+        }
+        if (input.trigger.light === 1 && game.player.lightOn === false) {
+            game.learning.light2 = 1;
+        }
+    }
+
+
+
     if (input.click === 1) {
         input.click = 0;
         var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
