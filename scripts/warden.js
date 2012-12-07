@@ -146,9 +146,7 @@ function Warden() {
 		 	
 		 	this.mesh.position.x += ( this.vX = ( this.currSpd * ( dX / d )) );
 		 	this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
-		 	this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
-		 	console.log(this.mesh.rotation.y);
-				
+		 	this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;				
 		 }	
 		 
 		 //update light position and direction

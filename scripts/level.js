@@ -585,7 +585,7 @@ function Level(game) {
             mesh5.name = 'support';
         }
         if (mesh6 !== null) {
-            mesh6.name = 'floor';
+            mesh6.name = 'stairfloor';
         }
         var rx = x / CELL_SIZE;
         var rz = z / CELL_SIZE;
