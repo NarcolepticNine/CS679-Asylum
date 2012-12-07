@@ -6,22 +6,22 @@ function Player() {
     this.input = null;
     this.camera = null;
     this.flashlight = null;
-    
+
     //general sounds
-    this.soundManager; 
-    this.countAssets = 4 ; // number of sound files to be loaded
-    
+    this.soundManager;
+    this.countAssets = 4; // number of sound files to be loaded
+
     //heartbeat variables
-	this.lastbeat = 0; 
-	this.heartbeat  = "./sounds/heartbeat.mp3";
-	
-	//footstep variables
-	this.laststep = 0; 
-	this.footsteps = new Array(); 
-	this.footsteps[0] = "./sounds/step1.mp3";
-	this.footsteps[1] = "./sounds/step2.mp3"; 
-	this.footsteps[2] = "./sounds/step3.mp3";  
-	
+    this.lastbeat = 0;
+    this.heartbeat = "./sounds/heartbeat.mp3";
+
+    //footstep variables
+    this.laststep = 0;
+    this.footsteps = new Array();
+    this.footsteps[0] = "./sounds/step1.mp3";
+    this.footsteps[1] = "./sounds/step2.mp3";
+    this.footsteps[2] = "./sounds/step3.mp3";
+
 
     //mechanic variables
     var speed = 0.5;
@@ -31,49 +31,53 @@ function Player() {
     this.vY = 0;
     this.lightTog = false;
     this.lightOn = true;
+    this.crouch = 0;
 
     this.init = function (game, scene, camera, startPos) {
 
         this.camera = camera;
         this.game = game;
-        this.soundManager = game.soundManager; 
+        this.soundManager = game.soundManager;
 
-        this.mesh = new THREE.Mesh(
-			new THREE.CubeGeometry(9, 30, 3.5),
-            new THREE.MeshPhongMaterial({ color: 0x00ff00 })
+        standMesh = new THREE.Mesh(
+			new THREE.CubeGeometry(5, 20, 5),
+            new THREE.MeshBasicMaterial()
 		);
 
-        this.flashlight = new THREE.SpotLight(0xfffed9, 5, 50);
-        this.flashlight.castShadow = true;
-        this.flashlight.shadowCameraNear = 0;
-        this.flashlight.shadowCameraFar = 5;
-        this.flashlight.shadowCameraVisible = true;
+        creepMesh = new THREE.Mesh(
+			new THREE.CubeGeometry(5, 5, 5),
+            new THREE.MeshBasicMaterial()
+		);
 
+        this.mesh = standMesh;
+
+        this.flashlight = new THREE.SpotLight(0xfffed9, 10, 1.5 * CELL_SIZE);
         scene.add(this.mesh);
         scene.add(this.flashlight);
 
         this.setStartPos(startPos);
-        
-        game.soundManager.loadSound( this.heartbeat ); 
-        game.soundManager.loadSound( this.footsteps[0]  ); 
-        game.soundManager.loadSound( this.footsteps[1]  );
-        game.soundManager.loadSound( this.footsteps[2]  );
+
+        game.soundManager.loadSound(this.heartbeat);
+        game.soundManager.loadSound(this.footsteps[0]);
+        game.soundManager.loadSound(this.footsteps[1]);
+        game.soundManager.loadSound(this.footsteps[2]);
     }
 
     //pass in level.startPos
     this.setStartPos = function (vec3) {
 
-        var x = vec3.x, y = vec3.y + 15, z = vec3.z;
+        var x = vec3.x, y = vec3.y + 10, z = vec3.z;
 
         this.mesh.position.set(x, y, z);
         this.flashlight.position.set(x, y, z);
-        this.camera.position.set(x, y, z);
+        this.camera.position.set(x, y + 9, z);
 
     }
 
     this.getPosVec = function () {
         return this.mesh.position;
     }
+
 
 	this.soundLoaded = function ( distance, movement, speed ) {
 		
@@ -143,23 +147,28 @@ function Player() {
 	//  code to play the sounds.   
 	this.playSounds = this.soundLoad; 
 
-    this.update = function (input) {
+    this.update = function (input, scene) {
 
 
 		//current position.
 		var X  = this.mesh.position.x; 
 		var Z  = this.mesh.position.z;
 		
-		var warPos = this.game.warden.mesh.position;
-		
-		var dX = warPos.x - X; 
-		var dZ = warPos.z - Z; 
-		
-		var d = Math.sqrt(dX*dX+dZ*dZ); 
-		
-		
-        this.sound = this.updateMovement(input);
-        this.playSounds( d, this.sound, this.currSpd ); 
+		this.sound = this.updateMovement(input, scene);
+	    
+	    if ( this.game.warden.mesh ) {
+			var warPos = this.game.warden.mesh.position;
+			
+			var dX = warPos.x - X; 
+			var dZ = warPos.z - Z; 
+			
+			var d = Math.sqrt(dX*dX+dZ*dZ); 
+			this.playSounds( d, this.sound, this.currSpd );
+	        
+        } else {
+        	this.playSounds( 1000, this.sound, this.currSpd ); 
+        } 
+
         this.sound = this.sound * this.currSpd;
         this.sound = this.sound * 100;
 
@@ -174,21 +183,49 @@ function Player() {
         input.viewRay = new THREE.Ray(
             playPos,                             // origin
             rayVec.subSelf(playPos).normalize(), // direction
-            0, 1000                                           // near, far
+            0, 1000                              // near, far
         );
     }
 
-    this.updateMovement = function (input) {
+    this.updateMovement = function (input, scene) {
 
         //adjust for running or crouching, or neither: 
-        if (input.trigger.run || input.trigger.crouch) {
+        this.currSpd = speed;
+        if (input.trigger.run) {
+            this.currSpd *= 2;
+        }
+        if (this.crouch) {
+            this.currSpd /= 2;
+        }
 
-            this.currSpd = (input.trigger.run) ? speed * 2 : speed / 2;
-
-        } else {
-
-            this.currSpd = speed;
-
+        if (input.trigger.crouch) {
+            input.trigger.crouch = 0;
+            this.crouch = 1 - this.crouch;
+            if (input.hold === 1) {
+                if (this.crouch) {
+                   //rather than switching between two meshes, 
+                    //  why not scale the existing?
+                    var oldx = this.mesh.position.x;
+                    var oldy = this.mesh.position.y;
+                    var oldz = this.mesh.position.z;
+                    scene.remove(this.mesh);
+                    this.mesh = creepMesh;
+                    scene.add(this.mesh);
+                    this.mesh.position.set(oldx, oldy - 7.5, oldz);
+                    //this.mesh.scale.set(1, 0.25, 1);
+                    
+                }
+                else {
+                    var oldx = this.mesh.position.x;
+                    var oldy = this.mesh.position.y;
+                    var oldz = this.mesh.position.z;
+                    scene.remove(this.mesh);
+                    this.mesh = standMesh;
+                    scene.add(this.mesh);
+                    this.mesh.position.set(oldx, oldy + 7.5, oldz);
+                    //this.mesh.scale.set(1, 1, 1);
+                }
+            }
         }
 
         //correct for mouse cursor not being locked.  
@@ -220,7 +257,7 @@ function Player() {
         // handle player jump
         if (input.hold === 1) {
             input.Jump = 0;
-            if (input.trigger.Jump === 1) {
+            if (input.trigger.Jump === 1 && this.crouch === 0) {
                 input.Jump = 1;
                 input.v = jumpVel;
                 input.trigger.Jump = 0;
@@ -245,8 +282,14 @@ function Player() {
         this.mesh.position.z +=
             this.currSpd * (WS * input.f.z - AD * input.f.x / xzNorm);
 
-        // Update camera position/lookat 
-        this.camera.position = this.mesh.position;
+        // Update camera position/lookat
+        if (this.crouch === 0) {
+            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 9, 0));
+        }
+        else {
+            this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 2.25, 0));
+        }
+
         var look = new THREE.Vector3();
         look.add(this.camera.position, input.f);
         this.camera.lookAt(look);

@@ -8,6 +8,7 @@ function Game(renderer, canvas) {
     this.scene = null;
     this.camera = null;
     this.objects = null;
+    this.models = null;
     this.level = null;
     this.lights = null;
     this.skybox = null;
@@ -22,6 +23,9 @@ function Game(renderer, canvas) {
     this.end = 0;
     this.nextGoal = null;
     this.gindex = 0;
+    this.numCheck = 0;
+    this.modelNum = null;
+    this.again = false;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -53,6 +57,26 @@ function Game(renderer, canvas) {
     this.playerInfo.style.bottom = 0;
     this.playerInfo.style.right = 0;
     document.getElementById("container").appendChild(this.playerInfo);
+    
+    this.hints = document.createElement("canvas");
+    this.hints.id = "hints";
+    this.hints.width = canvas.width;
+    this.hints.height = 100;
+    this.hints.style.position = "absolute";
+    this.hints.style.bottom = 0;
+    this.hints.backgroundColor = "#000000";
+    document.getElementById("container").appendChild(this.hints);
+    
+    this.hintIndex = 0;
+    this.textHints = ['Use the WASD keys to move',
+    				  'Use the mouse cursor to look around',
+    				  'Press F to turn your flashlight on and off',
+    				  'Press spacebar to jump',
+    				  'Click to open doors and pick up items',
+    				  'Pick up the key from the warden\'s office and find the locked door to escape',
+    				  'Your heart beat indicates how close you are to being caught',
+    				  'If your heart is beating fast, the warden is close. Stop moving and turn off your flashlight to hide',
+    				  'Walk around carefully, good luck!'];
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -60,7 +84,7 @@ function Game(renderer, canvas) {
     var FOV = 67,
         ASPECT = canvas.width / canvas.height,
         NEAR = .01,
-        FAR = 2000;
+        FAR = 1.5 * CELL_SIZE;
 
     // ------------------------------------------------------------------------
     // Game Methods -----------------------------------------------------------
@@ -72,6 +96,7 @@ function Game(renderer, canvas) {
         this.scene = new THREE.Scene();
         this.camera = null;
         this.objects = null;
+        this.models = null;
         this.lights = [];
         this.level = null;
         this.skybox = null;
@@ -91,10 +116,13 @@ function Game(renderer, canvas) {
         this.nextGoal[0] = [];
         this.nextGoal[1] = [];
         this.gindex = 0;
+        this.numCheck = 0;
+        this.modelNum = { number: 0 };
+        this.again = false;
         // Setup scene
 
 
-        //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
+        //this.scene.add(new THREE.AmbientLight(0xffffff));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
         //this.scene.add(new THREE.AmbientLight(0x272727));
 
@@ -110,6 +138,13 @@ function Game(renderer, canvas) {
         this.soundManager.init();
 
         this.skybox = new Skybox(this);
+        
+        // which element in the textHints array to display
+        this.hintIndex = 0;
+        // set interval handles passing this weird, so you need to make a copy
+        var _this = this;
+        // update the hint every 5 seconds
+        this.hintTimer = setInterval(function(){hintTimerFunc(_this)}, 5000);
 
         // Setup player
         this.player = new Player();
@@ -140,8 +175,10 @@ function Game(renderer, canvas) {
         if (this.initialized == false) {
             this.init(input);
         }
+
         this.level.update();
-        this.player.update(input);
+
+        this.player.update(input, this.scene);
         this.warden.update(this.player.getPosVec(),
         					this.player.sound,
         					this.player.lightOn);
@@ -155,7 +192,7 @@ function Game(renderer, canvas) {
                 ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
             return false;
         }
-        updateCollisionSet(this);
+        
         handleCollisions(this, input);
         if (input.hold === 0 && input.Jump === 0) {
             input.Jump = 1;
@@ -165,6 +202,9 @@ function Game(renderer, canvas) {
                     handleCollisions(this, input);
                 }
             }
+        }
+        if (updateCollisionSet(this) || this.again === true) {
+            updateScene(this);
         }
         TWEEN.update();
         return true;
@@ -191,6 +231,33 @@ function ending(game, message) {
     Ending.textAlign = 'center';
     Ending.fillStyle = '#00ff00';
     Ending.fillText(message, game.endingInfo.width / 2, game.endingInfo.height / 2);
+}
+
+function hints(game, message) {
+    var hint = game.endingInfo.getContext("2d");
+    // Clear
+    hint.save();
+    hint.setTransform(1, 0, 0, 1, 0, 0);
+    hint.clearRect(0, 0, game.hints.width, game.hints.height);
+    hint.restore();
+
+    hint.font = '20px Arial';
+    hint.textBaseline = 'bottom';
+    hint.textAlign = 'center';
+    hint.fillStyle = '#ffffff';
+    hint.backgroundColor = '#000';
+    hint.fillText(message, game.hints.width / 2, game.hints.height - 40);
+}
+
+function hintTimerFunc(game){
+	if (game.hintIndex < game.textHints.length){
+		hints(game, game.textHints[game.hintIndex]);
+	}
+	else {
+		hints(game, "");
+		clearInterval(game.hintTimer);
+	}
+	game.hintIndex++;
 }
 
 function updatePlayerInformation(game, input) {
@@ -258,14 +325,29 @@ function updateCollisionSet(game) {
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
     var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
-        game.old.x = rx;
-        game.old.y = ry;
-        game.old.z = rz;
         game.collisionSet = [];
-        for (var y = ry - 1; y <= ry + 1; y++) {
-            if (y < 0 || y >= NUM_CELLS.y) {
+
+        var append = false;
+        for (var z = rz - 1; z <= rz + 1; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
                 continue;
             }
+            for (var x = rx - 1; x <= rx + 1; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+
+
+                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                    game.collisionSet.push(game.objects[ry][z][x][o]);
+                    if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2') {
+                        append = true;
+                    }
+                }
+            }
+        }
+
+        if (append === true) {
             for (var z = rz - 1; z <= rz + 1; z++) {
                 if (z < 0 || z >= NUM_CELLS.z) {
                     continue;
@@ -274,13 +356,114 @@ function updateCollisionSet(game) {
                     if (x < 0 || x >= NUM_CELLS.x) {
                         continue;
                     }
+                    for (var y = ry - 1; y <= ry + 1; y += 2) {
+                        if (y < 0 || y >= NUM_CELLS.y) {
+                            continue;
+                        }
+                        for (var o = 0; o < game.objects[y][z][x].length; o++) {
+                            game.collisionSet.push(game.objects[y][z][x][o]);
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function updateScene(game) {
+    if (game.modelNum.number !== game.numCheck) {
+        game.again = true;
+    }
+    else {
+        game.again = false;
+    }
+    if (game.old.x !== -1) {
+        var ox = game.old.x;
+        var oz = game.old.z;
+        var oy = game.old.y;
+
+        for (var y = oy - 1; y <= oy + 1; y++) {
+            if (y < 0 || y >= NUM_CELLS.y) {
+                continue;
+            }
+            for (var z = oz - 2; z <= oz + 2; z++) {
+                if (z < 0 || z >= NUM_CELLS.z) {
+                    continue;
+                }
+                for (var x = ox - 2; x <= ox + 2; x++) {
+                    if (x < 0 || x >= NUM_CELLS.x) {
+                        continue;
+                    }
                     for (var o = 0; o < game.objects[y][z][x].length; o++) {
-                        game.collisionSet.push(game.objects[y][z][x][o]);
+                        game.scene.remove(game.objects[y][z][x][o]);
+                    }
+
+                    for (var o = 0; o < game.models[y][z][x].length; o++) {
+                        game.scene.remove(game.models[y][z][x][o]);
                     }
                 }
             }
         }
     }
+
+    var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+    var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+
+    var append = false;
+    for (var z = rz - 2; z <= rz + 2; z++) {
+        if (z < 0 || z >= NUM_CELLS.z) {
+            continue;
+        }
+        for (var x = rx - 2; x <= rx + 2; x++) {
+            if (x < 0 || x >= NUM_CELLS.x) {
+                continue;
+            }
+
+            for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                game.scene.add(game.objects[ry][z][x][o]);
+                if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2') {
+                    append = true;
+                }
+            }
+
+            for (var o = 0; o < game.models[ry][z][x].length; o++) {
+                game.scene.add(game.models[ry][z][x][o]);
+            }
+        }
+    }
+
+    if (append === true) {
+        for (var z = rz - 2; z <= rz + 2; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
+                continue;
+            }
+            for (var x = rx - 2; x <= rx + 2; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+                for (var y = ry - 1; y <= ry + 1; y += 2) {
+                    if (y < 0 || y >= NUM_CELLS.y) {
+                        continue;
+                    }
+                    for (var o = 0; o < game.objects[y][z][x].length; o++) {
+                        game.scene.add(game.objects[y][z][x][o]);
+                    }
+
+                    for (var o = 0; o < game.models[y][z][x].length; o++) {
+                        game.scene.add(game.models[y][z][x][o]);
+                    }
+                }
+            }
+        }
+    }
+    game.old.x = rx;
+    game.old.y = ry;
+    game.old.z = rz;
 }
 
 var DOOR_TIMEOUT = 750; // milliseconds between door toggles
@@ -299,44 +482,28 @@ function updateOperation(game, input) {
                     continue;
                 }
 
-                var o = 0;
-                while (o !== game.objects[ry][z][x].length) {
-                    switch (game.objects[ry][z][x][o].name) {
-                        case 'key':
-                            game.scene.remove(game.objects[ry][z][x][o]);
-                            game.objects[ry][z][x].splice(o, 1);
-                            game.old.x = -1;
-                            game.old.y = -1;
-                            game.old.z = -1;
-                            game.key = 1;
-                            game.gindex++;
-                            break;
-                        case 'fdoor':
-                            if (game.key === 1) {
-                                game.end = 1;
-                            }
-                            o++;
-                            break;
+                var collision = input.viewRay.intersectObjects(game.objects[ry][z][x]);
+                if (collision.length > 0) {
+                    switch (collision[0].object.name) {
                         case 'door':
-                            var door = game.objects[ry][z][x][o], tween;
+                            var door = collision[0].object, tween;
                             var ob = door.model;
-
                             if (door.doorState === "closed" && door.canToggle) {
-                                var ix = door.position.x - door.halfsize * Math.sin(door.beginRot);
-                                var iz = door.position.z - door.halfsize * Math.cos(door.beginRot);
+                                var ix = door.position.x - door.halfsize * 16 / 17 * Math.sin(door.beginRot);
+                                var iz = door.position.z - door.halfsize * 16 / 17 * Math.cos(door.beginRot);
                                 tween = new TWEEN.Tween({ rot: door.beginRot })
-                                    .to({ rot: door.endRot }, DOOR_TIMEOUT)
-                                    .easing(TWEEN.Easing.Elastic.Out)
-                                    .onUpdate(function () {
-                                        door.rotation.y = this.rot;
-                                        ob.rotation.y = this.rot;
-                                        door.position.x = ix + door.halfsize * Math.sin(this.rot);
-                                        door.position.z = iz + door.halfsize * Math.cos(this.rot);
-                                        ob.position.x = door.position.x;
-                                        ob.position.z = door.position.z;
+                                                 .to({ rot: door.endRot }, DOOR_TIMEOUT)
+                                                 .easing(TWEEN.Easing.Elastic.Out)
+                                                 .onUpdate(function () {
+                                                     door.rotation.y = this.rot;
+                                                     ob.rotation.y = this.rot;
+                                                     door.position.x = ix + door.halfsize * 16 / 17 * Math.sin(this.rot);
+                                                     door.position.z = iz + door.halfsize * 16 / 17 * Math.cos(this.rot);
+                                                     ob.position.x = door.position.x;
+                                                     ob.position.z = door.position.z;
 
-                                    })
-                                    .start();
+                                                 })
+                                                 .start();
 
                                 door.doorState = "open";
                                 door.canToggle = false;
@@ -345,16 +512,16 @@ function updateOperation(game, input) {
                                     door.canToggle = true;
                                 }, DOOR_TIMEOUT);
                             } else if (door.doorState === "open" && door.canToggle) {
-                                var ix = door.position.x - door.halfsize * Math.sin(door.endRot);
-                                var iz = door.position.z - door.halfsize * Math.cos(door.endRot);
+                                var ix = door.position.x - door.halfsize * 16 / 17 * Math.sin(door.endRot);
+                                var iz = door.position.z - door.halfsize * 16 / 17 * Math.cos(door.endRot);
                                 tween = new TWEEN.Tween({ rot: door.endRot })
                                     .to({ rot: door.beginRot }, DOOR_TIMEOUT)
                                     .easing(TWEEN.Easing.Elastic.Out)
                                     .onUpdate(function () {
                                         door.rotation.y = this.rot;
                                         ob.rotation.y = this.rot;
-                                        door.position.x = ix + door.halfsize * Math.sin(this.rot);
-                                        door.position.z = iz + door.halfsize * Math.cos(this.rot);
+                                        door.position.x = ix + door.halfsize * 16 / 17 * Math.sin(this.rot);
+                                        door.position.z = iz + door.halfsize * 16 / 17 * Math.cos(this.rot);
                                         ob.position.x = door.position.x;
                                         ob.position.z = door.position.z;
 
@@ -368,10 +535,34 @@ function updateOperation(game, input) {
                                     door.canToggle = true;
                                 }, DOOR_TIMEOUT);
                             }
-                            o++;
                             break;
-                        default:
-                            o++;
+                        case 'key':
+                            game.scene.remove(collision[0].object);
+                            game.scene.remove(collision[0].object.model);
+                            for (var m = 0; m < game.models[ry][z][x].length; m++) {
+                                if (game.models[ry][z][x][m] === collision[0].object.model) {
+                                    game.models[ry][z][x].splice(m, 1);
+                                    break;
+                                }
+                            }
+
+                            for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                                if (game.objects[ry][z][x][o] === collision[0].object) {
+                                    game.objects[ry][z][x].splice(o, 1);
+                                    break;
+                                }
+                            }
+                            game.old.x = -1;
+                            game.old.y = -1;
+                            game.old.z = -1;
+                            game.key = 1;
+                            game.gindex++;
+                            break;
+                        case 'fdoor':
+                            if (game.key === 1) {
+                                game.end = 1;
+                            }
+                            break;
                     }
                 }
             }
@@ -512,7 +703,6 @@ function bumpBack(collisionResults, directionVector, game) {
     }
 
     game.player.mesh.position.add(game.oldplayer, new THREE.Vector3(i, j, k));
-    game.camera.position.set(game.player.mesh.position.x, game.player.mesh.position.y, game.player.mesh.position.z);
     return bumpy;
 }
 
@@ -539,11 +729,8 @@ function handleCollisions(game, input) {
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
-                    console.log(selected.name);
-                    console.log(collisionResults[0].distance - directionVector.length());
-                    console.log(game.player.mesh.position.x + ':' + game.player.mesh.position.y + ':' + game.player.mesh.position.z);
-                    if (selected.name === 'ceiling' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'column'
-                                                    || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
+                    if (selected.name === 'ceil' || selected.name === 'ceil2' || selected.name === 'wall' || selected.name === 'window' || selected.name === 'side' || selected.name === 'support' ||
+                        selected.name === 'column' || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
                         if (verticalInfo != 0) {
                             input.v = 0;

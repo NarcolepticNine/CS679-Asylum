@@ -2,7 +2,10 @@ function Warden() {
 	
 	//Warden Definition
 	this.game       = null; 
+	this.startPos   = null; 
 	this.mesh       = null;
+	this.meshURL    = "./obj/demon/demon.js";
+	this.textureURL = "./obj/demon/colorMap.png"; 
 	this.flashlight = null; 
 	
 	//Mechanic Variables 
@@ -35,20 +38,30 @@ function Warden() {
 	
 	//pass in level.startPos
 	this.setStartPos = function ( vec3  ){
-		this.mesh.position.set( vec3.x, vec3.y + 8.5, vec3.z ); 	
+		this.mesh.position.set( vec3.x, vec3.y, vec3.z ); 	
 		
 	}
 	
 	this.init = function( scene, startPos, patrolArr, game ){
 		
-		this.game = game; 
-		
+		this.game 		= game; 
+		this.startPos 	= startPos; 
 		//TODO Improved Warden Mesh
-		this.mesh = new THREE.Mesh(
-			new THREE.CubeGeometry( 10, 10, 10 ),
-			new THREE.MeshPhongMaterial( { color: 0xff0000 } ) 
-		);
-	
+		
+		var warden = this; 
+		
+		var callback = function ( geometry, scalex, scaley, scalez, tmap ) {
+			console.log( "Demon Loaded" ); 
+			var tempMesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture("./obj/demon/colorMap.png") }) ); 
+			tempMesh.scale.set( scalex, scaley, scalez ); 
+			warden.mesh = tempMesh; 
+				
+		}
+        
+        var loader = new THREE.JSONLoader(); 
+       	loader.load( this.meshURL, function( geometry ){ callback( geometry, 10,10,10, this.textureURL ); } )
+        
+
 		//Warden Flashlight
 		this.flashlight = new THREE.SpotLight(0xfffed9, 5, 50);
         this.flashlight.castShadow = true;
@@ -57,9 +70,7 @@ function Warden() {
         this.flashlight.shadowCameraVisible = true;
 		scene.add( this.flashlight ); 
 		
-		//Warden Location and Patrol
-		scene.add( this.mesh ); 
-		this.setStartPos( startPos ); 
+		//Warden Patrol points
 		this.patrols = patrolArr; 
 	
 	
@@ -71,10 +82,8 @@ function Warden() {
 	
 		//basic update function that idles until mesh is loaded ( eventually ); 
 		this.update  = this.updateLoad; 
-		
-		
-	}
 	
+	}
 
 	this.checkPlayer = function ( d, playerSound, lightOn ){
 		
@@ -83,15 +92,12 @@ function Warden() {
 		this.awareness = ( this.awareness < 0 ) ? 0 : ( ( this.awareness > 100 ) ? 100 : this.awareness ); 		
 	} 
 	
-	/*
-	 * Basic Sound Mechanic.  Player movement causes Player sound to rise.  
-	 * Sound is passed as a the player's sound level currently.  
-	 */
 	this.updateLoaded = function( posVec, playerSound, lightOn ){
 		
 		//current position.
 		var X  = this.mesh.position.x; 
 		var Z  = this.mesh.position.z;
+		var Y  = this.mesh.position.y; 
 		
 		var dX = posVec.x - X; 
 		var dZ = posVec.z - Z; 
@@ -100,7 +106,7 @@ function Warden() {
 		
 		this.checkPlayer( d, playerSound, lightOn ); 	
 		
-		if( d < 10 ){
+		if( d < 10 && ( Y >= posVec.y - 10 && Y <= posVec.y + 10 ) ){
 			this.caught = true;
 			this.game.end = 1; 
 		}  
@@ -155,8 +161,14 @@ function Warden() {
 	
 	this.updateLoad = function ( posVec, playerSound, lightOn ){
 		
-		if( this.mesh ) this.update = this.updateLoaded; 
+		if( this.mesh ){ 
+			
+			console.log( "Demon Model Ready" ); 
+			this.update = this.updateLoaded;
+			this.game.scene.add( this.mesh ); 
+			this.setStartPos( this.startPos ); 
 		
+		}
 	}
 
 	
