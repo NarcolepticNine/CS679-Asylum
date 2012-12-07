@@ -335,7 +335,6 @@ function Level(game) {
     function createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) {
         var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap) }));
         objMesh.rotation.y = rot;
-        objMesh.position.set(x, y, z);
         objMesh.scale.set(scalex, scaley, scalez);
         var maxX = geometry.vertices[0].x;
         var minX = geometry.vertices[0].x;
@@ -364,6 +363,17 @@ function Level(game) {
                 minZ = geometry.vertices[v].z;
             }
         }
+        if (Math.abs(maxX + minX) > 0.01 || Math.abs(maxY + minY) > 0.01 || Math.abs(maxZ + minZ) > 0.01) {
+            console.log(name);
+            console.log(maxX + minX);
+            console.log(maxY + minY);
+            console.log(maxZ + minZ);          
+        }
+        //if (name === 'fdoor') {
+        //    console.log(scalez * (maxZ - minZ));
+        //    console.log(z + scalez * (maxZ + minZ) / 2);
+        //}
+        objMesh.position.set(x, y, z);
         var rx = Math.floor(Math.floor(x + scalex * (maxX + minX) / 2) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(z + scalez * (maxZ + minZ) / 2) / CELL_SIZE + 1 / 2);
         var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
@@ -395,12 +405,10 @@ function Level(game) {
                 boundingBox.doorState = 'closed';
                 boundingBox.halfsize = scalez * (maxZ - minZ) / 2;
             }
-            if (name !== 'picture' && name !== 'bulletin' && name !== 'clock') {
+            if (name !== 'picture' && name !== 'bulletin' && name !== 'clock' && name !== 'window') {
                 game.objects[ry][rz][rx].push(boundingBox);
             }
         }
-
-
     }
 
     // Generate ceiling geometry
@@ -619,20 +627,20 @@ function Level(game) {
     this.generateWindowGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z + CELL_SIZE * 15 / 32, 0.7323325, 0.3354368, 0.3582517, Math.PI / 2, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
-                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z + CELL_SIZE * 16.1 / 32, 0.5354368, 0.3354368, 0.3582517, Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z + CELL_SIZE * 17 / 32, 0.7323325, 0.3354368, 0.3582517, -Math.PI / 2, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z + CELL_SIZE * 0.4878882, 0.6089207, 0.3354368, 0.3582517, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z - CELL_SIZE * 15 / 32, 0.7323325, 0.3354368, 0.3582517, -Math.PI / 2, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
-                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z - CELL_SIZE * 16.1 / 32, 0.5354368, 0.3354368, 0.3582517, -Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z - CELL_SIZE * 17 / 32, 0.7323325, 0.3354368, 0.3582517, Math.PI / 2, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.6806223, z - CELL_SIZE * 0.4878882, 0.6089207, 0.3354368, 0.3582517, Math.PI / 2, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806223, z, 0.7323325, 0.3354368, 0.3582517, 0, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
-                this.generateObjGeometry(x - CELL_SIZE * 16.1 / 32, y + CELL_SIZE * 0.6806223, z, 0.5354368, 0.3354368, 0.3582517, 0, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x - CELL_SIZE * 17 / 32, y + CELL_SIZE * 0.6806223, z, 0.7323325, 0.3354368, 0.3582517, Math.PI, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
+                this.generateObjGeometry(x - CELL_SIZE * 0.4878882, y + CELL_SIZE * 0.6806223, z, 0.6089207, 0.3354368, 0.3582517, Math.PI, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 15 / 32, y + CELL_SIZE * 0.6806223, z, 0.7323325, 0.3354368, 0.3582517, Math.PI, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
-                this.generateObjGeometry(x + CELL_SIZE * 16.1 / 32, y + CELL_SIZE * 0.6806223, z, 0.5354368, 0.3354368, 0.3582517, Math.PI, 'obj/window.js', 'obj/window.jpg', 'window');
+                this.generateObjGeometry(x + CELL_SIZE * 17 / 32, y + CELL_SIZE * 0.6806223, z, 0.7323325, 0.3354368, 0.3582517, 0, 'obj/window-wall.js', 'obj/window.jpg', 'window-wall');
+                this.generateObjGeometry(x + CELL_SIZE * 0.4878882, y + CELL_SIZE * 0.6806223, z, 0.6089207, 0.3354368, 0.3582517, 0, 'obj/window.js', 'obj/window.jpg', 'window');
                 break;
         }
     };
@@ -643,7 +651,7 @@ function Level(game) {
                 this.generateObjGeometry(x, y + CELL_SIZE * 0.1583751, z + CELL_SIZE / 4, 2, 2, 2, -Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'n':
-                this.generateObjGeometry(x, y + CELL_SIZE * 0.1583751, z - CELL_SIZE / 4, 2, 2, 2, Math.PI / 2, 'obj/bed.js', 'obj/bed.jpg', 'model');
+                this.generateObjGeometry(x, y + CELL_SIZE * 0.1583751, z - CELL_SIZE / 4, 2, 2, 2, Math.PI, 'obj/bed.js', 'obj/bed.jpg', 'model');
                 break;
             case 'w':
                 this.generateObjGeometry(x - CELL_SIZE / 4, y + CELL_SIZE * 0.1583751, z, 2, 2, 2, Math.PI, 'obj/bed.js', 'obj/bed.jpg', 'model');
@@ -657,16 +665,16 @@ function Level(game) {
     this.generateFdoorGeometry = function (x, y, z, c) {
         switch (c) {
             case 's':
-                this.generateObjGeometry(x - CELL_SIZE * 0.2311265, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.499653, 0.6531679, 1.6916896, 1.8976392, Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x - CELL_SIZE * 0.2311265, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.5101853, 0.6531679, 1.6916896, 1.8976392, -Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'n':
-                this.generateObjGeometry(x + CELL_SIZE * 0.2311265, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.499653, 0.6531679, 1.6916896, 1.8976392, -Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x + CELL_SIZE * 0.2311265, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.5101853, 0.6531679, 1.6916896, 1.8976392, Math.PI / 2, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'w':
-                this.generateObjGeometry(x - CELL_SIZE * 0.499653, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x - CELL_SIZE * 0.5101853, y + CELL_SIZE * 0.469391, z - CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
             case 'e':
-                this.generateObjGeometry(x + CELL_SIZE * 0.499653, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, Math.PI, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
+                this.generateObjGeometry(x + CELL_SIZE * 0.5101853, y + CELL_SIZE * 0.469391, z + CELL_SIZE * 0.2311265, 0.6531679, 1.6916896, 1.8976392, 0, 'obj/final-door.js', 'obj/door.jpg', 'fdoor');
                 break;
         }
     };

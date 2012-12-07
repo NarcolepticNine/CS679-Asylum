@@ -88,7 +88,7 @@ function Warden() {
 	this.checkPlayer = function ( d, playerSound, lightOn ){
 		
 		playerSound = ( lightOn ) ? playerSound * 2 : playerSound ;		
-		this.awareness = ( playerSound > d ) ? this.awareness += 5 : this.awareness -= 5 ; 
+		this.awareness = ( playerSound > d ) ? this.awareness += 1 : this.awareness -= 1 ; 
 		this.awareness = ( this.awareness < 0 ) ? 0 : ( ( this.awareness > 100 ) ? 100 : this.awareness ); 		
 	} 
 	
@@ -135,16 +135,19 @@ function Warden() {
 			} else {
 				//keep going towards current point
 				this.mesh.position.x += ( this.vX = ( this.currSpd * ( dX / d )) );
-			    this.mesh.position.z += ( this.vZ = ( this.currSpd * ( dZ / d )) );	
+				this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
+				this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
 				 
 			}
 		 } else {
 		 	
 		 	//if awareness too high, warden sprints
-		 	this.currSpd = ( this.awareness >= 60 ) ? this.speed * 2 : this.speed; 		 	
+		 	this.currSpd = ( this.awareness >= 60 ) ? this.speed * 0.5 : this.speed * 0.4; 		 	
 		 	
 		 	this.mesh.position.x += ( this.vX = ( this.currSpd * ( dX / d )) );
-			this.mesh.position.z += ( this.vZ = ( this.currSpd * ( dZ / d )) );	
+		 	this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
+		 	this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
+		 	console.log(this.mesh.rotation.y);
 				
 		 }	
 		 
