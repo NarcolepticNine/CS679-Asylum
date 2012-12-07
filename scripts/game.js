@@ -122,7 +122,7 @@ function Game(renderer, canvas) {
         // Setup scene
 
 
-        //this.scene.add(new THREE.AmbientLight(0xaaaaaa));
+        //this.scene.add(new THREE.AmbientLight(0xffffff));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
         //this.scene.add(new THREE.AmbientLight(0x272727));
 
@@ -140,7 +140,6 @@ function Game(renderer, canvas) {
         this.skybox = new Skybox(this);
         
         // which element in the textHints array to display
-        // start at -1 because the function updates
         this.hintIndex = 0;
         // set interval handles passing this weird, so you need to make a copy
         var _this = this;

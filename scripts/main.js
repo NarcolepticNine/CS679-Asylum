@@ -63,14 +63,18 @@
 
     // Enter main loop
     (function mainLoop() {
-        stats.begin();
-        if (game.update(inputData) === false) {
-            return;
-        }
-        game.render(inputData);
-        updateDebug( info, game ); 
-        stats.end();
-        requestFrame(mainLoop);
+    	
+    	setTimeout( function () {
+	        stats.begin();
+	        if (game.update(inputData) === false) {
+	            return;
+	        }
+	        game.render(inputData);
+	        updateDebug( info, game ); 
+	        stats.end();
+	        requestFrame(mainLoop);
+     	}, 1000/35 );
+     	
     })();
 
     //Deal with resizing
