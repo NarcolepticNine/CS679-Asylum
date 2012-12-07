@@ -26,6 +26,7 @@ function Game(renderer, canvas) {
     this.numCheck = 0;
     this.modelNum = null;
     this.again = false;
+    this.box = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -119,6 +120,7 @@ function Game(renderer, canvas) {
         this.numCheck = 0;
         this.modelNum = { number: 0 };
         this.again = false;
+        this.box = null;
         // Setup scene
 
 
@@ -172,9 +174,6 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
-        if (this.scene !== null) {
-            console.log(this.scene.children.length);
-        }
         if (this.initialized == false) {
             this.init(input);
         }
@@ -206,9 +205,8 @@ function Game(renderer, canvas) {
                 }
             }
         }
-        if (updateCollisionSet(this) || this.again === true) {
-            updateScene(this);
-        }
+        updateCollisionSet(this)
+        updateScene(this);
         TWEEN.update();
         return true;
     };
@@ -392,7 +390,14 @@ function updateScene(game) {
 
     var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+    var ty;
+    if (game.player.crouch) {
+        ty = game.player.mesh.position.y - 2.5;
+    }
+    else {
+        ty = game.player.mesh.position.y - 10;
+    }
+    var ry = Math.floor(ty / CELL_SIZE + 1 / 2);
 
     if (need === true) {
         for (var z = 0; z < NUM_CELLS.z; z++) {
@@ -436,10 +441,16 @@ function updateScene(game) {
         }
     }
     else {
+        if (ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) > 0.11 && ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) < 0.89) {
+            game.scene.remove(game.box);
+        }
+        else {
+            game.scene.add(game.box);
+        }
         if (ry != game.old.y) {
             for (var z = 0; z < NUM_CELLS.z; z++) {
                 for (var x = 0; x < NUM_CELLS.x; x++) {
-                    for (var y = ry - 2; y <= ry + 2; y += 2) {
+                    for (var y = ry - 2; y <= ry + 2; y++) {
                         if (y < 0 || y >= NUM_CELLS.y) {
                             continue;
                         }
@@ -772,7 +783,7 @@ function handleCollisions(game, input) {
                         }
                     }
                     else {
-                        if (selected.name === 'stair' || selected.name === 'floor') {
+                        if (selected.name === 'stair' || selected.name === 'floor' || selected.name === 'stairfloor') {
                             input.hold = 1;
                             input.v = 0;
                             var newCollide = bumpUp(collisionResults, directionVector, game);

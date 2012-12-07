@@ -22,7 +22,7 @@ function Skybox(game) {
     var mesh        = new THREE.Mesh(geometry, material);
     mesh.position.z += 250;
     mesh.position.x += 200;
-
+    game.box = mesh;
 
 
     (function generate(skybox) {
