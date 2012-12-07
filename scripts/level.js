@@ -363,16 +363,6 @@ function Level(game) {
                 minZ = geometry.vertices[v].z;
             }
         }
-        if (Math.abs(maxX + minX) > 0.01 || Math.abs(maxY + minY) > 0.01 || Math.abs(maxZ + minZ) > 0.01) {
-            console.log(name);
-            console.log(maxX + minX);
-            console.log(maxY + minY);
-            console.log(maxZ + minZ);          
-        }
-        //if (name === 'fdoor') {
-        //    console.log(scalez * (maxZ - minZ));
-        //    console.log(z + scalez * (maxZ + minZ) / 2);
-        //}
         objMesh.position.set(x, y, z);
         var rx = Math.floor(Math.floor(x + scalex * (maxX + minX) / 2) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(z + scalez * (maxZ + minZ) / 2) / CELL_SIZE + 1 / 2);
@@ -389,7 +379,9 @@ function Level(game) {
 
             boundingBox.name = name;
             boundingBox.rotation.y = rot;
-            boundingBox.position.set(x + scalex * (maxX + minX) / 2, y + scaley * (maxY + minY) / 2, z + scalez * (maxZ + minZ) / 2);
+            var realX = (maxX + minX) / 2 * Math.cos(rot) - (maxZ + minZ) / 2 * Math.sin(rot);
+            var realZ = -(maxX + minX) / 2 * Math.sin(rot) + (maxZ + minZ) / 2 * Math.cos(rot);
+            boundingBox.position.set(x + realX, y + scaley * (maxY + minY) / 2, z + realZ);
             boundingBox.model = objMesh;
             if (name === 'door') {
                 boundingBox.canToggle = true;
