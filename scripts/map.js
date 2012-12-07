@@ -14,7 +14,7 @@ Map[0].push(
 "........oFFfffffffff.\n" +
 ".ooooooooFFfffffffff.\n" +
 "fffffffffffffffpffff.\n" +
-"ffsfffffffpfffffffff.\n" +
+"ffffffffffpfffffffff.\n" +
 "ffffffffffffffffffff.\n" +
 ".fffpf\n" +
 ".fffff\n" +
@@ -23,7 +23,7 @@ Map[0].push(
 ".fffff\n" +
 ".ffpff\n" +
 ".fffff\n" +
-".fffff\n" +
+".sffff\n" +
 ".fffff");
 
 Map[0].push(
@@ -104,7 +104,7 @@ Map[0].push(
 ".e...4\n" +
 ".w11e4\n" +
 ".1..e4\n" +
-".w33ee");
+".w33qe");
 
 Map[0].push(
 ".....................\n" +
