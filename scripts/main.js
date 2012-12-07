@@ -100,6 +100,7 @@ function updateDebug( info, game ){
 		info.innerHTML += " Light: " + player.lightOn; 
 		info.innerHTML += " Current Speed: " + player.currSpd + "<br / >";
 		
+		info.innerHTML += " Sound Level: " + player.sound
 		info.innerHTML += " Key: " + game.key + "<br / ><br />";
 		
 		if( warden.mesh ){

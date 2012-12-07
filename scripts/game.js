@@ -223,7 +223,7 @@ function Game(renderer, canvas) {
 
         this.player.update(input, this.scene);
 
-        this.warden.update(this, input);
+        this.warden.update(this, input, this.player.mesh.position, this.player.sound);
 
         updateOperation(this, input);
         updateDistance(this);

@@ -10,8 +10,8 @@ function Warden() {
     //Mechanic Variables 
     this.speed = 0.6;
     this.currSpd = this.speed;
-    this.awareThres = 1;
-    this.angerThres = 60;
+    this.awareThres = 20;
+    this.angerThres = 50;
 
     //general Sound variables - Warden Sounds require nodes for positions. 
     //  Needs research
@@ -102,8 +102,6 @@ function Warden() {
         //Warden Patrol points
         this.patrols = patrolArr;
 
-
-
         console.log("Patrol Points: ");
         for (var i = 0; i < this.patrols.length ; i++) {
             console.log(this.patrols[i].x + " " + this.patrols[i].z);
@@ -113,51 +111,57 @@ function Warden() {
         this.update = this.updateLoad;
     }
 
-    this.checkPlayer = function (game, input) {
+    this.checkPlayer = function (game, input, playerSound, d ) {
+       
+       	//sound awareness
+       	this.awareness += (( playerSound > d ) ?  0.2 : -0.1 ) * playerSound / 100 ; 
+       	       
+        //light awareness
         switch (game.urgent) {
-            case 0:
+            case 0: //very far
                 game.warden.awareness -= 0.1;
                 break;
-            case 1:
+            case 1: //closer
                 
                 if (game.player.crouch === 1 || game.player.lightOn === false) {
                     this.awareness -= 0.1;
                 }
                 else {
-                    if (input.trigger.run === 1) {
-                        this.awareness += 0.2;
-                    }
-                    else {
-                        this.awareness += 0.1;
-                    }
+                    
+                    this.awareness += 0.1;
+                    
                 }
                 break;
-            case 2:
+            case 2: //closer still
                 if (game.player.crouch === 1 && game.player.lightOn === false) {
                     this.awareness -= 0.1;
                 }
                 else {
-                    this.awareness += 0.1 * (input.trigger.run + 1) * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                    this.awareness += 0.1 * ( 2 - game.player.crouch) * ( 1 + game.player.lightOn );
                 }
                 break;
-            case 3:
-                this.awareness += 0.3 * (input.trigger.run + 1) * (2 - game.player.crouch) * (1 + game.player.lightOn);
+            case 3: // Too close
+                this.awareness += 0.3 * ( 2 - game.player.crouch ) * ( 1 + game.player.lightOn );
                 break;
         }
+       
         this.awareness = (this.awareness < 0) ? 0 : ((this.awareness > 100) ? 100 : this.awareness);
     }
 
-    this.updateLoaded = function (game, input) {
+    this.updateLoaded = function (game, input, playPos, playerSound) {
 
         //current position.
         var X = this.mesh.position.x;
         var Z = this.mesh.position.z;
         var Y = this.mesh.position.y;
-        var dX;
-        var dZ;
-        var d;
+        
+        console.log( playPos ); 
+        var dX = playPos.x - X;
+        var dZ = playPos.z - Z; 
+        var  d = Math.sqrt( ( dX * dX) + (dZ * dZ));
 
-        this.checkPlayer(game, input);
+
+        this.checkPlayer(game, input, playerSound, d);
 
         if (game.urgent === 4) {
             this.playFinalScream();
@@ -199,7 +203,9 @@ function Warden() {
             d = Math.sqrt(dX * dX + dZ * dZ);
 
             //if awareness too high, warden sprints
-            this.currSpd = (1 + 0.01 * this.awareness) * this.speed;
+            
+            this.currSpd = ( this.awareness > this.angerThres ) ? ( 1 + 0.01 * this.awareness) * this.speed : this.speed;
+            
             this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
             this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
             this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
