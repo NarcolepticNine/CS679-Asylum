@@ -973,6 +973,10 @@ function Level(game) {
             wx = Math.floor(game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
             wz = Math.floor(game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
             wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
+            game.warden.ratio += 0.02;
+            if (game.warden.ratio > 1) {
+                game.warden.ratio -= 1;
+            }
             //draw the warden
             mapContext.beginPath();
             mapContext.fillStyle = "#ff0000";
@@ -1003,6 +1007,12 @@ function Level(game) {
             mapContext.fillStyle = "#ffcf00";
             mapContext.arc(wx, wz, 2 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
             mapContext.fill();
+            mapContext.moveTo(wx, wz);
+            mapContext.beginPath();
+            mapContext.strokeStyle = "#00ff00";
+            mapContext.lineWidth = 2;
+            mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE * game.warden.ratio, 0, 2 * Math.PI, false);
+            mapContext.stroke();
             mapContext.globalAlpha = 0.5;
 
         }

@@ -12,6 +12,7 @@ function Warden() {
     this.currSpd = this.speed;
     this.awareThres = 20;
     this.angerThres = 50;
+    this.ratio = 0;
 
     //general Sound variables - Warden Sounds require nodes for positions. 
     //  Needs research
@@ -67,6 +68,7 @@ function Warden() {
         this.game = game;
         this.soundManager = game.soundManager;
         this.startPos = startPos;
+        this.ratio = 0;
 
         var warden = this;
 
