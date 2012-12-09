@@ -964,10 +964,9 @@ function Level(game) {
 
         // Draw the player
         mapContext.beginPath();
-        mapContext.strokeStyle = "#ff0000";
-        mapContext.lineWidth = 3;
+        mapContext.fillStyle = "#00ff00";
         mapContext.arc(px, pz, 3, 0, 2 * Math.PI, false);
-        mapContext.stroke();
+        mapContext.fill();
 
 
         if (game.warden.mesh != null) {
@@ -976,10 +975,36 @@ function Level(game) {
             wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
             //draw the warden
             mapContext.beginPath();
-            mapContext.strokeStyle = "#00ff00";
-            mapContext.lineWidth = 3;
+            mapContext.fillStyle = "#ff0000";
             mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
-            mapContext.stroke();
+            mapContext.fill();
+            mapContext.globalAlpha = 0.1;
+            
+            var theta;
+            if (game.warden.vZ === 0 && game.warden.vX === 0) {
+                theta = Math.PI / 2;
+            }
+            else {
+                theta = Math.atan2(game.warden.vZ, game.warden.vX);
+            }
+            
+            mapContext.beginPath();
+            mapContext.moveTo(wx, wz);
+            mapContext.fillStyle = "#ffcf00";            
+            mapContext.arc(wx, wz, 8 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+            mapContext.fill();
+            mapContext.beginPath();
+            mapContext.moveTo(wx, wz);
+            mapContext.fillStyle = "#ffcf00";
+            mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+            mapContext.fill();
+            mapContext.beginPath();
+            mapContext.moveTo(wx, wz);
+            mapContext.fillStyle = "#ffcf00";
+            mapContext.arc(wx, wz, 2 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+            mapContext.fill();
+            mapContext.globalAlpha = 0.5;
+
         }
     };
 
