@@ -1,5 +1,4 @@
 var CELL_TYPES = {
-    nothing: ' ',
     floor: 'f',
     ceil: 'c',
     f_nc: 'F',//floor without ceiling
@@ -17,7 +16,7 @@ var CELL_TYPES = {
     key: 'k',
     warden: 'W',
     Fdoor: 'D',
-    Door: 'd',
+    door: 'd',
     stop: '.',
     patrol: 'p'
 },
@@ -132,8 +131,8 @@ function Level(game) {
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.Fdoor + rows[y][t + 1][z].charAt(x)));
                                 t++;
                                 break;
-                            case CELL_TYPES.Door:
-                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.Door + rows[y][t + 1][z].charAt(x)));
+                            case CELL_TYPES.door:
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.door + rows[y][t + 1][z].charAt(x)));
                                 t++;
                                 break;
                             case CELL_TYPES.bookcase:
@@ -161,9 +160,6 @@ function Level(game) {
                             case CELL_TYPES.warden:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.floor));
                                 this.addWardenPosition(x, y, z);
-                                break;
-                            case CELL_TYPES.nothing:
-                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.nothing));
                                 break;
                             case CELL_TYPES.patrol:
                                 this.patrolPos[rows[y][t + 1][z].charAt(x) - '0'] = new THREE.Vector3(x * CELL_SIZE, y, z * CELL_SIZE);
@@ -241,9 +237,7 @@ function Level(game) {
                         yy = y * CELL_SIZE;
                         zz = z * CELL_SIZE;
                         // Generate geometry according to cell type
-                        if (cell.type.charAt(0) === CELL_TYPES.nothing) {
-                            continue;
-                        } else if (cell.type.charAt(0) === CELL_TYPES.floor) {
+                        if (cell.type.charAt(0) === CELL_TYPES.floor) {
                             this.generateFloorGeometry(xx, yy, zz);
                             this.generateCeilingGeometry(xx, yy, zz, 'ceil');
                         }
@@ -252,7 +246,6 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.key) {
                             this.generateObjGeometry(xx, yy + 8, zz, 1, 1, 1, 0, 'obj/key.js', 'obj/key.jpg', 'key');
-                            console.log(cell.type.charAt(1));
                             if (cell.type.charAt(1) === '0') {
                                 game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
                                 game.nextGoal[1].push('Find Key 1');
@@ -286,7 +279,7 @@ function Level(game) {
                             game.nextGoal[3].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
                             game.nextGoal[3].push('Escape');
                         }
-                        else if (cell.type.charAt(0) === CELL_TYPES.Door) {
+                        else if (cell.type.charAt(0) === CELL_TYPES.door) {
                             this.generateDoorGeometry(xx, yy, zz, cell.type.charAt(1));
                             if (cell.type.charAt(1) === 'q') {
                                 game.nextGoal[0].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
@@ -705,10 +698,10 @@ function Level(game) {
                 this.generateObjGeometry(x + CELL_SIZE / 32, y + CELL_SIZE * 0.5, z - CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI - Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '3':
-                this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 0.5, z - CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x - CELL_SIZE / 2, y + CELL_SIZE * 0.5, z - CELL_SIZE / 16, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
             case '1':
-                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE * 0.5, z + CELL_SIZE / 32, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI + Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
+                this.generateObjGeometry(x + CELL_SIZE / 2, y + CELL_SIZE * 0.5, z + CELL_SIZE / 16, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI + Math.PI, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
         }
     };
@@ -906,23 +899,30 @@ function Level(game) {
         mapCanvas = document.getElementById("minimap");
         mapContext = mapCanvas.getContext("2d");
         // Setup colors for each cell type
-        this.mapColors.nothing = "#202020";
-        this.mapColors.floor = "#00004f";
-        this.mapColors.ceil = "#4f0000";
+        this.mapColors.nothing = "#ff0000";
+        this.mapColors.door = "#ffff00";
+        this.mapColors.Fdoor = "#00ff00";
         this.mapColors.stair = "#ff7f00";
-        this.mapColors.window = "#0000ff";
+        this.mapColors.window = "#c0c0c0";
         this.mapColors.wall = "#c0c0c0";
     };
 
     // Update minimap
     // --------------------------------
     this.updateMinimap = function () {
-        var x, z, t, xx, zz, px, pz, py, cell, color;
+        var x, z, t, xx, zz, px, pz, cell, color;
 
         // Calculate the player's position on the minimap
-        px = Math.floor(game.player.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-        pz = Math.floor(game.player.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-        ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        px = game.player.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE;
+        pz = game.player.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE;
+        var ry;
+        if (game.player.crouch) {
+            ry = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ry = game.player.mesh.position.y - 10;
+        }
+        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
 
         // Clear the map
         mapContext.save();
@@ -933,34 +933,101 @@ function Level(game) {
         // Blend the map a bit
         mapContext.globalAlpha = 0.5;
 
-        //// Draw the map cells
-        //for (z = 0; z < NUM_CELLS.z; ++z) {
-        //    for (x = 0; x < NUM_CELLS.x; ++x) {
-        //        color = this.mapColors.nothing;
-        //        xx = x * MAP_CELL_SIZE;
-        //        zz = z * MAP_CELL_SIZE;
-        //        var chosen = 0;
-        //        for (t = 0; t < this.grid[ry][z][x].length; t++) {
-        //            cell = this.grid[ry][z][x][t];
-        //            switch (cell.type.charAt(0)) {
-        //                //case CELL_TYPES.nothing: color = this.mapColors.nothing; break;
-        //                //case CELL_TYPES.ceil: color = this.mapColors.ceil; break;
-        //                //case CELL_TYPES.start: color = this.mapColors.floor; break;
-        //                //case CELL_TYPES.floor: color = this.mapColors.floor; break;
-        //                case CELL_TYPES.stair: color = this.mapColors.stair; chosen = 1; break;
-        //                case CELL_TYPES.window: color = this.mapColors.window; chosen = 1; break;
-        //                case CELL_TYPES.wall: color = this.mapColors.wall; chosen = 1; break;
-        //            }
-        //            if (chosen === 1) {
-        //                break;
-        //            }
-        //        }
-        //        if (this.grid[ry][z][x].length > 0) {
-        //            mapContext.fillStyle = color;
-        //            mapContext.fillRect(xx, zz, MAP_CELL_SIZE, MAP_CELL_SIZE);
-        //        }
-        //    }
-        //}
+        // Draw the map cells
+        for (z = 0; z < NUM_CELLS.z; ++z) {
+            for (x = 0; x < NUM_CELLS.x; ++x) {
+                color = this.mapColors.nothing;
+                description = '0';
+                xx = x * MAP_CELL_SIZE;
+                zz = z * MAP_CELL_SIZE;
+                for (t = 0; t < this.grid[ry][z][x].length; t++) {
+                    cell = this.grid[ry][z][x][t];
+                    switch (cell.type.charAt(0)) {
+                        case CELL_TYPES.wall: color = this.mapColors.wall; description = cell.type.charAt(1); break;
+                        case CELL_TYPES.window: color = this.mapColors.window; description = cell.type.charAt(1); break;
+                        case CELL_TYPES.door: color = this.mapColors.door; description = cell.type.charAt(1); break;
+                        case CELL_TYPES.Fdoor: color = this.mapColors.Fdoor; description = cell.type.charAt(1); break;
+                        case CELL_TYPES.f_nc:
+                        case CELL_TYPES.ceil:
+                            color = this.mapColors.stair; break;
+                        default:
+                            color = this.mapColors.nothing;
+                            break;
+                    }
+
+                    if (color !== this.mapColors.nothing) {
+                        mapContext.fillStyle = color;
+                        switch (color) {
+                            case this.mapColors.wall:
+                            case this.mapColors.window:
+                                switch (description) {
+                                    case 'n':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE, MAP_CELL_SIZE / 16);
+                                        break;
+                                    case 's':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE, zz + 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE, MAP_CELL_SIZE / 16);
+                                        break;
+                                    case 'w':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE, MAP_CELL_SIZE / 16, MAP_CELL_SIZE);
+                                        break;
+                                    case 'e':
+                                        mapContext.fillRect(xx + 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE, MAP_CELL_SIZE / 16, MAP_CELL_SIZE);
+                                        break;
+                                }
+                                break;
+                            case this.mapColors.door:
+                                switch (description) {
+                                    case 'n':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, MAP_CELL_SIZE, MAP_CELL_SIZE / 8);
+                                        break;
+                                    case 's':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE + 1 / 32 * MAP_CELL_SIZE, zz + 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, MAP_CELL_SIZE, MAP_CELL_SIZE / 8);
+                                        break;
+                                    case 'w':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE + 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE / 8, MAP_CELL_SIZE);
+                                        break;
+                                    case 'e':
+                                    case 'q':
+                                        mapContext.fillRect(xx + 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE / 8, MAP_CELL_SIZE);
+                                        break;
+                                    case '4':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE + 1 / 32 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, MAP_CELL_SIZE, MAP_CELL_SIZE / 8);
+                                        break;
+                                    case '2':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, zz + 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, MAP_CELL_SIZE, MAP_CELL_SIZE / 8);
+                                        break;
+                                    case '3':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE / 8, MAP_CELL_SIZE);
+                                        break;
+                                    case '1':
+                                        mapContext.fillRect(xx + 0.5 * MAP_CELL_SIZE - 1 / 16 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE + 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE / 8, MAP_CELL_SIZE);
+                                        break;
+                                }
+                                break;
+                            case this.mapColors.Fdoor:
+                                switch (description) {
+                                    case 'n':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 8 * MAP_CELL_SIZE, MAP_CELL_SIZE * 17 / 16, MAP_CELL_SIZE / 4);
+                                        break;
+                                    case 's':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, zz + 0.5 * MAP_CELL_SIZE - 1 / 8 * MAP_CELL_SIZE, MAP_CELL_SIZE * 17 / 16, MAP_CELL_SIZE / 4);
+                                        break;
+                                    case 'w':
+                                        mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE - 1 / 8 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE / 4, MAP_CELL_SIZE * 17 /16);
+                                        break;
+                                    case 'e':
+                                        mapContext.fillRect(xx + 0.5 * MAP_CELL_SIZE - 1 / 8 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE - 1 / 32 * MAP_CELL_SIZE, MAP_CELL_SIZE / 4, MAP_CELL_SIZE * 17 /16);
+                                        break;
+                                }
+                                break;
+                            case this.mapColors.stair:
+                                mapContext.fillRect(xx - 0.5 * MAP_CELL_SIZE, zz - 0.5 * MAP_CELL_SIZE, MAP_CELL_SIZE, MAP_CELL_SIZE);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
 
         // Draw the player
         mapContext.beginPath();
@@ -970,50 +1037,52 @@ function Level(game) {
 
 
         if (game.warden.mesh != null) {
-            wx = Math.floor(game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
-            wz = Math.floor(game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE) + MAP_CELL_SIZE / 2;
+            wx = game.warden.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE;
+            wz = game.warden.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE;
             wy = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
             game.warden.ratio += 0.02;
             if (game.warden.ratio > 1) {
                 game.warden.ratio -= 1;
             }
             //draw the warden
-            mapContext.beginPath();
-            mapContext.fillStyle = "#ff0000";
-            mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
-            mapContext.fill();
-            mapContext.globalAlpha = 0.1;
-            
-            var theta;
-            if (game.warden.vZ === 0 && game.warden.vX === 0) {
-                theta = Math.PI / 2;
+            if (wy === ry) {
+                mapContext.beginPath();
+                mapContext.fillStyle = "#ff0000";
+                mapContext.arc(wx, wz, 3, 0, 2 * Math.PI, false);
+                mapContext.fill();
+                mapContext.globalAlpha = 0.1;
+
+                var theta;
+                if (game.warden.vZ === 0 && game.warden.vX === 0) {
+                    theta = Math.PI / 2;
+                }
+                else {
+                    theta = Math.atan2(game.warden.vZ, game.warden.vX);
+                }
+
+                mapContext.beginPath();
+                mapContext.moveTo(wx, wz);
+                mapContext.fillStyle = "#ffcf00";
+                mapContext.arc(wx, wz, 8 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+                mapContext.fill();
+                mapContext.beginPath();
+                mapContext.moveTo(wx, wz);
+                mapContext.fillStyle = "#ffcf00";
+                mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+                mapContext.fill();
+                mapContext.beginPath();
+                mapContext.moveTo(wx, wz);
+                mapContext.fillStyle = "#ffcf00";
+                mapContext.arc(wx, wz, 2 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+                mapContext.fill();
+                mapContext.moveTo(wx, wz);
+                mapContext.beginPath();
+                mapContext.strokeStyle = "#00ff00";
+                mapContext.lineWidth = 2;
+                mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE * game.warden.ratio, 0, 2 * Math.PI, false);
+                mapContext.stroke();
+                mapContext.globalAlpha = 0.5;
             }
-            else {
-                theta = Math.atan2(game.warden.vZ, game.warden.vX);
-            }
-            
-            mapContext.beginPath();
-            mapContext.moveTo(wx, wz);
-            mapContext.fillStyle = "#ffcf00";            
-            mapContext.arc(wx, wz, 8 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
-            mapContext.fill();
-            mapContext.beginPath();
-            mapContext.moveTo(wx, wz);
-            mapContext.fillStyle = "#ffcf00";
-            mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
-            mapContext.fill();
-            mapContext.beginPath();
-            mapContext.moveTo(wx, wz);
-            mapContext.fillStyle = "#ffcf00";
-            mapContext.arc(wx, wz, 2 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
-            mapContext.fill();
-            mapContext.moveTo(wx, wz);
-            mapContext.beginPath();
-            mapContext.strokeStyle = "#00ff00";
-            mapContext.lineWidth = 2;
-            mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE * game.warden.ratio, 0, 2 * Math.PI, false);
-            mapContext.stroke();
-            mapContext.globalAlpha = 0.5;
 
         }
     };

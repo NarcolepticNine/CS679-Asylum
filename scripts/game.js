@@ -233,6 +233,19 @@ function Game(renderer, canvas) {
 
         this.player.update(input, this.scene);
 
+        handleCollisions(this, input);
+        if (input.hold === 0 && input.Jump === 0) {
+            input.Jump = 1;
+            if (smallDrop(this)) {
+                while (input.hold === 0) {
+                    this.player.update(input);
+                    handleCollisions(this, input);
+                }
+            }
+        }
+        updateCollisionSet(this)
+        updateScene(this);
+
         this.warden.update(this, input, this.player.mesh.position, this.player.sound);
 
         updateOperation(this, input);
@@ -246,18 +259,6 @@ function Game(renderer, canvas) {
             return false;
         }
 
-        handleCollisions(this, input);
-        if (input.hold === 0 && input.Jump === 0) {
-            input.Jump = 1;
-            if (smallDrop(this)) {
-                while (input.hold === 0) {
-                    this.player.update(input);
-                    handleCollisions(this, input);
-                }
-            }
-        }
-        updateCollisionSet(this)
-        updateScene(this);
         TWEEN.update();
         return true;
     };
@@ -333,18 +334,18 @@ function updatePlayerInformation(game, input) {
     playerContext.clearRect(0, 0, game.playerInfo.width, game.playerInfo.height);
     playerContext.restore();
 
-    // Draw the direction information
-    playerContext.beginPath();
-    playerContext.strokeStyle = "#7f7f7f";
-    playerContext.lineWidth = 2;
-    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 60, 0, 2 * Math.PI, false);
-    playerContext.stroke();
+    //// Draw the direction information
+    //playerContext.beginPath();
+    //playerContext.strokeStyle = "#7f7f7f";
+    //playerContext.lineWidth = 2;
+    //playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 60, 0, 2 * Math.PI, false);
+    //playerContext.stroke();
 
-    playerContext.beginPath();
-    playerContext.strokeStyle = "#7f7f7f";
-    playerContext.lineWidth = 2;
-    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 50, 0, 2 * Math.PI, false);
-    playerContext.stroke();
+    //playerContext.beginPath();
+    //playerContext.strokeStyle = "#7f7f7f";
+    //playerContext.lineWidth = 2;
+    //playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 50, 0, 2 * Math.PI, false);
+    //playerContext.stroke();
 
     playerContext.font = '20px Arial';
     playerContext.textBaseline = 'middle';
@@ -352,85 +353,85 @@ function updatePlayerInformation(game, input) {
     playerContext.fillStyle = '#00ff00';
     playerContext.fillText(game.nextGoal[game.gindex][1], game.playerInfo.width / 2, game.playerInfo.height / 2);
 
-    //calculate the distance between the player and the next goal
-    var dis = Math.sqrt((game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) * (game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) +
-                        (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z) * (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z));
+    ////calculate the distance between the player and the next goal
+    //var dis = Math.sqrt((game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) * (game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) +
+    //                    (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z) * (game.player.mesh.position.z - game.nextGoal[game.gindex][0].z));
 
-    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
-    var gy = game.nextGoal[game.gindex][0].y;
+    //var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+    //var gy = game.nextGoal[game.gindex][0].y;
 
-    var angle = 0;
-    if (dis < CELL_SIZE) {
-        angle = 2 * Math.PI;
-    }
-    else {
-        if (dis > 24 * CELL_SIZE) {
-            angle = -Math.PI / 12;
-        }
-        else {
-            angle = -(-Math.PI / 12 * dis / CELL_SIZE + 25 / 12 * Math.PI);
-        }
-    }
-    var direction1 = Math.atan2(game.nextGoal[game.gindex][0].z - game.player.mesh.position.z, game.nextGoal[game.gindex][0].x - game.player.mesh.position.x);
-    var direction2 = input.center + input.phi;
-    playerContext.beginPath();
-    playerContext.strokeStyle = "#ffff00";
-    playerContext.lineWidth = 10;
-    if (angle < 2 * Math.PI) {
-        playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, -Math.PI / 2 + direction1 - direction2 - angle / 2, -Math.PI / 2 + direction1 - direction2 + angle / 2, true);
-    }
-    else {
-        playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, 0, angle, true);
-    }
-    playerContext.stroke();
+    //var angle = 0;
+    //if (dis < CELL_SIZE) {
+    //    angle = 2 * Math.PI;
+    //}
+    //else {
+    //    if (dis > 24 * CELL_SIZE) {
+    //        angle = -Math.PI / 12;
+    //    }
+    //    else {
+    //        angle = -(-Math.PI / 12 * dis / CELL_SIZE + 25 / 12 * Math.PI);
+    //    }
+    //}
+    //var direction1 = Math.atan2(game.nextGoal[game.gindex][0].z - game.player.mesh.position.z, game.nextGoal[game.gindex][0].x - game.player.mesh.position.x);
+    //var direction2 = input.center + input.phi;
+    //playerContext.beginPath();
+    //playerContext.strokeStyle = "#ffff00";
+    //playerContext.lineWidth = 10;
+    //if (angle < 2 * Math.PI) {
+    //    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, -Math.PI / 2 + direction1 - direction2 - angle / 2, -Math.PI / 2 + direction1 - direction2 + angle / 2, true);
+    //}
+    //else {
+    //    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 55, 0, angle, true);
+    //}
+    //playerContext.stroke();
 
-    playerContext.beginPath();
-    playerContext.strokeStyle = "#ffffff";
-    playerContext.lineWidth = 1;
-    playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height * 0.41, game.playerInfo.height * 0.025, 0, Math.PI * 2, true);
-    playerContext.stroke();
-
-
+    //playerContext.beginPath();
+    //playerContext.strokeStyle = "#ffffff";
+    //playerContext.lineWidth = 1;
+    //playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height * 0.41, game.playerInfo.height * 0.025, 0, Math.PI * 2, true);
+    //playerContext.stroke();
 
 
-    playerContext.strokeStyle = "#ffff00";
-    if (gy > ry) {
-        playerContext.beginPath();
-        playerContext.lineWidth = 3;
-        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
-        playerContext.lineTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
-        playerContext.stroke();
-        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
-        playerContext.lineTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
-        playerContext.stroke();
-        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
-        playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
-        playerContext.stroke();
-    }
-    else {
-        if (gy < ry) {
-            playerContext.beginPath();
-            playerContext.lineWidth = 3;
-            playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
-            playerContext.lineTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
-            playerContext.stroke();
-            playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
-            playerContext.lineTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
-            playerContext.stroke();
-            playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
-            playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
-            playerContext.stroke();
-        }
-        else {
-            playerContext.beginPath();
-            playerContext.lineWidth = 3;
-            playerContext.moveTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
-            playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
-            playerContext.stroke();
 
 
-        }
-    }
+    //playerContext.strokeStyle = "#ffff00";
+    //if (gy > ry) {
+    //    playerContext.beginPath();
+    //    playerContext.lineWidth = 3;
+    //    playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+    //    playerContext.lineTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+    //    playerContext.stroke();
+    //    playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+    //    playerContext.lineTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+    //    playerContext.stroke();
+    //    playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+    //    playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+    //    playerContext.stroke();
+    //}
+    //else {
+    //    if (gy < ry) {
+    //        playerContext.beginPath();
+    //        playerContext.lineWidth = 3;
+    //        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.39);
+    //        playerContext.lineTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+    //        playerContext.stroke();
+    //        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+    //        playerContext.lineTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+    //        playerContext.stroke();
+    //        playerContext.moveTo(game.playerInfo.width / 2, game.playerInfo.height * 0.43);
+    //        playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+    //        playerContext.stroke();
+    //    }
+    //    else {
+    //        playerContext.beginPath();
+    //        playerContext.lineWidth = 3;
+    //        playerContext.moveTo(game.playerInfo.width / 2 - game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+    //        playerContext.lineTo(game.playerInfo.width / 2 + game.playerInfo.height * 0.02, game.playerInfo.height * 0.41);
+    //        playerContext.stroke();
+
+
+    //    }
+    //}
 
 }
 
@@ -440,7 +441,14 @@ function updatePlayerInformation(game, input) {
 function updateCollisionSet(game) {
     var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-    var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+    var ry;
+    if (game.player.crouch) {
+        ry = game.player.mesh.position.y - 2.5;
+    }
+    else {
+        ry = game.player.mesh.position.y - 10;
+    }
+    ry = Math.floor(ry / CELL_SIZE + 1 / 2);
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
         game.collisionSet = [];
 
@@ -507,7 +515,14 @@ function updateScene(game) {
     if (need === true) {
         var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        var ry;
+        if (game.player.crouch) {
+            ry = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ry = game.player.mesh.position.y - 10;
+        }
+        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
         for (var z = 0; z < NUM_CELLS.z; z++) {
             for (var x = 0; x < NUM_CELLS.x; x++) {
                 var append = false;
@@ -553,7 +568,15 @@ function updateScene(game) {
     else {
         var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        var ry;
+        if (game.player.crouch) {
+            ry = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ry = game.player.mesh.position.y - 10;
+        }
+        var ty = ry;
+        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
         var stairRegion = false;
         for (var o = 0; o < game.objects[ry][rz][rx].length; o++) {
             if (game.objects[ry][rz][rx][o].name === 'stair' || game.objects[ry][rz][rx][o].name === 'side' || game.objects[ry][rz][rx][o].name === 'support' || game.objects[ry][rz][rx][o].name === 'ceil2' || game.objects[ry][rz][rx][o].name === 'stairfloor') {
@@ -562,17 +585,13 @@ function updateScene(game) {
             }
         }
         if (stairRegion === false) {
+            game.old.x = rx;
+            game.old.y = ry;
+            game.old.z = rz;
             return;
         }
 
-        var ty;
-        if (game.player.crouch) {
-            ty = game.player.mesh.position.y - 2.5;
-        }
-        else {
-            ty = game.player.mesh.position.y - 10;
-        }
-
+       
         if (ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) > 0.11 && ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) < 0.89) {
             game.scene.remove(game.box);
         }
@@ -580,12 +599,12 @@ function updateScene(game) {
             game.scene.add(game.box);
         }
 
-        ty = Math.floor(ty / CELL_SIZE + 1 / 2);
+        
 
-        if (ty != game.old.y) {
+        if (ry != game.old.y) {
             for (var z = 0; z < NUM_CELLS.z; z++) {
                 for (var x = 0; x < NUM_CELLS.x; x++) {
-                    for (var y = ty - 2; y <= ty + 2; y++) {
+                    for (var y = ry - 2; y <= ry + 2; y++) {
                         if (y < 0 || y >= NUM_CELLS.y) {
                             continue;
                         }
@@ -602,14 +621,14 @@ function updateScene(game) {
             for (var z = 0; z < NUM_CELLS.z; z++) {
                 for (var x = 0; x < NUM_CELLS.x; x++) {
                     var append = false;
-                    for (var o = 0; o < game.objects[ty][z][x].length; o++) {
-                        if (game.objects[ty][z][x][o].name === 'stair' || game.objects[ty][z][x][o].name === 'side' || game.objects[ty][z][x][o].name === 'support' || game.objects[ty][z][x][o].name === 'ceil2' || game.objects[ty][z][x][o].name === 'stairfloor') {
+                    for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                        if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2' || game.objects[ry][z][x][o].name === 'stairfloor') {
                             append = true;
                         }
-                        game.scene.add(game.objects[ty][z][x][o]);
+                        game.scene.add(game.objects[ry][z][x][o]);
                     }
-                    for (var o = 0; o < game.models[ty][z][x].length; o++) {
-                        game.scene.add(game.models[ty][z][x][o]);
+                    for (var o = 0; o < game.models[ry][z][x].length; o++) {
+                        game.scene.add(game.models[ry][z][x][o]);
                     }
                     if (append === true) {
                         for (var dx = x - 1; dx <= x + 1; dx++) {
@@ -620,7 +639,7 @@ function updateScene(game) {
                                 if (dz < 0 || dz >= NUM_CELLS.z) {
                                     continue;
                                 }
-                                for (var y = ty - 1; y <= ty + 1; y += 2) {
+                                for (var y = ry - 1; y <= ry + 1; y += 2) {
                                     if (y < 0 || y >= NUM_CELLS.y) {
                                         continue;
                                     }
@@ -639,7 +658,7 @@ function updateScene(game) {
             }
         }
         game.old.x = rx;
-        game.old.y = ty;
+        game.old.y = ry;
         game.old.z = rz;
     }
 }
@@ -720,7 +739,14 @@ function updateOperation(game, input) {
         input.click = 0;
         var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        var ry;
+        if (game.player.crouch) {
+            ry = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ry = game.player.mesh.position.y - 10;
+        }
+        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
         for (var z = rz - 1; z <= rz + 1; z++) {
             if (z < 0 || z >= NUM_CELLS.z) {
                 continue;
@@ -745,16 +771,16 @@ function updateOperation(game, input) {
                             var door = collision[0].object, tween;
                             var ob = door.model;
                             if (door.doorState === "closed" && door.canToggle) {
-                                var ix = door.position.x - door.halfsize * 16 / 17 * Math.sin(door.beginRot);
-                                var iz = door.position.z - door.halfsize * 16 / 17 * Math.cos(door.beginRot);
+                                var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.beginRot);
+                                var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.beginRot);
                                 tween = new TWEEN.Tween({ rot: door.beginRot })
                                                  .to({ rot: door.endRot }, DOOR_TIMEOUT)
                                                  .easing(TWEEN.Easing.Elastic.Out)
                                                  .onUpdate(function () {
                                                      door.rotation.y = this.rot;
                                                      ob.rotation.y = this.rot;
-                                                     door.position.x = ix + door.halfsize * 16 / 17 * Math.sin(this.rot);
-                                                     door.position.z = iz + door.halfsize * 16 / 17 * Math.cos(this.rot);
+                                                     door.position.x = ix + door.halfsize * 15 / 16 * Math.sin(this.rot);
+                                                     door.position.z = iz + door.halfsize * 15 / 16 * Math.cos(this.rot);
                                                      ob.position.x = door.position.x;
                                                      ob.position.z = door.position.z;
 
@@ -768,16 +794,16 @@ function updateOperation(game, input) {
                                     door.canToggle = true;
                                 }, DOOR_TIMEOUT);
                             } else if (door.doorState === "open" && door.canToggle) {
-                                var ix = door.position.x - door.halfsize * 16 / 17 * Math.sin(door.endRot);
-                                var iz = door.position.z - door.halfsize * 16 / 17 * Math.cos(door.endRot);
+                                var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.endRot);
+                                var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.endRot);
                                 tween = new TWEEN.Tween({ rot: door.endRot })
                                     .to({ rot: door.beginRot }, DOOR_TIMEOUT)
                                     .easing(TWEEN.Easing.Elastic.Out)
                                     .onUpdate(function () {
                                         door.rotation.y = this.rot;
                                         ob.rotation.y = this.rot;
-                                        door.position.x = ix + door.halfsize * 16 / 17 * Math.sin(this.rot);
-                                        door.position.z = iz + door.halfsize * 16 / 17 * Math.cos(this.rot);
+                                        door.position.x = ix + door.halfsize * 15 / 16 * Math.sin(this.rot);
+                                        door.position.z = iz + door.halfsize * 15 / 16 * Math.cos(this.rot);
                                         ob.position.x = door.position.x;
                                         ob.position.z = door.position.z;
 
@@ -827,7 +853,14 @@ function updateDistance(game) {
     if (game.player.mesh !== null && game.warden.mesh !== null && (game.warden.vX != 0 || game.warden.vZ != 0)) {        
         var z1 = game.player.mesh.position.z - game.warden.mesh.position.z;
         var x1 = game.player.mesh.position.x - game.warden.mesh.position.x;
-        var ry = Math.floor(Math.floor(game.player.mesh.position.y) / CELL_SIZE);
+        var ry;
+        if (game.player.crouch) {
+            ry = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ry = game.player.mesh.position.y - 10;
+        }
+        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
         var my = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
         if (ry != my) {
             game.urgent = 0;
@@ -1026,6 +1059,7 @@ function handleCollisions(game, input) {
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    console.log(collisionResults[0].object.name);
                     if (selected.name === 'ceil' || selected.name === 'ceil2' || selected.name === 'wall' || selected.name === 'window-wall' || selected.name === 'side' || selected.name === 'support' ||
                         selected.name === 'column' || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);

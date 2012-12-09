@@ -185,8 +185,18 @@ function Warden() {
         //current position.
         var X = this.mesh.position.x;
         var Z = this.mesh.position.z;
-        var Y = this.mesh.position.y;
-
+        var Y = Math.floor(Math.floor(this.mesh.position.y) / CELL_SIZE);
+        var ry;
+        if (game.player.crouch) {
+            ry = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ry = game.player.mesh.position.y - 10;
+        }
+        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        if (Y != ry) {
+            this.awareness = 0;
+        }
         var dX = playPos.x - X;
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
