@@ -725,7 +725,12 @@ function updateOperation(game, input) {
                     switch (collision[0].object.name) {
                         case 'door':
                             if (game.gindex === 0) {
-                                game.gindex++;
+                                if (game.hintIndex >= 7) {
+                                    game.gindex++;
+                                }
+                                else {
+                                    break;
+                                }
                             }
                             var door = collision[0].object, tween;
                             var ob = door.model;

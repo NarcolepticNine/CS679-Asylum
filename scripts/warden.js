@@ -111,25 +111,25 @@ function Warden() {
         this.update = this.updateLoad;
     }
 
-    this.checkPlayer = function (game, input, playerSound, d ) {
-       
-       	//sound awareness
-       	this.awareness += (( playerSound > d ) ?  0.2 : -0.1 ) * playerSound / 100 ; 
-       	       
+    this.checkPlayer = function (game, input, playerSound, d) {
+
+        //sound awareness
+        this.awareness += ((playerSound > d) ? 0.2 : -0.1) * playerSound / 100;
+
         //light awareness
         switch (game.urgent) {
             case 0: //very far
                 game.warden.awareness -= 0.1;
                 break;
             case 1: //closer
-                
+
                 if (game.player.crouch === 1 || game.player.lightOn === false) {
                     this.awareness -= 0.1;
                 }
                 else {
-                    
+
                     this.awareness += 0.1;
-                    
+
                 }
                 break;
             case 2: //closer still
@@ -137,28 +137,30 @@ function Warden() {
                     this.awareness -= 0.1;
                 }
                 else {
-                    this.awareness += 0.1 * ( 2 - game.player.crouch) * ( 1 + game.player.lightOn );
+                    this.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn);
                 }
                 break;
             case 3: // Too close
-                this.awareness += 0.3 * ( 2 - game.player.crouch ) * ( 1 + game.player.lightOn );
+                this.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn);
                 break;
         }
-       
+
         this.awareness = (this.awareness < 0) ? 0 : ((this.awareness > 100) ? 100 : this.awareness);
     }
 
     this.updateLoaded = function (game, input, playPos, playerSound) {
+        if (game.gindex === 0) {
+            return;
+        }
 
         //current position.
         var X = this.mesh.position.x;
         var Z = this.mesh.position.z;
         var Y = this.mesh.position.y;
-        
-        console.log( playPos ); 
+
         var dX = playPos.x - X;
-        var dZ = playPos.z - Z; 
-        var  d = Math.sqrt( ( dX * dX) + (dZ * dZ));
+        var dZ = playPos.z - Z;
+        var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
 
         this.checkPlayer(game, input, playerSound, d);
@@ -203,9 +205,9 @@ function Warden() {
             d = Math.sqrt(dX * dX + dZ * dZ);
 
             //if awareness too high, warden sprints
-            
-            this.currSpd = ( this.awareness > this.angerThres ) ? ( 1 + 0.01 * this.awareness) * this.speed : this.speed;
-            
+
+            this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.01 * this.awareness) * this.speed : this.speed;
+
             this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
             this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
             this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
@@ -326,70 +328,70 @@ function Warden() {
     /* meshPos is a short hand for the warden's mesh
  * targetPos is either the player's position, or a patrol position.
  */
-this.pathfind = function( meshPos, targetPos ) {
-    var rx = Math.floor(Math.floor( meshPos.x) / CELL_SIZE + 1 / 2);
-    var rz = Math.floor(Math.floor( meshPos.z) / CELL_SIZE + 1 / 2);
-    var ry = Math.floor(Math.floor( meshPos.y) / CELL_SIZE);
-			
-		
-    var levelGrid = this.game.level.grid[ry]; 
-		
-    var direction = new Array();
-    for( var i = 0; i < 3; i++ ) direction[i] = new Array();  
-    var center = null;
-    var centerWalls = new Array();   
-		
-    for( var i = 0; i < 3 ; i++ ){
-			
-        for( var j = 0; j < 3; j++ ){
-            var cell = levelGrid[ rz + ( j - 1 )][ rx + ( i - 1 ) ];
-            if( i == 1 && j == 1 ){
-                center = cell; 
-    } else {
-					
-                for (var o = 0; o < cell.length; o++){
-						
-                    if ( cell[o].type.charAt(0) === CELL_TYPES.wall) {
-				    		
-                        switch( cell[o].type.charAt(1) ){
-				    		
-        //for any direction, set the variable to false for 
-        // the outer cells
-                            case 'n':
-                            case 's':
-                            case 'e':
-                            case 'w':
-                                direction[ i ][ j ] = true; 
-                                break;
-				    			
-    }
-    }
-    }
-    }
-    }
-    }
-		
+    this.pathfind = function (meshPos, targetPos) {
+        var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
+        var ry = Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
+
+
+        var levelGrid = this.game.level.grid[ry];
+
+        var direction = new Array();
+        for (var i = 0; i < 3; i++) direction[i] = new Array();
+        var center = null;
+        var centerWalls = new Array();
+
+        for (var i = 0; i < 3 ; i++) {
+
+            for (var j = 0; j < 3; j++) {
+                var cell = levelGrid[rz + (j - 1)][rx + (i - 1)];
+                if (i == 1 && j == 1) {
+                    center = cell;
+                } else {
+
+                    for (var o = 0; o < cell.length; o++) {
+
+                        if (cell[o].type.charAt(0) === CELL_TYPES.wall) {
+
+                            switch (cell[o].type.charAt(1)) {
+
+                                //for any direction, set the variable to false for 
+                                // the outer cells
+                                case 'n':
+                                case 's':
+                                case 'e':
+                                case 'w':
+                                    direction[i][j] = true;
+                                    break;
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         //check center
-    for (var o = 0; o < center.length; o++){
-						
-        if ( center[o].type.charAt(0) === CELL_TYPES.wall) {
-	    		
-            switch( center[o].type.charAt(1) ){
-	    		
-                case 'n':
-                case 's':
-                case 'e':
-                case 'w':
-                    centerWalls[center[o].type.charAt(1)] = true;
-                    break;
-	    			
-    }
-    }
-    }
-		
+        for (var o = 0; o < center.length; o++) {
+
+            if (center[o].type.charAt(0) === CELL_TYPES.wall) {
+
+                switch (center[o].type.charAt(1)) {
+
+                    case 'n':
+                    case 's':
+                    case 'e':
+                    case 'w':
+                        centerWalls[center[o].type.charAt(1)] = true;
+                        break;
+
+                }
+            }
+        }
+
         //determine which direction based on target direction. 
-    var ret = new THREE.Vector2();
-    ret.x = meshPos.x, ret.z = meshPos.z; 
+        var ret = new THREE.Vector2();
+        ret.x = meshPos.x, ret.z = meshPos.z;
         /*
         if( targetPos.x > meshPos.x ) {
             
@@ -409,8 +411,8 @@ this.pathfind = function( meshPos, targetPos ) {
              
         }
             */
-			
+
         //return ret;
-    return targetPos;  
-    }       
+        return targetPos;
+    }
 }
