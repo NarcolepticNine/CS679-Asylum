@@ -114,34 +114,61 @@ function Warden() {
     this.checkPlayer = function (game, input, playerSound, d) {
 
         //sound awareness
-        this.awareness += ((playerSound > d) ? 0.2 : -0.1) * playerSound / 100;
+        var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
 
         //light awareness
         switch (game.urgent) {
             case 0: //very far
-                game.warden.awareness -= 0.1;
-                break;
-            case 1: //closer
-
-                if (game.player.crouch === 1 || game.player.lightOn === false) {
-                    this.awareness -= 0.1;
+                if (soundAwareness === -1) {
+                    game.warden.awareness -= 1;
                 }
                 else {
-
-                    this.awareness += 0.1;
-
+                    game.warden.awareness += soundAwareness;
+                }
+                break;
+            case 1: //closer
+                if (game.player.crouch === 1 || game.player.lightOn === false) {
+                    if (soundAwareness === -1) {
+                        game.warden.awareness -= 1;
+                    }
+                    else {
+                        game.warden.awareness += soundAwareness;
+                    }
+                }
+                else {
+                    if (soundAwareness === -1) {
+                        game.warden.awareness += 0.1;
+                    }
+                    else {
+                        game.warden.awareness += soundAwareness + 0.1;
+                    }
                 }
                 break;
             case 2: //closer still
                 if (game.player.crouch === 1 && game.player.lightOn === false) {
-                    this.awareness -= 0.1;
+                    if (soundAwareness === -1) {
+                        game.warden.awareness -= 1;
+                    }
+                    else {
+                        game.warden.awareness += soundAwareness;
+                    }
                 }
                 else {
-                    this.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                    if (soundAwareness === -1) {
+                        this.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                    }
+                    else {
+                        game.warden.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn) + soundAwareness;
+                    }
                 }
                 break;
             case 3: // Too close
-                this.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                if (soundAwareness === -1) {
+                    game.warden.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                }
+                else {
+                    game.warden.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn) + soundAwareness;
+                }
                 break;
         }
 
@@ -206,7 +233,7 @@ function Warden() {
 
             //if awareness too high, warden sprints
 
-            this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.01 * this.awareness) * this.speed : this.speed;
+            this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
 
             this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
             this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
