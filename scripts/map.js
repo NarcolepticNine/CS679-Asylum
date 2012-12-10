@@ -13,9 +13,9 @@ Map[0].push(
 "..........o.o.oofffff.\n" +
 ".........oFFfffffffff.\n" +
 "..ooooooooFFfffffffff.\n" +
-".ffffffffffsfffffffff.\n" +
 ".ffffffffffffffffffff.\n" +
 ".ffffffffffffffffffff.\n" +
+".ffffffffffffffffffff.\n" +
 "..fffff\n" +
 "..fffff\n" +
 "..fffff\n" +
@@ -23,7 +23,7 @@ Map[0].push(
 "..fffff\n" +
 "..fffff\n" +
 "..fffff\n" +
-"..fffff\n" +
+"..sffff\n" +
 "..fffff");
 
 Map[0].push(

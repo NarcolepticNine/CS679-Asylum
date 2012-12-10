@@ -256,6 +256,8 @@ function Level(game) {
                             }
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz, 'ceil2');
+                            game.stairPosition.x += xx;
+                            game.stairPosition.y += zz;
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.desk) {
                             this.generateDeskGeometry(xx, yy, zz);
@@ -276,13 +278,13 @@ function Level(game) {
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.Fdoor) {
                             this.generateFdoorGeometry(xx, yy, zz, cell.type.charAt(1));
-                            game.nextGoal[3].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                            game.nextGoal[3].push(new THREE.Vector3(xx - CELL_SIZE / 2, yy / CELL_SIZE, zz));
                             game.nextGoal[3].push('Escape');
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.door) {
                             this.generateDoorGeometry(xx, yy, zz, cell.type.charAt(1));
                             if (cell.type.charAt(1) === 'q') {
-                                game.nextGoal[0].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
+                                game.nextGoal[0].push(new THREE.Vector3(xx + CELL_SIZE / 2, yy / CELL_SIZE, zz));
                                 game.nextGoal[0].push('Open Door');
                             }
                         }
@@ -900,7 +902,7 @@ function Level(game) {
         mapContext = mapCanvas.getContext("2d");
         // Setup colors for each cell type
         this.mapColors.nothing = "#ff0000";
-        this.mapColors.door = "#ffff00";
+        this.mapColors.door = "#00ffff";
         this.mapColors.Fdoor = "#00ff00";
         this.mapColors.stair = "#ff7f00";
         this.mapColors.window = "#c0c0c0";
@@ -1034,6 +1036,42 @@ function Level(game) {
         mapContext.fillStyle = "#00ff00";
         mapContext.arc(px, pz, 3, 0, 2 * Math.PI, false);
         mapContext.fill();
+
+        //draw destination
+        var ry;
+        if (game.player.crouch) {
+            ry = game.player.mesh.position.y - 2.5;
+        }
+        else {
+            ry = game.player.mesh.position.y - 10;
+        }
+        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        if (ry === game.nextGoal[game.gindex][0].y) {
+            mapContext.moveTo(game.nextGoal[game.gindex][0].x / CELL_SIZE * MAP_CELL_SIZE, game.nextGoal[game.gindex][0].z / CELL_SIZE * MAP_CELL_SIZE);
+            mapContext.beginPath();
+            mapContext.strokeStyle = "#ffff00";
+            mapContext.lineWidth = 2;
+            game.ratio += 0.1;
+            if (game.ratio > 1) {
+                game.ratio -= 1;
+            }
+            mapContext.arc(game.nextGoal[game.gindex][0].x / CELL_SIZE * MAP_CELL_SIZE, game.nextGoal[game.gindex][0].z / CELL_SIZE * MAP_CELL_SIZE, 0.5 * MAP_CELL_SIZE * game.ratio, 0, 2 * Math.PI, false);
+            mapContext.stroke();
+        }
+        else {
+            mapContext.moveTo(game.stairPosition.x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition.y / 4 / CELL_SIZE * MAP_CELL_SIZE);
+            mapContext.beginPath();
+            mapContext.strokeStyle = "#ffff00";
+            mapContext.lineWidth = 2;
+            game.ratio += 0.1;
+            if (game.ratio > 1) {
+                game.ratio -= 1;
+            }
+            mapContext.arc(game.stairPosition.x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition.y / 4 / CELL_SIZE * MAP_CELL_SIZE, MAP_CELL_SIZE * game.ratio, 0, 2 * Math.PI, false);
+            mapContext.stroke();
+        }
+
+
 
 
         if (game.warden.mesh != null) {

@@ -29,6 +29,8 @@ function Game(renderer, canvas) {
     this.box = 0;
     this.urgent = 0;
     this.learning = null;
+    this.ratio = 0;
+    this.stairPosition = null;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -171,7 +173,11 @@ function Game(renderer, canvas) {
         this.again = false;
         this.box = null;
         this.urgent = 0;
+        this.ratio = 0;
         this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0, jump: 0, crouch1: 0, crouch2: 0, run: 0 };
+        this.stairPosition = new THREE.Vector2();
+        this.stairPosition.x = 0;
+        this.stairPosition.y = 0;
         // Setup scene
 
 
@@ -1059,7 +1065,6 @@ function handleCollisions(game, input) {
             if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 1e-6) {
                 var selected = collisionResults[0].object;
                 if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
-                    console.log(collisionResults[0].object.name);
                     if (selected.name === 'ceil' || selected.name === 'ceil2' || selected.name === 'wall' || selected.name === 'window-wall' || selected.name === 'side' || selected.name === 'support' ||
                         selected.name === 'column' || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
                         var verticalInfo = bumpBack(collisionResults, directionVector, game);
