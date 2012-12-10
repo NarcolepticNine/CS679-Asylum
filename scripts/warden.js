@@ -3,9 +3,16 @@ function Warden() {
     this.game = null;
     this.startPos = null;
     this.mesh = null;
-    this.meshURL = "./obj/demon/demon.js";
+    this.meshURL = "./obj/demon/demonAnim.js";
     this.textureURL = "./obj/demon/colorMap.png";
     this.flashlight1 = null;
+    
+    //Animation Variables
+	this.duration = 1500;
+	this.keyframes = 23;
+	this.interpolation = this.duration / this.keyframes;
+	this.lastKeyframe = 0;
+	this.currentKeyframe = 0;
 
     //Mechanic Variables 
     this.speed = 0.6;
@@ -74,7 +81,7 @@ function Warden() {
 
         var callback = function (geometry, scalex, scaley, scalez, tmap) {
             console.log("Demon Loaded");
-            var tempMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture("./obj/demon/colorMap.png") }));
+            var tempMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture("./obj/demon/colorMap.png"), morphTargets: true }));
             tempMesh.scale.set(scalex, scaley, scalez);
             warden.mesh = tempMesh;
 
@@ -94,9 +101,9 @@ function Warden() {
         this.soundManager.loadSound(this.finalscream);
 
         //Warden Flashlight
-        this.flashlight1 = new THREE.SpotLight(0xffffff, 50, 50, Math.PI / 2, 10);
-        this.flashlight2 = new THREE.SpotLight(0xffffff, 30, 100, Math.PI / 2, 10);
-        this.flashlight3 = new THREE.PointLight(0xffffff, 10, 10);
+        this.flashlight1 = new THREE.SpotLight(0xffffff, 5, 50, Math.PI / 2, 10);
+        this.flashlight2 = new THREE.SpotLight(0xffffff, 5, 100, Math.PI / 2, 10);
+        this.flashlight3 = new THREE.PointLight(0xffffff, 5, 10);
         scene.add(this.flashlight1);
         scene.add(this.flashlight2);
         scene.add(this.flashlight3);
@@ -272,7 +279,28 @@ function Warden() {
                 meshPos.z + this.vZ / this.currSpd * 5
             );
         this.playSounds();
-
+        
+    	
+	
+		this.time = Date.now() % this.duration;
+	
+		this.keyframe = Math.floor( this.time / this.interpolation );
+	
+		if ( this.keyframe != this.currentKeyframe ) {
+	
+			this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 0;
+			this.mesh.morphTargetInfluences[ this.currentKeyframe ] = 1;
+			this.mesh.morphTargetInfluences[ this.keyframe ] = 0;
+	
+			this.lastKeyframe = this.currentKeyframe;
+			this.currentKeyframe = this.keyframe;
+			
+			//console.log(this.currentKeyframe);
+	
+		}
+	
+		this.mesh.morphTargetInfluences[ this.keyframe ] = ( this.time % this.interpolation ) / this.interpolation;
+		this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 1 - this.mesh.morphTargetInfluences[ this.keyframe ];
     }
 
     this.updateLoad = function (game, input) {
