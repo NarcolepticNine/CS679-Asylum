@@ -185,18 +185,22 @@ function Level(game) {
         this.grid = new Array(NUM_CELLS.y);
         game.objects = new Array(NUM_CELLS.y);
         game.models = new Array(NUM_CELLS.y);
+        game.visited = new Array(NUM_CELLS.y);
         for (y = 0; y < NUM_CELLS.y; ++y) {
             this.grid[y] = new Array(NUM_CELLS.z);
             game.objects[y] = new Array(NUM_CELLS.z);
             game.models[y] = new Array(NUM_CELLS.z);
+            game.visited[y] = new Array(NUM_CELLS.z);
             for (z = 0; z < NUM_CELLS.z; ++z) {
                 this.grid[y][z] = new Array(NUM_CELLS.x);
                 game.objects[y][z] = new Array(NUM_CELLS.x);
                 game.models[y][z] = new Array(NUM_CELLS.x);
+                game.visited[y][z] = new Array(NUM_CELLS.x);
                 for (x = 0; x < NUM_CELLS.x; ++x) {
                     this.grid[y][z][x] = [];
                     game.objects[y][z][x] = [];
                     game.models[y][z][x] = [];
+                    game.visited[y][z][x] = 0;
                 }
             }
         }
@@ -384,7 +388,12 @@ function Level(game) {
                 boundingBox = new THREE.Mesh(new THREE.CubeGeometry(8 * scalex * (maxX - minX), 4 * scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
             }
 
-            boundingBox.name = name;
+            if (name === 'qdoor') {
+                boundingBox.name = 'door';
+            }
+            else {
+                boundingBox.name = name;
+            }
             boundingBox.rotation.y = rot;
             var realX = scalex * (maxX + minX) / 2 * Math.cos(rot) - scalez * (maxZ + minZ) / 2 * Math.sin(rot);
             var realZ = -scalex * (maxX + minX) / 2 * Math.sin(rot) + scalez * (maxZ + minZ) / 2 * Math.cos(rot);
@@ -394,16 +403,31 @@ function Level(game) {
                 boundingBox.canToggle = true;
                 boundingBox.doorState = 'closed';
                 boundingBox.beginRot = rot;
+                boundingBox.special = 0;
                 if (rot > 2 * Math.PI) {
                     boundingBox.endRot = rot + Math.PI / 2;
                 }
                 else {
                     boundingBox.endRot = rot - Math.PI / 2;
                 }
-                boundingBox.canToggle = true;
-                boundingBox.doorState = 'closed';
                 boundingBox.halfsize = scalez * (maxZ - minZ) / 2;
             }
+            else {
+                if (name === 'qdoor') {
+                    boundingBox.canToggle = true;
+                    boundingBox.doorState = 'closed';
+                    boundingBox.special = 1;
+                    boundingBox.beginRot = rot;
+                    if (rot > 2 * Math.PI) {
+                        boundingBox.endRot = rot + Math.PI / 2;
+                    }
+                    else {
+                        boundingBox.endRot = rot - Math.PI / 2;
+                    }
+                    boundingBox.halfsize = scalez * (maxZ - minZ) / 2;
+                }
+            }
+
             if (name !== 'picture' && name !== 'bulletin' && name !== 'clock' && name !== 'window') {
                 game.objects[ry][rz][rx].push(boundingBox);
             }
@@ -696,6 +720,9 @@ function Level(game) {
             case '2':
                 this.generateObjGeometry(x - CELL_SIZE / 32, y + CELL_SIZE * 0.5, z + CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI + Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
+            case 'z':
+                this.generateObjGeometry(x - CELL_SIZE / 32, y + CELL_SIZE * 0.5, z + CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI + Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'qdoor');
+                break;
             case '4':
                 this.generateObjGeometry(x + CELL_SIZE / 32, y + CELL_SIZE * 0.5, z - CELL_SIZE / 2, 0.9689922, 1.8020047, 4.1472265, 4 * Math.PI - Math.PI / 2, 'obj/door.js', 'obj/door.jpg', 'door');
                 break;
@@ -912,11 +939,14 @@ function Level(game) {
     // Update minimap
     // --------------------------------
     this.updateMinimap = function () {
-        var x, z, t, xx, zz, px, pz, cell, color;
+        var x, z, t, xx, zz, rx, rz, px, pz, cell, color;
 
         // Calculate the player's position on the minimap
         px = game.player.mesh.position.x / CELL_SIZE * MAP_CELL_SIZE;
         pz = game.player.mesh.position.z / CELL_SIZE * MAP_CELL_SIZE;
+        rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+
         var ry;
         if (game.player.crouch) {
             ry = game.player.mesh.position.y - 2.5;
@@ -925,6 +955,7 @@ function Level(game) {
             ry = game.player.mesh.position.y - 10;
         }
         ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        game.visited[ry][rz][rx] = 1;
 
         // Clear the map
         mapContext.save();
@@ -1031,6 +1062,19 @@ function Level(game) {
             }
         }
 
+        for (var z = 0; z < NUM_CELLS.z; z++) {
+            for (var x = 0; x < NUM_CELLS.x; x++) {
+                if (game.visited[ry][z][x] === 0) {
+                    mapContext.clearRect(MAP_CELL_SIZE * (x - 0.5) , MAP_CELL_SIZE * (z - 0.5), MAP_CELL_SIZE, MAP_CELL_SIZE);
+                }
+                else {
+                    console.log('haha');
+                }
+            }
+        }
+
+
+
         // Draw the player
         mapContext.beginPath();
         mapContext.fillStyle = "#00ff00";
@@ -1101,17 +1145,17 @@ function Level(game) {
                 mapContext.beginPath();
                 mapContext.moveTo(wx, wz);
                 mapContext.fillStyle = "#ffcf00";
-                mapContext.arc(wx, wz, 8 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+                mapContext.arc(wx, wz, 8 * MAP_CELL_SIZE, theta - Math.PI / 6, theta + Math.PI / 6, false);
                 mapContext.fill();
                 mapContext.beginPath();
                 mapContext.moveTo(wx, wz);
                 mapContext.fillStyle = "#ffcf00";
-                mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+                mapContext.arc(wx, wz, 5 * MAP_CELL_SIZE, theta - Math.PI / 6, theta + Math.PI / 6, false);
                 mapContext.fill();
                 mapContext.beginPath();
                 mapContext.moveTo(wx, wz);
                 mapContext.fillStyle = "#ffcf00";
-                mapContext.arc(wx, wz, 2 * MAP_CELL_SIZE, theta - Math.PI / 12, theta + Math.PI / 12, false);
+                mapContext.arc(wx, wz, 2 * MAP_CELL_SIZE, theta - Math.PI / 6, theta + Math.PI / 6, false);
                 mapContext.fill();
                 mapContext.moveTo(wx, wz);
                 mapContext.beginPath();

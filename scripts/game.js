@@ -776,7 +776,7 @@ function updateOperation(game, input) {
                             }
                             var door = collision[0].object, tween;
                             var ob = door.model;
-                            if (door.doorState === "closed" && door.canToggle) {
+                            if (door.doorState === "closed" && door.canToggle && (!door.special || game.gindex >= 2)) {
                                 var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.beginRot);
                                 var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.beginRot);
                                 tween = new TWEEN.Tween({ rot: door.beginRot })
@@ -799,7 +799,7 @@ function updateOperation(game, input) {
                                 setTimeout(function () {
                                     door.canToggle = true;
                                 }, DOOR_TIMEOUT);
-                            } else if (door.doorState === "open" && door.canToggle) {
+                            } else if (door.doorState === "open" && door.canToggle && (!door.special || game.gindex >= 2)) {
                                 var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.endRot);
                                 var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.endRot);
                                 tween = new TWEEN.Tween({ rot: door.endRot })
