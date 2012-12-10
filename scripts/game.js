@@ -56,7 +56,7 @@ function Game(renderer, canvas) {
 
     this.playerInfo = document.createElement("canvas");
     this.playerInfo.id = "info";
-    this.playerInfo.width = canvas.width / 5;
+    this.playerInfo.width = canvas.width / 3;
     this.playerInfo.height = canvas.height / 3;
     this.playerInfo.style.position = "absolute";
     this.playerInfo.style.bottom = 0;
@@ -357,7 +357,10 @@ function updatePlayerInformation(game, input) {
     playerContext.textBaseline = 'middle';
     playerContext.textAlign = 'center';
     playerContext.fillStyle = '#00ff00';
-    playerContext.fillText(game.nextGoal[game.gindex][1], game.playerInfo.width / 2, game.playerInfo.height / 2);
+    var allInfo = game.nextGoal[game.gindex][1].split('@');
+    for (var i = 0; i < allInfo.length; i++) {
+        playerContext.fillText(allInfo[i], game.playerInfo.width / 2, game.playerInfo.height / 3 + i * game.playerInfo.height / 6);
+    }
 
     ////calculate the distance between the player and the next goal
     //var dis = Math.sqrt((game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) * (game.player.mesh.position.x - game.nextGoal[game.gindex][0].x) +

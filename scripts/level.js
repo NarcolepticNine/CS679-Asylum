@@ -252,11 +252,11 @@ function Level(game) {
                             this.generateObjGeometry(xx, yy + 8, zz, 1, 1, 1, 0, 'obj/key.js', 'obj/key.jpg', 'key');
                             if (cell.type.charAt(1) === '0') {
                                 game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                                game.nextGoal[1].push('Find Key 1');
+                                game.nextGoal[1].push('Key 1 is on the second floor@Find the stair first');
                             }
                             else {
                                 game.nextGoal[2].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                                game.nextGoal[2].push('Find Key 2');
+                                game.nextGoal[2].push('Key 2 is on the first floor@Beneath where you now stand upon');
                             }
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz, 'ceil2');
@@ -289,7 +289,7 @@ function Level(game) {
                             this.generateDoorGeometry(xx, yy, zz, cell.type.charAt(1));
                             if (cell.type.charAt(1) === 'q') {
                                 game.nextGoal[0].push(new THREE.Vector3(xx + CELL_SIZE / 2, yy / CELL_SIZE, zz));
-                                game.nextGoal[0].push('Open Door');
+                                game.nextGoal[0].push('Click on the door to open it@First finish or skip the tutorial');
                             }
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.bookcase) {
@@ -1066,9 +1066,6 @@ function Level(game) {
             for (var x = 0; x < NUM_CELLS.x; x++) {
                 if (game.visited[ry][z][x] === 0) {
                     mapContext.clearRect(MAP_CELL_SIZE * (x - 0.5) , MAP_CELL_SIZE * (z - 0.5), MAP_CELL_SIZE, MAP_CELL_SIZE);
-                }
-                else {
-                    console.log('haha');
                 }
             }
         }
