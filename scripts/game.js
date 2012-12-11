@@ -31,6 +31,11 @@ function Game(renderer, canvas) {
     this.learning = null;
     this.ratio = 0;
     this.stairPosition = null;
+    this.clearSpeed = 0;
+    this.WIN = new Image();
+    this.WIN.src = "images/win.png";
+    this.LOSE = new Image();
+    this.LOSE.src = "images/lose.png";
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -126,8 +131,9 @@ function Game(renderer, canvas) {
                       'Warning!@Turn off the flashlight(Press F) or Crouch(Press C)@Step back',
                       'Warning!@Turn off the flashligth(Press F) and Crouch(Press C)@Step aside and back',
                       'Dangerous!@Stand up and Run to a safe place',
-                      ''];
-                      
+                      'You are caught by the warden@Please write some story here@story more@and more@and more@and more',
+                      'Congratulations!@Please write some story here@story more@and more@and more@and more'];
+
 
     // ------------------------------------------------------------------------
     // Private constants ------------------------------------------------------
@@ -178,6 +184,7 @@ function Game(renderer, canvas) {
         this.stairPosition = new THREE.Vector2();
         this.stairPosition.x = 0;
         this.stairPosition.y = 0;
+        this.clearSpeed = 0;
         // Setup scene
 
 
@@ -259,9 +266,9 @@ function Game(renderer, canvas) {
         updatePlayerInformation(this, input);
         if (this.end === 1) {
             if (this.warden.caught)
-                ending(this, 'You have been caught by the Warden.');
+                ending(this);
             else
-                ending(this, 'Congratulations! You\'ve escaped from the Insane Asylum');
+                ending(this);
             return false;
         }
 
@@ -276,7 +283,7 @@ function Game(renderer, canvas) {
     }
 }; // end Game object
 
-function ending(game, message) {
+function ending(game) {
     var Ending = game.endingInfo.getContext("2d");
     // Clear
     Ending.save();
@@ -284,12 +291,25 @@ function ending(game, message) {
     Ending.clearRect(0, 0, game.endingInfo.width, game.endingInfo.height);
     Ending.restore();
 
+    var playerContext = game.playerInfo.getContext("2d");
+    playerContext.save();
+    playerContext.setTransform(1, 0, 0, 1, 0, 0);
+    playerContext.clearRect(0, 0, game.playerInfo.width, game.playerInfo.height);
+    playerContext.restore();
 
-    Ending.font = '50px Arial';
-    Ending.textBaseline = 'middle';
-    Ending.textAlign = 'center';
-    Ending.fillStyle = '#00ff00';
-    Ending.fillText(message, game.endingInfo.width / 2, game.endingInfo.height / 2);
+    var mapContext = mapCanvas.getContext("2d");
+    mapContext.save();
+    mapContext.setTransform(1, 0, 0, 1, 0, 0);
+    mapContext.clearRect(0, 0, game.mapCanvas.width, game.mapCanvas.height);
+    mapContext.restore();
+
+    if (game.warden.caught) {
+        Ending.drawImage(game.LOSE, 0, 0, game.LOSE.width, game.LOSE.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+    }
+    else {
+        Ending.drawImage(game.WIN, 0, 0, game.WIN.width, game.WIN.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+    }
+
 }
 
 function hints(game, message) {
@@ -300,17 +320,46 @@ function hints(game, message) {
     hint.clearRect(0, 0, game.hints.width, game.hints.height);
     hint.restore();
 
-    hint.font = '20px Arial';
+
     hint.textBaseline = 'bottom';
     hint.textAlign = 'center';
-    hint.fillStyle = '#ffffff';
     var allmessage = message.split('@');
-    for (var i = 0; i < allmessage.length; i++) {
-        hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 8 + 1 / 16 * i));
+    if (game.urgent != 4 && game.urgent != 5) {
+        hint.font = '20px Arial';
+        hint.fillStyle = '#ffffff';
+        for (var i = 0; i < allmessage.length; i++) {
+            hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 8 + 1 / 16 * i));
+        }
+    }
+    else {
+        setInterval(function () { storyFunc(game) }, 100);
+        hint.font = '40px Arial';
+        hint.fillStyle = '#ff0000';
+        hint.fillText(allmessage[0], game.hints.width / 2, game.hints.height * 1 / 4);
+        hint.font = '20px Arial';
+        hint.fillStyle = '#ffffff';
+        for (var i = 1; i < allmessage.length; i++) {
+            hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 3 + 1 / 10 * i));
+        }
+        hint.clearRect(game.hints.width / 3, game.hints.height * (1 / 3 + game.clearSpeed), game.hints.width / 3, game.hints.height * 2 / 3);
+    }
+
+
+
+}
+
+function storyFunc(game) {
+    game.clearSpeed += 0.001;
+    console.log(game.clearSpeed);
+    if (game.clearSpeed >= 2 / 3) {
+        game.clearSpeed = 2 / 3;
     }
 }
 
 function hintTimerFunc(game) {
+
+
+
     if (game.hintIndex < game.textHints.length) {
         hints(game, game.textHints[game.hintIndex]);
     }
@@ -600,7 +649,7 @@ function updateScene(game) {
             return;
         }
 
-       
+
         if (ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) > 0.11 && ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) < 0.89) {
             game.scene.remove(game.box);
         }
@@ -608,7 +657,7 @@ function updateScene(game) {
             game.scene.add(game.box);
         }
 
-        
+
 
         if (ry != game.old.y) {
             for (var z = 0; z < NUM_CELLS.z; z++) {
@@ -742,7 +791,7 @@ function updateOperation(game, input) {
     }
 
 
-    
+
 
     if (input.click === 1) {
         input.click = 0;
@@ -848,6 +897,7 @@ function updateOperation(game, input) {
                             break;
                         case 'fdoor':
                             if (game.key === 1) {
+                                game.urgent = 1;
                                 game.end = 1;
                             }
                             break;
@@ -859,7 +909,7 @@ function updateOperation(game, input) {
 }
 
 function updateDistance(game) {
-    if (game.player.mesh !== null && game.warden.mesh !== null && (game.warden.vX != 0 || game.warden.vZ != 0)) {        
+    if (game.player.mesh !== null && game.warden.mesh !== null && (game.warden.vX != 0 || game.warden.vZ != 0)) {
         var z1 = game.player.mesh.position.z - game.warden.mesh.position.z;
         var x1 = game.player.mesh.position.x - game.warden.mesh.position.x;
         var ry;
