@@ -454,7 +454,7 @@ function Level(game) {
     };
 
     this.generateDeskGeometry = function (x, y, z) {
-        this.generateObjGeometry(x, y + CELL_SIZE * 0.3408594, z, 1.25, 1.25, 1.25, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');
+        this.generateObjGeometry(x, y + CELL_SIZE * 0.2708594, z, 1.25, 1.25, 1.25, Math.PI / 2, 'obj/desk.js', 'obj/desk.jpg', 'model');
     }
 
     // Generate stair geometry

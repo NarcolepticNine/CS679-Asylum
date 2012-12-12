@@ -148,7 +148,7 @@ function Player() {
     //  code to play the sounds.   
     this.playSounds = this.soundLoad;
 
-    this.update = function (input, scene) {
+    this.update = function (input, scene, value) {
         //current position.
         var X = this.mesh.position.x;
         var Z = this.mesh.position.z;
@@ -162,10 +162,14 @@ function Player() {
             var dZ = warPos.z - Z;
 
             var d = Math.sqrt(dX * dX + dZ * dZ);
-            this.playSounds(d, this.sound, this.currSpd);
+            if (value === 1) {
+                this.playSounds(d, this.sound, this.currSpd);
+            }
 
         } else {
-            this.playSounds(1000, this.sound, this.currSpd);
+            if (value === 1) {
+                this.playSounds(1000, this.sound, this.currSpd);
+            }
         }
 
         this.sound = this.sound * this.currSpd;
