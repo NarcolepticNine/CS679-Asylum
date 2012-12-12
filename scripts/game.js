@@ -31,11 +31,16 @@ function Game(renderer, canvas) {
     this.learning = null;
     this.ratio = 0;
     this.stairPosition = null;
-    this.clearSpeed = 0;
     this.WIN = new Image();
     this.WIN.src = "images/win.png";
     this.LOSE = new Image();
     this.LOSE.src = "images/lose.png";
+    this.EWIN = new Image();
+    this.EWIN.src = "images/eval-win.jpg";
+    this.ELOSE = new Image();
+    this.ELOSE.src = "images/eval-lose.jpg";
+    this.clock2 = new THREE.Clock();
+    this.waitToEvaluate = -1;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -129,10 +134,9 @@ function Game(renderer, canvas) {
 
     this.playHints = ['',
                       'Warning!@Turn off the flashlight(Press F) or Crouch(Press C)@Step back',
-                      'Warning!@Turn off the flashligth(Press F) and Crouch(Press C)@Step aside and back',
+                      'Warning!@Turn off the flashlight(Press F) and Crouch(Press C)@Step aside and back',
                       'Dangerous!@Stand up and Run to a safe place',
-                      'You are caught by the warden@Please write some story here@story more@and more@and more@and more',
-                      'Congratulations!@Please write some story here@story more@and more@and more@and more'];
+                      ''];
 
 
     // ------------------------------------------------------------------------
@@ -184,7 +188,7 @@ function Game(renderer, canvas) {
         this.stairPosition = new THREE.Vector2();
         this.stairPosition.x = 0;
         this.stairPosition.y = 0;
-        this.clearSpeed = 0;
+        this.waitToEvaluate = -1;
         // Setup scene
 
 
@@ -238,41 +242,48 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
-        if (this.initialized == false) {
+        if (this.initialized === false) {
             this.init(input);
         }
+        if (this.end === 0) {
 
-        this.level.update();
+            this.level.update();
 
-        this.player.update(input, this.scene);
+            this.player.update(input, this.scene);
 
-        handleCollisions(this, input);
-        if (input.hold === 0 && input.Jump === 0) {
-            input.Jump = 1;
-            if (smallDrop(this)) {
-                while (input.hold === 0) {
-                    this.player.update(input);
-                    handleCollisions(this, input);
+            handleCollisions(this, input);
+            if (input.hold === 0 && input.Jump === 0) {
+                input.Jump = 1;
+                if (smallDrop(this)) {
+                    while (input.hold === 0) {
+                        this.player.update(input);
+                        handleCollisions(this, input);
+                    }
                 }
             }
+            updateCollisionSet(this)
+            updateScene(this);
+
+            this.warden.update(this, input, this.player.mesh.position, this.player.sound);
+
+            updateOperation(this, input);
+            updateDistance(this);
+            updatePlayerInformation(this, input);
+            TWEEN.update();
         }
-        updateCollisionSet(this)
-        updateScene(this);
-
-        this.warden.update(this, input, this.player.mesh.position, this.player.sound);
-
-        updateOperation(this, input);
-        updateDistance(this);
-        updatePlayerInformation(this, input);
-        if (this.end === 1) {
-            if (this.warden.caught)
-                ending(this);
-            else
-                ending(this);
-            return false;
+        else {
+            if (this.waitToEvaluate === -1) {
+                this.clock2.getDelta();
+                this.waitToEvaluate = 0;
+            }
+            else {
+                this.waitToEvaluate += this.clock2.getDelta();
+            }
+            ending(this);
+            if (this.waitToEvaluate > 5) {
+                return false;
+            }
         }
-
-        TWEEN.update();
         return true;
     };
 
@@ -303,13 +314,22 @@ function ending(game) {
     mapContext.clearRect(0, 0, game.mapCanvas.width, game.mapCanvas.height);
     mapContext.restore();
 
-    if (game.warden.caught) {
-        Ending.drawImage(game.LOSE, 0, 0, game.LOSE.width, game.LOSE.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+    if (game.waitToEvaluate <= 5) {
+        if (game.warden.caught) {
+            Ending.drawImage(game.LOSE, 0, 0, game.LOSE.width, game.LOSE.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        }
+        else {
+            Ending.drawImage(game.WIN, 0, 0, game.WIN.width, game.WIN.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        }
     }
     else {
-        Ending.drawImage(game.WIN, 0, 0, game.WIN.width, game.WIN.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        if (game.warden.caught) {
+            Ending.drawImage(game.ELOSE, 0, 0, game.ELOSE.width, game.ELOSE.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        }
+        else {
+            Ending.drawImage(game.EWIN, 0, 0, game.EWIN.width, game.EWIN.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        }
     }
-
 }
 
 function hints(game, message) {
@@ -324,35 +344,11 @@ function hints(game, message) {
     hint.textBaseline = 'bottom';
     hint.textAlign = 'center';
     var allmessage = message.split('@');
-    if (game.urgent != 4 && game.urgent != 5) {
-        hint.font = '20px Arial';
-        hint.fillStyle = '#ffffff';
-        for (var i = 0; i < allmessage.length; i++) {
-            hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 8 + 1 / 16 * i));
-        }
-    }
-    else {
-        setInterval(function () { storyFunc(game) }, 100);
-        hint.font = '40px Arial';
-        hint.fillStyle = '#ff0000';
-        hint.fillText(allmessage[0], game.hints.width / 2, game.hints.height * 1 / 4);
-        hint.font = '20px Arial';
-        hint.fillStyle = '#ffffff';
-        for (var i = 1; i < allmessage.length; i++) {
-            hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 3 + 1 / 10 * i));
-        }
-        hint.clearRect(game.hints.width / 3, game.hints.height * (1 / 3 + game.clearSpeed), game.hints.width / 3, game.hints.height * 2 / 3);
-    }
 
-
-
-}
-
-function storyFunc(game) {
-    game.clearSpeed += 0.001;
-    console.log(game.clearSpeed);
-    if (game.clearSpeed >= 2 / 3) {
-        game.clearSpeed = 2 / 3;
+    hint.font = '20px Arial';
+    hint.fillStyle = '#ffffff';
+    for (var i = 0; i < allmessage.length; i++) {
+        hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 8 + 1 / 16 * i));
     }
 }
 
@@ -897,7 +893,7 @@ function updateOperation(game, input) {
                             break;
                         case 'fdoor':
                             if (game.key === 1) {
-                                game.urgent = 1;
+                                game.urgent = 4;
                                 game.end = 1;
                             }
                             break;
