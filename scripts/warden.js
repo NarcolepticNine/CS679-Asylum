@@ -199,17 +199,18 @@ function Warden() {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
-        if (Y != ry) {
-            this.awareness = 0;
-        }
+        ry = Math.floor(ry / CELL_SIZE + 0.51);
         var dX = playPos.x - X;
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-
-        this.checkPlayer(game, input, playerSound, d);
-
+	if (Y != ry) {
+            this.awareness = 0;
+        }
+	else {
+	     this.checkPlayer(game, input, playerSound, d);
+	}	    
+	
         if (game.urgent === 4) {
             this.playFinalScream();
             this.caught = true;
