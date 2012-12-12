@@ -153,7 +153,7 @@ function setupInput(data, game) {
             case 67: data.trigger.crouch = 1; break;
             case 70: data.trigger.light  = 1; break; 
             case 16: data.trigger.run = 1; break;  
-            case 32: data.trigger.Jump = 0; break;
+            //case 32: data.trigger.Jump = 1; break;
         }
     }, false);
 
@@ -167,7 +167,7 @@ function setupInput(data, game) {
             case 67: data.trigger.crouch = 0; break;
             case 70: data.trigger.light  = 0; break; 
             case 16: data.trigger.run = 0; break;  
-            case 32: data.trigger.Jump = 0; break;
+            //case 32: data.trigger.Jump = 0; break;
         }
     }, false);
 
