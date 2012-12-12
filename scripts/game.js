@@ -32,7 +32,7 @@ function Game(renderer, canvas) {
     this.ratio = 0;
     this.stairPosition = null;
     this.WIN = new Image();
-    this.WIN.src = "images/win.png";
+    this.WIN.src = "images/win.jpg";
     this.LOSE = new Image();
     this.LOSE.src = "images/lose.png";
     this.EWIN = new Image();
