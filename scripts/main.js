@@ -79,8 +79,10 @@
 
     //Deal with resizing
     window.onresize = function (event) {
-        game.camera.aspect = window.innerWidth / window.innerHeight;
-        game.camera.updateProjectionMatrix();
+        if (game.camera != null) {
+            game.camera.aspect = window.innerWidth / window.innerHeight;
+            game.camera.updateProjectionMatrix();
+        }
         var canv = document.getElementById("canvas");
         canv.height = window.innerHeight;
         canv.width = window.innerWidth;
