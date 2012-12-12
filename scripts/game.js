@@ -93,9 +93,8 @@ function Game(renderer, canvas) {
     this.textHints = ['Click to enable pointer lock@(Press E to skip tutorial)',
                       'Use the WASD keys to move@(Press E to skip tutorial)',
     				  'Use the mouse cursor to look around@(Press E to skip tutorial)',
-                      'Press C to crouch and stand up@Crouch lowers your speed, but can help you hide@(Press E to skip tutorial)',
+                      'Press C to crouch and stand up@Crouching lowers your speed, but can help you hide@(Press E to skip tutorial)',
     				  'Press F to turn your flashlight on and off@Light attracts the warden\'s attention@(Press E to skip tutorial)',
-                      'Press spacebar to jump@You can\'t jump when you are crouching@(Press E to skip tutorial)',
                       'Press shift and WSAD to run@Running attracts the warden\'s attention@(Press E to skip tutorial)',
                       'Your objective will flash in yellow circle in the mini-map@Click to open a door or pick up a key@Now move to the closest door and click to open it@(Press E to skip tutorial)',
                       'Great Job!@The warden is going on patrol now@(Press E to skip tutorial)',
@@ -205,7 +204,7 @@ function Game(renderer, canvas) {
 
         //this.scene.add(new THREE.AmbientLight(0xffffff));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
-        this.scene.add(new THREE.AmbientLight(0x0f0f0f));
+        this.scene.add(new THREE.AmbientLight(0x0a0a0f));
 
         // Load the level
         this.level = new Level(this);
@@ -372,9 +371,9 @@ function ending(game) {
         }
         Ending.font = '20px Courier';
         Ending.fillStyle = '#ff0000';
-        Ending.fillText(Math.floor(game.timer * 100) / 100 + 's', game.endingInfo.width * 0.63, game.endingInfo.height * 0.51);
-        Ending.fillText(Math.floor(game.allVisit / 305 * 100) + '%', game.endingInfo.width * 0.64, game.endingInfo.height * 0.57);
-        Ending.fillText(game.maxAwareness, game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);
+        Ending.fillText(Math.floor((game.timer * 100) / 100) + ' seconds', game.endingInfo.width * 0.63, game.endingInfo.height * 0.51);
+        Ending.fillText(Math.floor(game.allVisit / 305 * 100) + ' %', game.endingInfo.width * 0.64, game.endingInfo.height * 0.57);
+        Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);
     }
 }
 
@@ -391,7 +390,7 @@ function hints(game, message) {
     hint.textAlign = 'center';
     var allmessage = message.split('@');
 
-    hint.font = '20px Arial';
+    hint.font = '24px Arial';
     hint.fillStyle = '#ffffff';
     for (var i = 0; i < allmessage.length; i++) {
         hint.fillText(allmessage[i], game.hints.width / 2, game.hints.height * (1 / 8 + 1 / 16 * i));
@@ -409,14 +408,13 @@ function hintTimerFunc(game) {
         hints(game, game.playHints[game.urgent]);
     }
     if ((game.learning.click === 1 && game.hintIndex === 0) ||
-        (game.learning.W === 1 && game.learning.S === 1 && game.learning.A === 1 && game.learning.D === 1 && game.hintIndex === 1) ||
+        (game.learning.W === 1 && game.hintIndex === 1) ||
         (game.learning.X1 === 1 && game.learning.X2 === 1 && game.learning.Y1 === 1 && game.learning.Y2 === 1 && game.hintIndex === 2) ||
         (game.learning.crouch1 === 1 && game.learning.crouch2 === 1 && game.hintIndex === 3) ||
         (game.learning.light1 === 1 && game.learning.light2 === 1 && game.hintIndex === 4) ||
-        (game.learning.jump === 1 && game.hintIndex === 5) ||
-        (game.learning.run === 1 && game.hintIndex === 6) ||
-        (game.gindex === 1 && game.hintIndex === 7) ||
-        (game.hintIndex >= 8)
+        (game.learning.run === 1 && game.hintIndex === 5) ||
+        (game.gindex === 1 && game.hintIndex === 6) ||
+        (game.hintIndex >= 7)
         ) {
         game.hintIndex++;
     }
@@ -444,7 +442,7 @@ function updatePlayerInformation(game, input) {
     //playerContext.arc(game.playerInfo.width / 2, game.playerInfo.height / 2, 50, 0, 2 * Math.PI, false);
     //playerContext.stroke();
 
-    playerContext.font = '20px Arial';
+    playerContext.font = '18px Arial';
     playerContext.textBaseline = 'middle';
     playerContext.textAlign = 'center';
     playerContext.fillStyle = '#ffffff';
@@ -781,13 +779,13 @@ function updateOperation(game, input) {
         }
 
         if (input.trigger.S === 1) {
-            game.learning.S = 1;
+            game.learning.W = 1;
         }
         if (input.trigger.A === 1) {
-            game.learning.A = 1;
+            game.learning.W = 1;
         }
         if (input.trigger.D === 1) {
-            game.learning.D = 1;
+            game.learning.W = 1;
         }
     }
     if (game.hintIndex === 2) {
@@ -820,13 +818,13 @@ function updateOperation(game, input) {
             game.learning.light2 = 1;
         }
     }
-    if (game.hintIndex === 5) {
+    /*if (game.hintIndex === 5) {
         if (input.trigger.Jump === 1 && game.player.crouch === 0) {
             game.learning.jump = 1;
         }
     }
-
-    if (game.hintIndex === 6) {
+*/
+    if (game.hintIndex === 5) {
         if (input.trigger.run === 1 && (input.trigger.W === 1 || input.trigger.S === 1 || input.trigger.A === 1 || input.trigger.D === 1)) {
             game.learning.run = 1;
         }
@@ -861,7 +859,7 @@ function updateOperation(game, input) {
                     switch (collision[0].object.name) {
                         case 'door':
                             if (game.gindex === 0) {
-                                if (game.hintIndex >= 7) {
+                                if (game.hintIndex >= 6) {
                                     game.gindex++;
                                 }
                                 else {
