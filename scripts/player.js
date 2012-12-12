@@ -149,8 +149,6 @@ function Player() {
     this.playSounds = this.soundLoad;
 
     this.update = function (input, scene) {
-
-
         //current position.
         var X = this.mesh.position.x;
         var Z = this.mesh.position.z;
@@ -189,7 +187,6 @@ function Player() {
     }
 
     this.updateMovement = function (input, scene) {
-
         //adjust for running or crouching, or neither: 
         this.currSpd = speed;
         if (input.trigger.run) {
@@ -284,10 +281,8 @@ function Player() {
         var xzNorm = Math.sqrt(input.f.x * input.f.x + input.f.z * input.f.z);
         this.mesh.position.x +=
            this.currSpd * (WS * input.f.x + AD * input.f.z / xzNorm);
-
         this.mesh.position.z +=
             this.currSpd * (WS * input.f.z - AD * input.f.x / xzNorm);
-
         // Update camera position/lookat
         if (this.crouch === 0) {
             this.camera.position.add(this.mesh.position, new THREE.Vector3(0, 9, 0));

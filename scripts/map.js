@@ -215,7 +215,7 @@ Map[1].push(
 "..fffff............if.\n" +
 "..fffffwwiwiwiwwiwwwf.\n" +
 "..fffffffffffffffffff.\n" +
-"...ffff\n" +
+"..fffff\n" +
 ".......");
 
 Map[1].push(

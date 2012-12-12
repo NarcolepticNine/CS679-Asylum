@@ -39,8 +39,12 @@ function Game(renderer, canvas) {
     this.EWIN.src = "images/eval-win.jpg";
     this.ELOSE = new Image();
     this.ELOSE.src = "images/eval-lose.jpg";
+    this.clock = new THREE.Clock();
     this.clock2 = new THREE.Clock();
     this.waitToEvaluate = -1;
+    this.timer = -1;
+    this.allVisit = 0;
+    this.maxAwareness = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -189,6 +193,10 @@ function Game(renderer, canvas) {
         this.stairPosition.x = 0;
         this.stairPosition.y = 0;
         this.waitToEvaluate = -1;
+        this.clock.getDelta();
+        this.timer = 0;
+        this.allVisit = 0;
+        this.maxAwareness = 0;
         // Setup scene
 
 
@@ -246,26 +254,37 @@ function Game(renderer, canvas) {
             this.init(input);
         }
         if (this.end === 0) {
-
+            this.timer += this.clock.getDelta();
             this.level.update();
-
             this.player.update(input, this.scene);
-
             handleCollisions(this, input);
             if (input.hold === 0 && input.Jump === 0) {
                 input.Jump = 1;
                 if (smallDrop(this)) {
                     while (input.hold === 0) {
+                        var oldW = intput.trigger.W;
+                        var oldS = intput.trigger.S;
+                        var oldA = intput.trigger.A;
+                        var oldD = intput.trigger.D;
+                        intput.trigger.W = 0;
+                        intput.trigger.S = 0;
+                        intput.trigger.A = 0;
+                        intput.trigger.D = 0;
                         this.player.update(input);
+                        intput.trigger.W = oldW;
+                        intput.trigger.S = oldS;
+                        intput.trigger.A = oldA;
+                        intput.trigger.D = oldD;
                         handleCollisions(this, input);
                     }
                 }
             }
             updateCollisionSet(this)
             updateScene(this);
-
             this.warden.update(this, input, this.player.mesh.position, this.player.sound);
-
+            if (this.warden.awareness > this.maxAwareness) {
+                this.maxAwareness = this.warden.awareness;
+            }
             updateOperation(this, input);
             updateDistance(this);
             updatePlayerInformation(this, input);
@@ -323,12 +342,18 @@ function ending(game) {
         }
     }
     else {
+      
         if (game.warden.caught) {
             Ending.drawImage(game.ELOSE, 0, 0, game.ELOSE.width, game.ELOSE.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
         }
         else {
             Ending.drawImage(game.EWIN, 0, 0, game.EWIN.width, game.EWIN.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
         }
+        Ending.font = '20px Arial';
+        Ending.fillStyle = '#0000ff';
+        Ending.fillText(Math.floor(game.timer * 100) / 100 + 's', game.endingInfo.width * 0.63, game.endingInfo.height * 0.51);
+        Ending.fillText(Math.floor(game.allVisit / 305 * 100) + '%', game.endingInfo.width * 0.64, game.endingInfo.height * 0.57);
+        Ending.fillText(game.maxAwareness, game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);
     }
 }
 
@@ -1142,6 +1167,9 @@ function handleCollisions(game, input) {
         }
         if (count === game.player.mesh.geometry.vertices.length) {
             input.hold = 0;
+        }
+        else {
+            input.hold = 1;
         }
         game.oldplayer.copy(game.player.mesh.position);
     }

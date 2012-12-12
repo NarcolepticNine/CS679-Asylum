@@ -955,7 +955,10 @@ function Level(game) {
             ry = game.player.mesh.position.y - 10;
         }
         ry = Math.floor(ry / CELL_SIZE + 1 / 2);
-        game.visited[ry][rz][rx] = 1;
+        if (game.visited[ry][rz][rx] === 0) {
+            game.allVisit++;
+            game.visited[ry][rz][rx] = 1;
+        }
 
         // Clear the map
         mapContext.save();
