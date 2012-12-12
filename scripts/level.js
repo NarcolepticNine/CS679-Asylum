@@ -389,11 +389,6 @@ function Level(game) {
         var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
         game.models[ry][rz][rx].push(objMesh);
         var boundingBox = null;
-        if (name === 'mstair') {
-            console.log(x + realX);
-            console.log(z + realZ);
-        }
-
         if (name !== 'mstair') {
             if (name !== 'key') {
                 boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
@@ -552,7 +547,7 @@ function Level(game) {
                 mesh4.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 4, z);
                 break;
             case 'e':
-                this.generateObjGeometry(x - 0.3594343 * CELL_SIZE, y + 0.026017979 * CELL_SIZE, z - 0.0058691 * CELL_SIZE, 3.6275010, 1.6922263, 3.2663060, 0, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
+                this.generateObjGeometry(x - 0.3594343 * CELL_SIZE, y + 0.026017979 * CELL_SIZE, z + 0.0058691 * CELL_SIZE, 3.6275010, 1.6922263, 3.2663060, 0, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.rotation.y = -(Math.PI / 2 - Math.atan(2));
                 mesh.rotation.z = -Math.PI / 2;

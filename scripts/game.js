@@ -604,6 +604,22 @@ function updateCollisionSet(game) {
             }
         }
 
+        for (var z = rz - 2; z <= rz + 2; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
+                continue;
+            }
+            for (var x = rx - 2; x <= rx + 2; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                    if (game.objects[ry][z][x][o].name === 'door') {
+                        game.collisionSet.push(game.objects[ry][z][x][o]);
+                    }
+                }
+            }
+        }
+
         if (append === true) {
             for (var z = rz - 1; z <= rz + 1; z++) {
                 if (z < 0 || z >= NUM_CELLS.z) {
@@ -869,90 +885,84 @@ function updateOperation(game, input) {
 
     if (input.click === 1) {
         input.click = 0;
-        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
-        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-        var ry;
-        if (game.player.crouch) {
-            ry = game.player.mesh.position.y - 2.5;
-        }
-        else {
-            ry = game.player.mesh.position.y - 10;
-        }
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
-        for (var z = rz - 1; z <= rz + 1; z++) {
-            if (z < 0 || z >= NUM_CELLS.z) {
-                continue;
-            }
-            for (var x = rx - 1; x <= rx + 1; x++) {
-                if (x < 0 || x >= NUM_CELLS.x) {
-                    continue;
-                }
 
-                var collision = input.viewRay.intersectObjects(game.objects[ry][z][x]);
-                if (collision.length > 0) {
-                    switch (collision[0].object.name) {
-                        case 'door':
-                            if (game.gindex === 0) {
-                                if (game.hintIndex >= 6) {
-                                    game.gindex++;
-                                }
-                                else {
-                                    break;
-                                }
-                            }
-                            var door = collision[0].object, tween;
-                            var ob = door.model;
-                            if (door.doorState === "closed" && door.canToggle && (!door.special || game.gindex >= 2)) {
-                                var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.beginRot);
-                                var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.beginRot);
-                                tween = new TWEEN.Tween({ rot: door.beginRot })
-                                                 .to({ rot: door.endRot }, DOOR_TIMEOUT)
-                                                 .easing(TWEEN.Easing.Elastic.Out)
-                                                 .onUpdate(function () {
-                                                     door.rotation.y = this.rot;
-                                                     ob.rotation.y = this.rot;
-                                                     door.position.x = ix + door.halfsize * 15 / 16 * Math.sin(this.rot);
-                                                     door.position.z = iz + door.halfsize * 15 / 16 * Math.cos(this.rot);
-                                                     ob.position.x = door.position.x;
-                                                     ob.position.z = door.position.z;
-
-                                                 })
-                                                 .start();
-
-                                door.doorState = "open";
-                                door.canToggle = false;
-
-                                setTimeout(function () {
-                                    door.canToggle = true;
-                                }, DOOR_TIMEOUT);
-                            } else if (door.doorState === "open" && door.canToggle && (!door.special || game.gindex >= 2)) {
-                                var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.endRot);
-                                var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.endRot);
-                                tween = new TWEEN.Tween({ rot: door.endRot })
-                                    .to({ rot: door.beginRot }, DOOR_TIMEOUT)
-                                    .easing(TWEEN.Easing.Elastic.Out)
-                                    .onUpdate(function () {
-                                        door.rotation.y = this.rot;
-                                        ob.rotation.y = this.rot;
-                                        door.position.x = ix + door.halfsize * 15 / 16 * Math.sin(this.rot);
-                                        door.position.z = iz + door.halfsize * 15 / 16 * Math.cos(this.rot);
-                                        ob.position.x = door.position.x;
-                                        ob.position.z = door.position.z;
-
-                                    })
-                                    .start();
-
-                                door.doorState = "closed";
-                                door.canToggle = false;
-
-                                setTimeout(function () {
-                                    door.canToggle = true;
-                                }, DOOR_TIMEOUT);
-                            }
+        var collision = input.viewRay.intersectObjects(game.collisionSet);
+        if (collision.length > 0) {
+            switch (collision[0].object.name) {
+                case 'door':
+                    if (game.gindex === 0) {
+                        if (game.hintIndex >= 6) {
+                            game.gindex++;
+                        }
+                        else {
                             break;
-                        case 'key':
-                            game.scene.remove(collision[0].object);
-                            game.scene.remove(collision[0].object.model);
+                        }
+                    }
+                    var door = collision[0].object, tween;
+                    var ob = door.model;
+                    if (door.doorState === "closed" && door.canToggle && (!door.special || game.gindex >= 2)) {
+                        var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.beginRot);
+                        var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.beginRot);
+                        tween = new TWEEN.Tween({ rot: door.beginRot })
+                                         .to({ rot: door.endRot }, DOOR_TIMEOUT)
+                                         .easing(TWEEN.Easing.Elastic.Out)
+                                         .onUpdate(function () {
+                                             door.rotation.y = this.rot;
+                                             ob.rotation.y = this.rot;
+                                             door.position.x = ix + door.halfsize * 15 / 16 * Math.sin(this.rot);
+                                             door.position.z = iz + door.halfsize * 15 / 16 * Math.cos(this.rot);
+                                             ob.position.x = door.position.x;
+                                             ob.position.z = door.position.z;
+
+                                         })
+                                         .start();
+
+                        door.doorState = "open";
+                        door.canToggle = false;
+
+                        setTimeout(function () {
+                            door.canToggle = true;
+                        }, DOOR_TIMEOUT);
+                    } else if (door.doorState === "open" && door.canToggle && (!door.special || game.gindex >= 2)) {
+                        var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.endRot);
+                        var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.endRot);
+                        tween = new TWEEN.Tween({ rot: door.endRot })
+                            .to({ rot: door.beginRot }, DOOR_TIMEOUT)
+                            .easing(TWEEN.Easing.Elastic.Out)
+                            .onUpdate(function () {
+                                door.rotation.y = this.rot;
+                                ob.rotation.y = this.rot;
+                                door.position.x = ix + door.halfsize * 15 / 16 * Math.sin(this.rot);
+                                door.position.z = iz + door.halfsize * 15 / 16 * Math.cos(this.rot);
+                                ob.position.x = door.position.x;
+                                ob.position.z = door.position.z;
+
+                            })
+                            .start();
+
+                        door.doorState = "closed";
+                        door.canToggle = false;
+
+                        setTimeout(function () {
+                            door.canToggle = true;
+                        }, DOOR_TIMEOUT);
+                    }
+                    break;
+                case 'key':
+                    game.scene.remove(collision[0].object);
+                    game.scene.remove(collision[0].object.model);
+                    var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+                    var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
+                    var ry;
+                    if (game.player.crouch) {
+                        ry = game.player.mesh.position.y - 2.5;
+                    }
+                    else {
+                        ry = game.player.mesh.position.y - 10;
+                    }
+                    ry = Math.floor(ry / CELL_SIZE + 0.51);
+                    for (var z = rz - 1; z <= rz + 1; z++) {
+                        for (var x = rx - 1; x <= rx + 1; x++) {
                             for (var m = 0; m < game.models[ry][z][x].length; m++) {
                                 if (game.models[ry][z][x][m] === collision[0].object.model) {
                                     game.models[ry][z][x].splice(m, 1);
@@ -966,17 +976,17 @@ function updateOperation(game, input) {
                                     break;
                                 }
                             }
-                            game.key = 1;
-                            game.gindex++;
-                            break;
-                        case 'fdoor':
-                            if (game.key === 1) {
-                                game.urgent = 4;
-                                game.end = 1;
-                            }
-                            break;
+                        }
                     }
-                }
+                    game.key = 1;
+                    game.gindex++;
+                    break;
+                case 'fdoor':
+                    if (game.key === 1) {
+                        game.urgent = 4;
+                        game.end = 1;
+                    }
+                    break;
             }
         }
     }

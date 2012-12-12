@@ -124,7 +124,6 @@ function Warden() {
 
         //sound awareness
         var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
-
         //light awareness
         switch (game.urgent) {
             case 0: //very far
