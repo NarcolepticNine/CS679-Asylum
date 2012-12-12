@@ -39,12 +39,15 @@ function Game(renderer, canvas) {
     this.EWIN.src = "images/eval-win.jpg";
     this.ELOSE = new Image();
     this.ELOSE.src = "images/eval-lose.jpg";
+    this.START = new Image();
+    this.START.src = "images/start.jpg";
     this.clock = new THREE.Clock();
     this.clock2 = new THREE.Clock();
     this.waitToEvaluate = -1;
     this.timer = -1;
     this.allVisit = 0;
     this.maxAwareness = 0;
+    this.start = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -250,60 +253,66 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
-        if (this.initialized === false) {
-            this.init(input);
-        }
-        if (this.end === 0) {
-            this.timer += this.clock.getDelta();
-            this.level.update();
-            this.player.update(input, this.scene);
-            handleCollisions(this, input);
-            if (input.hold === 0 && input.Jump === 0) {
-                input.Jump = 1;
-                if (smallDrop(this)) {
-                    while (input.hold === 0) {
-                        var oldW = intput.trigger.W;
-                        var oldS = intput.trigger.S;
-                        var oldA = intput.trigger.A;
-                        var oldD = intput.trigger.D;
-                        intput.trigger.W = 0;
-                        intput.trigger.S = 0;
-                        intput.trigger.A = 0;
-                        intput.trigger.D = 0;
-                        this.player.update(input);
-                        intput.trigger.W = oldW;
-                        intput.trigger.S = oldS;
-                        intput.trigger.A = oldA;
-                        intput.trigger.D = oldD;
-                        handleCollisions(this, input);
-                    }
-                }
-            }
-            updateCollisionSet(this)
-            updateScene(this);
-            this.warden.update(this, input, this.player.mesh.position, this.player.sound);
-            if (this.warden.awareness > this.maxAwareness) {
-                this.maxAwareness = this.warden.awareness;
-            }
-            updateOperation(this, input);
-            updateDistance(this);
-            updatePlayerInformation(this, input);
-            TWEEN.update();
+        starting(this);
+        if (this.start === 0) {
+            return false;
         }
         else {
-            if (this.waitToEvaluate === -1) {
-                this.clock2.getDelta();
-                this.waitToEvaluate = 0;
+            if (this.initialized === false) {
+                this.init(input);
+            }
+            if (this.end === 0) {
+                this.timer += this.clock.getDelta();
+                this.level.update();
+                this.player.update(input, this.scene);
+                handleCollisions(this, input);
+                if (input.hold === 0 && input.Jump === 0) {
+                    input.Jump = 1;
+                    if (smallDrop(this)) {
+                        while (input.hold === 0) {
+                            var oldW = input.trigger.W;
+                            var oldS = input.trigger.S;
+                            var oldA = input.trigger.A;
+                            var oldD = input.trigger.D;
+                            input.trigger.W = 0;
+                            input.trigger.S = 0;
+                            input.trigger.A = 0;
+                            input.trigger.D = 0;
+                            this.player.update(input);
+                            input.trigger.W = oldW;
+                            input.trigger.S = oldS;
+                            input.trigger.A = oldA;
+                            input.trigger.D = oldD;
+                            handleCollisions(this, input);
+                        }
+                    }
+                }
+                updateCollisionSet(this)
+                updateScene(this);
+                this.warden.update(this, input, this.player.mesh.position, this.player.sound);
+                if (this.warden.awareness > this.maxAwareness) {
+                    this.maxAwareness = this.warden.awareness;
+                }
+                updateOperation(this, input);
+                updateDistance(this);
+                updatePlayerInformation(this, input);
+                TWEEN.update();
             }
             else {
-                this.waitToEvaluate += this.clock2.getDelta();
+                if (this.waitToEvaluate === -1) {
+                    this.clock2.getDelta();
+                    this.waitToEvaluate = 0;
+                }
+                else {
+                    this.waitToEvaluate += this.clock2.getDelta();
+                }
+                ending(this);
+                if (this.waitToEvaluate > 5) {
+                    return false;
+                }
             }
-            ending(this);
-            if (this.waitToEvaluate > 5) {
-                return false;
-            }
+            return true;
         }
-        return true;
     };
 
     // Draw the scene as seen through the current camera
@@ -312,6 +321,18 @@ function Game(renderer, canvas) {
         this.renderer.render(this.scene, this.camera);
     }
 }; // end Game object
+
+function starting(game) {
+    var Ending = game.endingInfo.getContext("2d");
+    // Clear
+    Ending.save();
+    Ending.setTransform(1, 0, 0, 1, 0, 0);
+    Ending.clearRect(0, 0, game.endingInfo.width, game.endingInfo.height);
+    Ending.restore();
+    if (game.start === 0) {
+        Ending.drawImage(game.START, 0, 0, game.START.width, game.START.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+    }
+}
 
 function ending(game) {
     var Ending = game.endingInfo.getContext("2d");
@@ -342,7 +363,7 @@ function ending(game) {
         }
     }
     else {
-      
+
         if (game.warden.caught) {
             Ending.drawImage(game.ELOSE, 0, 0, game.ELOSE.width, game.ELOSE.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
         }

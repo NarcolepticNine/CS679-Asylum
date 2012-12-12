@@ -62,18 +62,16 @@
     setupInput(inputData, game);
 
     // Enter main loop
-    (function mainLoop() {
-    	
+    (function mainLoop() {    	
     	setTimeout( function () {
 	        if( this.debug ) stats.begin();
-	        if (game.update(inputData) === false) {
-	            return;
+	        if (game.update(inputData)) {
+	            game.render(inputData);
+	            if (this.debug) {
+	                updateDebug(info, game);
+	                stats.end()
+	            };
 	        }
-	        game.render(inputData);
-	        if( this.debug ) {
-	        	updateDebug( info, game ); 
-	        	stats.end() 
-	        };
 	        requestFrame(mainLoop);
      	}, 1000/35 );
      	
@@ -178,6 +176,7 @@ function setupInput(data, game) {
             canvas.requestPointerLock();
         }
         data.click = 1;
+        game.start = 1;
     }, false);
 
     document.addEventListener("mouseup", function (event) {
