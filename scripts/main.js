@@ -172,11 +172,17 @@ function setupInput(data, game) {
     }, false);
 
     document.addEventListener("mousedown", function (event) {
-        if (!canvas.pointerLockEnabled) {
-            canvas.requestPointerLock();
+        if (game.start === 0) {
+            if (event.pageX > 0.16 * canvas.width && event.pageX < 0.28 * canvas.width && event.pageY > 0.28 * canvas.height && event.pageY < 0.36 * canvas.height) {
+                game.start = 1;
+            }
         }
-        data.click = 1;
-        game.start = 1;
+        else {
+            if (!canvas.pointerLockEnabled) {
+                canvas.requestPointerLock();
+            }
+            data.click = 1;
+        }
     }, false);
 
     document.addEventListener("mouseup", function (event) {

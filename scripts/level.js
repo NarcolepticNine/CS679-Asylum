@@ -252,11 +252,11 @@ function Level(game) {
                             this.generateObjGeometry(xx, yy + 8, zz, 1, 1, 1, 0, 'obj/key.js', 'obj/key.jpg', 'key');
                             if (cell.type.charAt(1) === '0') {
                                 game.nextGoal[1].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                                game.nextGoal[1].push('Key 1 is on the second floor@Find the stair first');
+                                game.nextGoal[1].push('The first key is on the second floor@Find the stairs first');
                             }
                             else {
                                 game.nextGoal[2].push(new THREE.Vector3(xx, yy / CELL_SIZE, zz));
-                                game.nextGoal[2].push('Key 2 is on the first floor@Beneath where you now stand upon');
+                                game.nextGoal[2].push('The second key is on the first floor');
                             }
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz, 'ceil2');

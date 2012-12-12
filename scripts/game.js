@@ -93,26 +93,26 @@ function Game(renderer, canvas) {
     this.textHints = ['Click to enable pointer lock@(Press E to skip tutorial)',
                       'Use the WASD keys to move@(Press E to skip tutorial)',
     				  'Use the mouse cursor to look around@(Press E to skip tutorial)',
-                      'Press C to crouch and stand up@Crouch lower your speed, but can hide you better@(Press E to skip tutorial)',
-    				  'Press F to turn your flashlight on and off@Light can attract warden\'s attention@(Press E to skip tutorial)',
-                      'Press spacebar to jump@You can\'t jump when you crouch@(Press E to skip tutorial)',
-                      'Press shift and WSAD to run@Run can attract warden\'s attention@(Press E to skip tutorial)',
-                      'Your objective will flash in yellow circle in the minimap@Click to open a door or pick up a key@Now move to the closest door and click to open it@(Press E to skip tutorial)',
-                      'Great Job!@The warden begins to move now@(Press E to skip tutorial)',
-                      'Great Job!@The warden begins to move now@(Press E to skip tutorial)',
-                      'Great Job!@The warden begins to move now@(Press E to skip tutorial)',
-                      'Great Job!@The warden begins to move now@(Press E to skip tutorial)',
-                      'Great Job!@The warden begins to move now@(Press E to skip tutorial)',
-                      'Your final goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
-                      'Your final goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
-                      'Your final goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
-                      'Your final goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
-                      'Your final goal is to click and pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
-                      'Be careful! The warden\'s eyesight and hearing distance is shown in the minimap@(Press E to skip tutorial)',
-                      'Be careful! The warden\'s eyesight and hearing distance is shown in the minimap@(Press E to skip tutorial)',
-                      'Be careful! The warden\'s eyesight and hearing distance is shown in the minimap@(Press E to skip tutorial)',
-                      'Be careful! The warden\'s eyesight and hearing distance is shown in the minimap@(Press E to skip tutorial)',
-                      'Be careful! The warden\'s eyesight and hearing distance is shown in the minimap@(Press E to skip tutorial)',
+                      'Press C to crouch and stand up@Crouch lowers your speed, but can help you hide@(Press E to skip tutorial)',
+    				  'Press F to turn your flashlight on and off@Light attracts the warden\'s attention@(Press E to skip tutorial)',
+                      'Press spacebar to jump@You can\'t jump when you are crouching@(Press E to skip tutorial)',
+                      'Press shift and WSAD to run@Running attracts the warden\'s attention@(Press E to skip tutorial)',
+                      'Your objective will flash in yellow circle in the mini-map@Click to open a door or pick up a key@Now move to the closest door and click to open it@(Press E to skip tutorial)',
+                      'Great Job!@The warden is going on patrol now@(Press E to skip tutorial)',
+                      'Great Job!@The warden is going on patrol now@(Press E to skip tutorial)',
+                      'Great Job!@The warden is going on patrol now@(Press E to skip tutorial)',
+                      'Great Job!@The warden is going on patrol now@(Press E to skip tutorial)',
+                      'Great Job!@The warden is going on patrol now@(Press E to skip tutorial)',
+                      'Your final goal is to pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your final goal is to pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your final goal is to pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your final goal is to pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Your final goal is to pick up the key in the room and find the locked door to escape@(Press E to skip tutorial)',
+                      'Be careful! The warden\'s line of sight and hearing distance is shown in the mini-map@(Press E to skip tutorial)',
+                      'Be careful! The warden\'s line of sight and hearing distance is shown in the mini-map@(Press E to skip tutorial)',
+                      'Be careful! The warden\'s line of sight and hearing distance is shown in the mini-map@(Press E to skip tutorial)',
+                      'Be careful! The warden\'s line of sight and hearing distance is shown in the mini-map@(Press E to skip tutorial)',
+                      'Be careful! The warden\'s line of sight and hearing distance is shown in the mini-map@(Press E to skip tutorial)',
                       'Try your best to stay away from him@(Press E to skip tutorial)',
                       'Try your best to stay away from him@(Press E to skip tutorial)',
                       'Try your best to stay away from him@(Press E to skip tutorial)',
@@ -128,11 +128,11 @@ function Game(renderer, canvas) {
                       'If your heart is beating fast, the warden is close@(Press E to skip tutorial)',
                       'If your heart is beating fast, the warden is close@(Press E to skip tutorial)',
                       'If your heart is beating fast, the warden is close@(Press E to skip tutorial)',
-                      'Remember! Stop running, crouch or turn off your flashlight if you want to hide@(Press E to skip tutorial)',
-                      'Remember! Stop running, crouch or turn off your flashlight if you want to hide@(Press E to skip tutorial)',
-                      'Remember! Stop running, crouch or turn off your flashlight if you want to hide@(Press E to skip tutorial)',
-                      'Remember! Stop running, crouch or turn off your flashlight if you want to hide@(Press E to skip tutorial)',
-                      'Remember! Stop running, crouch or turn off your flashlight if you want to hide@(Press E to skip tutorial)',
+                      'Remember! Stop running, crouch and turn off your flashlight if you want to hide@(Press E to skip tutorial)',
+                      'Remember! Stop running, crouch and turn off your flashlight if you want to hide@(Press E to skip tutorial)',
+                      'Remember! Stop running, crouch and turn off your flashlight if you want to hide@(Press E to skip tutorial)',
+                      'Remember! Stop running, crouch and turn off your flashlight if you want to hide@(Press E to skip tutorial)',
+                      'Remember! Stop running, crouch and turn off your flashlight if you want to hide@(Press E to skip tutorial)',
                       'Good luck!@(Press E to skip tutorial)',
                       'Good luck!@(Press E to skip tutorial)',
                       'Good luck!@(Press E to skip tutorial)',
@@ -140,8 +140,8 @@ function Game(renderer, canvas) {
                       'Good luck!'];
 
     this.playHints = ['',
-                      'Warning!@Turn off the flashlight(Press F) or Crouch(Press C)@Step back',
-                      'Warning!@Turn off the flashlight(Press F) and Crouch(Press C)@Step aside and back',
+                      'Warning!@Turn off your flashlight(Press F) or Crouch(Press C)@Step back',
+                      'Warning!@Turn off your flashlight(Press F) and Crouch(Press C)@Step aside and back',
                       'Dangerous!@Stand up and Run to a safe place',
                       ''];
 
@@ -370,8 +370,8 @@ function ending(game) {
         else {
             Ending.drawImage(game.EWIN, 0, 0, game.EWIN.width, game.EWIN.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
         }
-        Ending.font = '20px Arial';
-        Ending.fillStyle = '#0000ff';
+        Ending.font = '20px Courier';
+        Ending.fillStyle = '#ff0000';
         Ending.fillText(Math.floor(game.timer * 100) / 100 + 's', game.endingInfo.width * 0.63, game.endingInfo.height * 0.51);
         Ending.fillText(Math.floor(game.allVisit / 305 * 100) + '%', game.endingInfo.width * 0.64, game.endingInfo.height * 0.57);
         Ending.fillText(game.maxAwareness, game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);
@@ -447,7 +447,7 @@ function updatePlayerInformation(game, input) {
     playerContext.font = '20px Arial';
     playerContext.textBaseline = 'middle';
     playerContext.textAlign = 'center';
-    playerContext.fillStyle = '#00ff00';
+    playerContext.fillStyle = '#ffffff';
     var allInfo = game.nextGoal[game.gindex][1].split('@');
     for (var i = 0; i < allInfo.length; i++) {
         playerContext.fillText(allInfo[i], game.playerInfo.width / 2, game.playerInfo.height / 3 + i * game.playerInfo.height / 6);
