@@ -191,9 +191,13 @@ function Game(renderer, canvas) {
         this.urgent = 0;
         this.ratio = 0;
         this.learning = { click: 0, W: 0, S: 0, A: 0, D: 0, X1: 0, X2: 0, Y1: 0, Y2: 0, light1: 0, light2: 0, jump: 0, crouch1: 0, crouch2: 0, run: 0 };
-        this.stairPosition = new THREE.Vector2();
-        this.stairPosition.x = 0;
-        this.stairPosition.y = 0;
+        this.stairPosition = new Array(2);
+        this.stairPosition[0] = new THREE.Vector2();
+        this.stairPosition[1] = new THREE.Vector2();
+        this.stairPosition[0].x = 0;
+        this.stairPosition[0].y = 0;
+        this.stairPosition[1].x = 0;
+        this.stairPosition[1].y = 0;
         this.waitToEvaluate = -1;
         this.clock.getDelta();
         this.timer = 0;
@@ -576,7 +580,7 @@ function updateCollisionSet(game) {
     else {
         ry = game.player.mesh.position.y - 10;
     }
-    ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+    ry = Math.floor(ry / CELL_SIZE + 0.51);
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
         game.collisionSet = [];
 
@@ -650,7 +654,7 @@ function updateScene(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        ry = Math.floor(ry / CELL_SIZE + 0.51);
         for (var z = 0; z < NUM_CELLS.z; z++) {
             for (var x = 0; x < NUM_CELLS.x; x++) {
                 var append = false;
@@ -704,7 +708,7 @@ function updateScene(game) {
             ry = game.player.mesh.position.y - 10;
         }
         var ty = ry;
-        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        ry = Math.floor(ry / CELL_SIZE + 0.51);
         var stairRegion = false;
         for (var o = 0; o < game.objects[ry][rz][rx].length; o++) {
             if (game.objects[ry][rz][rx][o].name === 'stair' || game.objects[ry][rz][rx][o].name === 'side' || game.objects[ry][rz][rx][o].name === 'support' || game.objects[ry][rz][rx][o].name === 'ceil2' || game.objects[ry][rz][rx][o].name === 'stairfloor') {
@@ -874,7 +878,7 @@ function updateOperation(game, input) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        ry = Math.floor(ry / CELL_SIZE + 0.51);
         for (var z = rz - 1; z <= rz + 1; z++) {
             if (z < 0 || z >= NUM_CELLS.z) {
                 continue;
@@ -989,7 +993,7 @@ function updateDistance(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        ry = Math.floor(ry / CELL_SIZE + 0.51);
         var my = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
         if (ry != my) {
             game.urgent = 0;

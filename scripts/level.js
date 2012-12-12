@@ -152,7 +152,8 @@ function Level(game) {
                                 t++;
                                 break;
                             case CELL_TYPES.ceil:
-                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.ceil));
+                                this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.ceil + rows[y][t + 1][z].charAt(x)));
+                                t++;
                                 break;
                             case CELL_TYPES.desk:
                                 this.grid[y][z][x].push(new Cell(x, y, z, CELL_TYPES.desk));
@@ -260,8 +261,14 @@ function Level(game) {
                             }
                         } else if (cell.type.charAt(0) === CELL_TYPES.ceil) {
                             this.generateCeilingGeometry(xx, yy, zz, 'ceil2');
-                            game.stairPosition.x += xx;
-                            game.stairPosition.y += zz;
+                            if (cell.type.charAt(1) === 'a') {
+                                game.stairPosition[0].x += xx;
+                                game.stairPosition[0].y += zz;
+                            }
+                            else {
+                                game.stairPosition[1].x += xx;
+                                game.stairPosition[1].y += zz;
+                            }
                         }
                         else if (cell.type.charAt(0) === CELL_TYPES.desk) {
                             this.generateDeskGeometry(xx, yy, zz);
@@ -375,11 +382,18 @@ function Level(game) {
             }
         }
         objMesh.position.set(x, y, z);
-        var rx = Math.floor(Math.floor(x + scalex * (maxX + minX) / 2) / CELL_SIZE + 1 / 2);
-        var rz = Math.floor(Math.floor(z + scalez * (maxZ + minZ) / 2) / CELL_SIZE + 1 / 2);
+        var realX = scalex * (maxX + minX) / 2 * Math.cos(rot) - scalez * (maxZ + minZ) / 2 * Math.sin(rot);
+        var realZ = -scalex * (maxX + minX) / 2 * Math.sin(rot) + scalez * (maxZ + minZ) / 2 * Math.cos(rot);
+        var rx = Math.floor(Math.floor(x + realX) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(z + realZ) / CELL_SIZE + 1 / 2);
         var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
         game.models[ry][rz][rx].push(objMesh);
         var boundingBox = null;
+        if (name === 'mstair') {
+            console.log(x + realX);
+            console.log(z + realZ);
+        }
+
         if (name !== 'mstair') {
             if (name !== 'key') {
                 boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);
@@ -395,8 +409,6 @@ function Level(game) {
                 boundingBox.name = name;
             }
             boundingBox.rotation.y = rot;
-            var realX = scalex * (maxX + minX) / 2 * Math.cos(rot) - scalez * (maxZ + minZ) / 2 * Math.sin(rot);
-            var realZ = -scalex * (maxX + minX) / 2 * Math.sin(rot) + scalez * (maxZ + minZ) / 2 * Math.cos(rot);
             boundingBox.position.set(x + realX, y + scaley * (maxY + minY) / 2, z + realZ);
             boundingBox.model = objMesh;
             if (name === 'door') {
@@ -517,7 +529,7 @@ function Level(game) {
                 mesh4.position.set(x, y + CELL_SIZE / 4, z + CELL_SIZE / 2);
                 break;
             case 'n':
-                this.generateObjGeometry(x - 0.01 * CELL_SIZE, y + 0.026017979 * CELL_SIZE, z + 0.37 * CELL_SIZE, 3.6275010, 1.6922263, 3.2663060, Math.PI / 2, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
+                this.generateObjGeometry(x - 0.0058691 * CELL_SIZE, y + 0.026017979 * CELL_SIZE, z + 0.3594343 * CELL_SIZE, 3.6275010, 1.6922263, 3.2663060, Math.PI / 2, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -Math.atan(2);
                 mesh.position.set(x, y + CELL_SIZE / 4, z);
                 mesh2.rotation.y = Math.PI / 2;
@@ -540,7 +552,7 @@ function Level(game) {
                 mesh4.position.set(x - CELL_SIZE / 2, y + CELL_SIZE / 4, z);
                 break;
             case 'e':
-                this.generateObjGeometry(x, y, z, 3.6275010, 1.6922263, 3.2553060, 0, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
+                this.generateObjGeometry(x - 0.3594343 * CELL_SIZE, y + 0.026017979 * CELL_SIZE, z - 0.0058691 * CELL_SIZE, 3.6275010, 1.6922263, 3.2663060, 0, 'obj/stairs.js', 'obj/stairs.jpg', 'mstair');
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.rotation.y = -(Math.PI / 2 - Math.atan(2));
                 mesh.rotation.z = -Math.PI / 2;
@@ -805,9 +817,10 @@ function Level(game) {
 
     // Generate wall geometry
     // --------------------------------
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1),
-        BOUND_CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
     WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1, WALL_MATERIAL, { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),
+        BOUND_CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
+    
 
     this.generateWallGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(CUBE_GEOMETRY, WALL_MATERIAL);
@@ -860,9 +873,10 @@ function Level(game) {
         //THREE.GeometryUtils.merge(this.geometry, mesh); // this.geometry.wall.push(mesh);
     }
 
-    var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 15, 1),
-        BOUND_COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16),
-        COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
+    COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
+    var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16, 1, 15, 1, COLUMN_MATERIAL, { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),
+        BOUND_COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16);
+        
 
     this.generateColumnGeometry = function (x, y, z, c) {
         var mesh = new THREE.Mesh(COLUMN_GEOMETRY, COLUMN_MATERIAL);
@@ -954,7 +968,7 @@ function Level(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        ry = Math.floor(ry / CELL_SIZE + 0.51);
         if (game.visited[ry][rz][rx] === 0) {
             game.allVisit++;
             game.visited[ry][rz][rx] = 1;
@@ -1089,7 +1103,7 @@ function Level(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 1 / 2);
+        ry = Math.floor(ry / CELL_SIZE + 0.51);
         if (ry === game.nextGoal[game.gindex][0].y) {
             mapContext.moveTo(game.nextGoal[game.gindex][0].x / CELL_SIZE * MAP_CELL_SIZE, game.nextGoal[game.gindex][0].z / CELL_SIZE * MAP_CELL_SIZE);
             mapContext.beginPath();
@@ -1103,16 +1117,21 @@ function Level(game) {
             mapContext.stroke();
         }
         else {
-            mapContext.moveTo(game.stairPosition.x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition.y / 4 / CELL_SIZE * MAP_CELL_SIZE);
-            mapContext.beginPath();
             mapContext.strokeStyle = "#ffff00";
             mapContext.lineWidth = 2;
             game.ratio += 0.1;
             if (game.ratio > 1) {
                 game.ratio -= 1;
             }
-            mapContext.arc(game.stairPosition.x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition.y / 4 / CELL_SIZE * MAP_CELL_SIZE, MAP_CELL_SIZE * game.ratio, 0, 2 * Math.PI, false);
+            mapContext.moveTo(game.stairPosition[0].x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition[0].y / 4 / CELL_SIZE * MAP_CELL_SIZE);
+            mapContext.beginPath();
+            mapContext.arc(game.stairPosition[0].x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition[0].y / 4 / CELL_SIZE * MAP_CELL_SIZE, MAP_CELL_SIZE * game.ratio, 0, 2 * Math.PI, false);
             mapContext.stroke();
+            mapContext.moveTo(game.stairPosition[1].x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition[1].y / 4 / CELL_SIZE * MAP_CELL_SIZE);
+            mapContext.beginPath();
+            mapContext.arc(game.stairPosition[1].x / 4 / CELL_SIZE * MAP_CELL_SIZE, game.stairPosition[1].y / 4 / CELL_SIZE * MAP_CELL_SIZE, MAP_CELL_SIZE * game.ratio, 0, 2 * Math.PI, false);
+            mapContext.stroke();
+
         }
 
 

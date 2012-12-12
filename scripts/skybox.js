@@ -20,8 +20,8 @@ function Skybox(game) {
 
     var geometry    = new THREE.CubeGeometry( 1000, 1000, 1000);
     var mesh        = new THREE.Mesh(geometry, material);
-    mesh.position.z += 250;
-    mesh.position.x += 200;
+    mesh.position.z += NUM_CELLS.z * CELL_SIZE / 2;
+    mesh.position.x += NUM_CELLS.x * CELL_SIZE / 2;
     game.box = mesh;
 
 
