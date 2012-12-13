@@ -560,7 +560,7 @@ function Warden(game) {
         var ray = new THREE.Ray(this.mesh.position,
                 directionVector.clone().normalize());
         var collisionResults = ray.intersectObjects(this.game.scene.children);
-        if (collisionResults.length > 0 && collisionResults[0].distance < 100) {
+        if (collisionResults.length > 0) {
             var selected = collisionResults[0].object;
             if (selected.name === 'player') {
                 //player is in line of sight
