@@ -266,9 +266,6 @@ function Game(renderer, canvas) {
     var loaded = false;
     var once = true;
     this.update = function (input) {
-        if (this.scene !== null) {
-            console.log(this.scene.children.length);
-        }
         starting(this);
         if (this.initialized === false) {
             this.init(input);
@@ -457,7 +454,7 @@ function ending(game) {
         Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.63, game.endingInfo.height * 0.62);
         Ending.font = '14px Courier';
         Ending.fillStyle = '#ffffff';
-        if (game.warden.caught === 0) {
+        if (game.warden.caught === false) {
             if (game.difficulty === 1) {
                 Ending.fillText('Click to proceed to normal difficulty.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
             }
@@ -466,7 +463,7 @@ function ending(game) {
                     Ending.fillText('Click to proceed to hard difficulty.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
                 }
                 else {
-                    Ending.fillText('You finished all difficulties.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
+                    Ending.fillText('You\'ve finished all difficulties.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
                 }
             }
         }

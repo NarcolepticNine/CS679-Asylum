@@ -1,6 +1,6 @@
 /* Defines an array of strings to use to load game map.
- *
- */
+*
+*/
 
 var numFloors = 2;
 var Map = new Array(numFloors);

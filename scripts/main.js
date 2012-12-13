@@ -155,7 +155,7 @@ function setupInput(data, game) {
             case 67: data.trigger.crouch = 1; break;
             case 70: data.trigger.light = 1; break;
             case 16: data.trigger.run = 1; break;
-                //case 32: data.trigger.Jump = 1; break;
+            //case 32: data.trigger.Jump = 1; break; 
         }
     }, false);
 
@@ -169,29 +169,29 @@ function setupInput(data, game) {
             case 67: data.trigger.crouch = 0; break;
             case 70: data.trigger.light = 0; break;
             case 16: data.trigger.run = 0; break;
-                //case 32: data.trigger.Jump = 0; break;
+            //case 32: data.trigger.Jump = 0; break; 
         }
     }, false);
 
     document.addEventListener("mousedown", function (event) {
         if (game.waitToEvaluate > 5) {
-	    if (game.difficulty < 3) {
-		game.initialized = false;
-		if (game.hintTimer !== null) {
-		    clearInterval(game.hintTimer);
-		}
-		if (game.warden.caught === 0) {		 
-		    game.difficulty++;		  
-		}
-	    }
-	    else {
-		if (game.warden.caught === 1) {
-		    game.initialized = false;
-		    if (game.hintTimer !== null) {
-			clearInterval(game.hintTimer);
-		    }
-		}
-	    }		    
+            if (game.difficulty < 3) {
+                game.initialized = false;
+                if (game.hintTimer !== null) {
+                    clearInterval(game.hintTimer);
+                }
+                if (game.warden.caught === 0) {
+                    game.difficulty++;
+                }
+            }
+            else {
+                if (game.warden.caught === 1) {
+                    game.initialized = false;
+                    if (game.hintTimer !== null) {
+                        clearInterval(game.hintTimer);
+                    }
+                }
+            }
         }
         if (game.start === 0) {
             if (game.scene.children.length === 1575 && game.progress === 204) {

@@ -56,9 +56,9 @@ function Warden(game) {
     this.patrols = new Array();
 
     /*Awareness determines how hard it is to hide from the Warden.  
-     * If the player is heard, or spotted within a certain amount of time,
-     * awareness goes up.  If the player is able to hide, awareness will drop.
-     */
+    * If the player is heard, or spotted within a certain amount of time,
+    * awareness goes up.  If the player is able to hide, awareness will drop.
+    */
     this.awareness = 0;
 
     //Game Variables
@@ -91,10 +91,10 @@ function Warden(game) {
         var loader = new THREE.JSONLoader();
         loader.load(this.meshURL, function (geometry) { callback(geometry, 10, 10, 10, this.textureURL); })
 
-            //load warden sounds:
+        //load warden sounds:
 
-            for (var i = 0; i < this.growls.length; i++)
-                this.soundManager.loadSound(this.growls[i]);
+        for (var i = 0; i < this.growls.length; i++)
+            this.soundManager.loadSound(this.growls[i]);
 
         for (var i = 0; i < this.screams.length; i++)
             this.soundManager.loadSound(this.screams[i]);
@@ -113,7 +113,7 @@ function Warden(game) {
         this.patrols = patrolArr;
 
         console.log("Patrol Points: ");
-        for (var i = 0; i < this.patrols.length ; i++) {
+        for (var i = 0; i < this.patrols.length; i++) {
             console.log(this.patrols[i].x + " " + this.patrols[i].z);
         }
 
@@ -126,26 +126,26 @@ function Warden(game) {
         //sound awareness
         var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
         //light awareness
-       
+
         var cond = 0;
 
-        if ( this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.z - this.mesh.position.z) === true) {
+        if (this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.z - this.mesh.position.z) === true) {
             //if in line of sight, use urgency
-            this.notSeen =  false;
-	    cond = game.urgent;
+            this.notSeen = false;
+            cond = game.urgent;
 
         } else {
-	    this.notSeen = true;
-	    if (soundAwareness !== -1){
-            //otherwise leave cond = 0, so awareness goes down, and half sound
-            //awareness
-	    
-		soundAwareness = soundAwareness / 2;
-	    }
-	}
+            this.notSeen = true;
+            if (soundAwareness !== -1) {
+                //otherwise leave cond = 0, so awareness goes down, and half sound
+                //awareness
 
-        
-    
+                soundAwareness = soundAwareness / 2;
+            }
+        }
+
+
+
         switch (cond) {
             case 0: //very far
                 if (soundAwareness === -1) {
@@ -193,7 +193,7 @@ function Warden(game) {
                     if (soundAwareness === -1) {
                         game.warden.awareness -= 1;
                     }
-                    else {                        
+                    else {
                         if (game.difficulty === 3) {
                             game.warden.awareness = 100;
                         }
@@ -268,7 +268,7 @@ function Warden(game) {
             this.game.end = 1;
         }
 
-        if (this.awareness < this.awareThres || this.inLineOfSight(dX, dZ) === false ) {
+        if (this.awareness < this.awareThres || this.inLineOfSight(dX, dZ) === false) {
 
             if (this.pt == null) {
                 this.pt = this.patrols[this.nextPt];
@@ -335,13 +335,13 @@ function Warden(game) {
 
         this.time = Date.now() % this.duration;
 
-        this.keyframe = Math.floor( this.time / this.interpolation );
+        this.keyframe = Math.floor(this.time / this.interpolation);
 
-        if ( this.keyframe != this.currentKeyframe ) {
+        if (this.keyframe != this.currentKeyframe) {
 
-            this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 0;
-            this.mesh.morphTargetInfluences[ this.currentKeyframe ] = 1;
-            this.mesh.morphTargetInfluences[ this.keyframe ] = 0;
+            this.mesh.morphTargetInfluences[this.lastKeyframe] = 0;
+            this.mesh.morphTargetInfluences[this.currentKeyframe] = 1;
+            this.mesh.morphTargetInfluences[this.keyframe] = 0;
             this.lastKeyframe = this.currentKeyframe;
             this.currentKeyframe = this.keyframe;
 
@@ -349,8 +349,8 @@ function Warden(game) {
 
         }
 
-        this.mesh.morphTargetInfluences[ this.keyframe ] = ( this.time % this.interpolation ) / this.interpolation;
-        this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 1 - this.mesh.morphTargetInfluences[ this.keyframe ];
+        this.mesh.morphTargetInfluences[this.keyframe] = (this.time % this.interpolation) / this.interpolation;
+        this.mesh.morphTargetInfluences[this.lastKeyframe] = 1 - this.mesh.morphTargetInfluences[this.keyframe];
     }
 
     this.updateLoad = function (game, input) {
@@ -443,8 +443,8 @@ function Warden(game) {
     this.playSounds = this.soundLoad;
 
     /* meshPos is a short hand for the warden's mesh
-     * targetPos is either the player's position, or a patrol position.
-     */
+    * targetPos is either the player's position, or a patrol position.
+    */
     this.pathfind = function (meshPos, targetPos) {
         var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
@@ -458,7 +458,7 @@ function Warden(game) {
         var center = null;
         var centerWalls = new Array();
 
-        for (var i = 0; i < 3 ; i++) {
+        for (var i = 0; i < 3; i++) {
 
             for (var j = 0; j < 3; j++) {
                 var cell = levelGrid[rz + (j - 1)][rx + (i - 1)];
@@ -472,8 +472,8 @@ function Warden(game) {
 
                             switch (cell[o].type.charAt(1)) {
 
-                                //for any direction, set the variable to false for 
-                                // the outer cells
+                                //for any direction, set the variable to false for  
+                                // the outer cells 
                                 case 'n':
                                 case 's':
                                 case 'e':
@@ -510,30 +510,30 @@ function Warden(game) {
         var ret = new THREE.Vector2();
         ret.x = meshPos.x, ret.z = meshPos.z;
         /*
-           if( targetPos.x > meshPos.x ) {
+        if( targetPos.x > meshPos.x ) {
 
 
-           ret.x = ( rx + 1 ) * CELL_SIZE ; 
+        ret.x = ( rx + 1 ) * CELL_SIZE ; 
 
 
-           } else if ( targetPos.x < meshPos.x ){
+        } else if ( targetPos.x < meshPos.x ){
 
 
-           ret.x = ( rx - 1 ) * CELL_SIZE ;
+        ret.x = ( rx - 1 ) * CELL_SIZE ;
 
 
-           } else{
+        } else{
 
-           ret.x = targetPos.x;
+        ret.x = targetPos.x;
 
-           }
-           */
+        }
+        */
 
         //return ret;
         return targetPos;
     }
 
-    this.inLineOfSight = function(dX, dZ) {
+    this.inLineOfSight = function (dX, dZ) {
         var directionVector = new THREE.Vector3(dX, this.mesh.position.y, dZ);
         var ray = new THREE.Ray(this.mesh.position,
                 directionVector.clone().normalize());
