@@ -174,6 +174,9 @@ function setupInput(data, game) {
     }, false);
 
     document.addEventListener("mousedown", function (event) {
+        if (game.waitToEvaluate > 5) {
+            window.location.reload(true);
+        }
         if (game.start === 0) {
             if (event.pageX > 0.16 * canvas.width && event.pageX < 0.28 * canvas.width && event.pageY > 0.28 * canvas.height && event.pageY < 0.36 * canvas.height) {
                 game.start = 1;

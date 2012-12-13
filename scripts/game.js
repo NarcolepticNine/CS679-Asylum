@@ -376,15 +376,15 @@ function ending(game) {
             Ending.drawImage(game.EWIN, 0, 0, game.EWIN.width, game.EWIN.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
             Ending.font = '40px Courier';
             Ending.fillStyle = '#ff0000';
-            var sum = 4;
-            if (game.timer < 60) {
-                sum--;
+            var sum = 1;
+            if (game.timer > 120) {
+                sum++;
+                if (game.timer > 240) {
+                    sum++;
+                }
             }
-            if (game.allVisit > 200) {
-                sum--;
-            }
-            if (game.maxAwareness === 0) {
-                sum--;
+            if (game.maxAwareness !== 0) {
+                sum++;
             }
             var show;
             switch (sum) {
@@ -405,8 +405,8 @@ function ending(game) {
         }
         Ending.font = '20px Courier';
         Ending.fillStyle = '#ff0000';
-        Ending.fillText(Math.floor((game.timer * 100) / 100) + ' seconds', game.endingInfo.width * 0.63, game.endingInfo.height * 0.51);
-        Ending.fillText(Math.floor(game.allVisit / 305 * 100) + ' %', game.endingInfo.width * 0.64, game.endingInfo.height * 0.57);
+        Ending.fillText(Math.floor((game.timer * 100) / 100) + ' seconds', game.endingInfo.width * 0.620, game.endingInfo.height * 0.51);
+        Ending.fillText(Math.floor(game.allVisit / 329 * 100) + ' %', game.endingInfo.width * 0.638, game.endingInfo.height * 0.57);
         Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);        
     }
 }
