@@ -501,6 +501,10 @@ function hintTimerFunc(game) {
         if (game.warden.notSeen === false) {
             hints(game, game.playHints[game.urgent]);
         }
+        else {
+            hints(game, '');
+        }
+            
     }
     if ((game.learning.click === 1 && game.hintIndex === 0) ||
         (game.learning.W === 1 && game.hintIndex === 1) ||
