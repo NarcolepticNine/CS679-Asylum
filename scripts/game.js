@@ -257,11 +257,12 @@ function Game(renderer, canvas) {
     var once = true;
     this.update = function (input) {
         starting(this);
-	if (this.start === 1 && this.hintTimer === null) {
-	    this.hintTimer = setInterval(function () { hintTimerFunc(this) }, 1000);
-	}
 	if (this.initialized === false) {
 	    this.init(input);
+	}
+	if (this.start === 1 && this.hintTimer === null && this.initialized) {
+	    _this = this;
+	    this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
 	}
 	if (this.end === 0) {
 	    this.timer += this.clock.getDelta();
@@ -433,9 +434,6 @@ function hints(game, message) {
 }
 
 function hintTimerFunc(game) {
-
-
-
     if (game.hintIndex < game.textHints.length) {
         hints(game, game.textHints[game.hintIndex]);
     }
@@ -659,7 +657,6 @@ function updateScene(game) {
     }
     else {
         game.again = false;
-	game.progress++;
     }
 
     if (need === true) {
