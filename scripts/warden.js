@@ -53,9 +53,9 @@ function Warden(game) {
     this.nextPatrol = 0;
     this.currPatrol = null;
     this.patrols = new Array();
-    this.targetPt = null; 
 
-	this.lastTarget	= new THREE.Vector3(); 
+	this.there		= false; 
+	this.targetPt	= new THREE.Vector3(); 
 	this.Path   	= new Array(); //will be filled with path points to current target
 	this.pathPt     = null; 
     /*Awareness determines how hard it is to hide from the Warden.  
@@ -255,7 +255,7 @@ function Warden(game) {
         if (this.awareness < this.awareThres) {
 
             if (this.currPatrol == null) {
-                this.currPatrol = this.patrols[this.nextPatrol];
+                this.currPatrol = this.patrols[ this.nextPatrol ];
                 this.nextPatrol = (++this.nextPatrol == this.patrols.length) ? 0 : this.nextPatrol;
             	
             	this.pathfind( this.mesh.position, this.currPatrol );
@@ -267,9 +267,10 @@ function Warden(game) {
             var pZ = this.currPatrol.z;
 			
 			
-            if( this.Path.length == 0 ) {
+            if( this.there ) {
                 //select new current point.  
-                this.currPatrol = this.patrols[this.nextPatrol];
+                this.there = false; 
+                this.currPatrol = this.patrols[ this.nextPatrol ];
                 this.nextPatrol = (this.pDir) ? this.nextPatrol + 1 : this.nextPatrol - 1;
                 this.pDir = (this.nextPatrol == 0 || this.nextPatrol == this.patrols.length - 1) ? !this.pDir : this.pDir;
 
@@ -281,9 +282,9 @@ function Warden(game) {
         } else {
             
             //calculate new path to player if needed
-            this.pathfind( this.mesh.position, game.player.mesh.position ); 
-        	this.pathPt = this.Path.pop();
-        	console.log( this.Path ); 
+            if( this.pathfind( this.mesh.position, game.player.mesh.position ) )
+        		this.pathPt = this.Path.pop();
+        	
             //if awareness too high, warden sprints
 		    this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
         }
@@ -299,8 +300,10 @@ function Warden(game) {
             this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
             this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
             
-            if( d < 10 ) this.pathPt = this.Path.pop(); 
-            
+            if( d < 10 ){
+           		this.pathPt = this.Path.pop(); 
+            	if( !this.pathPt ) this.there = true; 
+            }
 		}
 
 
@@ -445,46 +448,73 @@ function Warden(game) {
  	 */
  	this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
+
+			
+		var tarX = Math.floor(Math.floor(targetPos.x) / CELL_SIZE + 1 / 2);
+		var tarZ = Math.floor(Math.floor(targetPos.z) / CELL_SIZE + 1 / 2);
+
+
 	
-		if( targetPos != this.lastTarget ){
+		if( this.targetPt.x != tarX || this.targetPt.z != tarZ ){
+			
 			// if targetPos is different that last target position pathfind
 			var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
 	        var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
 	        var ry = 0; //Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
-	
-			var tarX = Math.floor(Math.floor(targetPos.x) / CELL_SIZE + 1 / 2);
-			var tarZ = Math.floor(Math.floor(targetPos.z) / CELL_SIZE + 1 / 2);
+
+
 			var tarY = 0; //Math.floor(Math.floor(targetPos.y) / CELL_SIZE);
 			
-			this.lastTarget = targetPos; 
+			console.log( "Finding Path to: " + tarX + " " + tarZ );
 			
-			this.visitCnt = 1; 
-			var iterCount = 500; 
-			var findQueue = new Array(); 
-			var visitedArr = new Array(); 
-			var notFound = true; 
+			this.targetPt.x = tarX;
+			this.targetPt.z = tarZ; 
+			
+			this.visitCnt   = 1; 
+			var iterCount   = 1000; 
+			var findQueue   = new Array(); 
+			var visitedArr  = new Array();
+			var visitedGrid = new Array(); 
+			
+			var markVisit   = function ( x, y, z ) {
+				
+				if( visitedGrid[x] ){
+					visitedGrid[x][z] = true; 
+				}else{
+					visitedGrid[x] = new Array();
+					visitedGrid[x][z] = true; 
+				} 
+				
+			} 
+			  
+			var notFound    = true; 
 			
 			// check center, and prime queue
 			this.processCell( rx, ry, rz, 0,  findQueue, visitedArr  );
 			
-			while( notFound && findQueue.length > 0 && ( --iterCount > 0 ) ){
+			while( notFound && findQueue.length > 0  && ( --iterCount > 0 ) ){
 				var curr = findQueue.shift(); 
 				
-				if( curr.x == tarX && curr.y == tarY && curr.z == tarZ ){
+				if( curr.x == tarX && curr.z == tarZ ){
 					//found where we need to be, trace back. 
 					notFound = false;
 					
 					//build up and set path 
-					this.traceBack( visitedArr, curr ); 
-					break;
+					this.traceBack( targetPos, visitedArr, curr ); 
+					return true;
 					
-				} else {
+					
+				} else if( !( visitedGrid[curr.x] && visitedGrid[curr.x][curr.z] ) ) {
+					markVisit( curr.x, 0, curr.z );
 					this.processCell( curr.x, curr.y, curr.z, curr.id, findQueue, visitedArr );
 				}
 			}
+			
+			
 		}
 		//else, leave this.lastPath alone
-
+		
+		return false; 
         
     }
 
@@ -529,23 +559,23 @@ function Warden(game) {
 		
 	}
 
-	this.traceBack = function ( visitedArr, end ) {
+	this.traceBack = function ( targetPos, visitedArr, end ) {
 		
+		
+		
+		this.Path = []; 
 		var curr = end; 
-		var path = new Array();
-		var pos  = new THREE.Vector3( curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE );
-		path.push( pos );  
+		var pos  = targetPos;
+		this.Path.push( pos );  
 		
 		// when curr.prev = 0, it should be the node 1 away from the current
 		// node, which works, as we are already in the current node. 
 		while( curr.prev ){ 
 			curr = visitedArr[ curr.prev ]; 
 			pos  = new THREE.Vector3( curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE );
-			path.push( pos ); 		
+			this.Path.push( pos ); 		
 			
 		}
-		
-		this.Path = path; 
 				
 	}
 	

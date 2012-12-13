@@ -116,15 +116,24 @@ function updateDebug( info, game ){
 			info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
 			info.innerHTML += " vX: " + warden.vX.toFixed(2) + " vZ: " + warden.vZ.toFixed(2) + "<br />";
 			
-			info.innerHTML += "Path Length: " + warden.Path.length; 
-			info.innerHTML += " Next path pt: " + warden.pathPt + "<br />"; 
-		
+			info.innerHTML += "Path Length: " + warden.Path.length + "<br />"; 
+			if( warden.pathPt ){
+				info.innerHTML += " Next path pt x: " + warden.pathPt.x ;
+				info.innerHTML += " y: " + warden.pathPt.y ;
+				info.innerHTML += " z: " + warden.pathPt.z + "<br />"; 
+			}
+			
+			if( warden.currPatrol ) {
+				info.innerHTML += " Current Patrol X: " + warden.currPatrol.x; 
+				info.innerHTML += " Y: " + warden.currPatrol.y;		
+				info.innerHTML += " Z: " + warden.currPatrol.z + "<br />"; 
+			}
 		}
 		
 				 
 		info.innerHTML += " currSpd: " + warden.currSpd; 
 		info.innerHTML += " Awareness: " + warden.awareness.toFixed(2);
-		info.innerHTML += " Next Pt: " + warden.nextPt + "<br / >";
+		info.innerHTML += " Next Patrol: " + warden.nextPatrol + "<br / >";
 		      
 	}
 	
