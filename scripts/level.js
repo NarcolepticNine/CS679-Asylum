@@ -871,7 +871,7 @@ function Level(game) {
 
     COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
     var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 12, CELL_SIZE, CELL_SIZE / 12, 1, 16, 1, COLUMN_MATERIAL, { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),
-        BOUND_COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16);
+        BOUND_COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 12, CELL_SIZE, CELL_SIZE / 12);
 
 
     this.generateColumnGeometry = function (x, y, z, c) {
