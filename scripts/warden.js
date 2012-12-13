@@ -53,6 +53,7 @@ function Warden(game) {
     this.nextPatrol = 0;
     this.currPatrol = null;
     this.patrols = new Array();
+    this.targetPt = null; 
 
 	this.lastTarget	= new THREE.Vector3(); 
 	this.Path   	= new Array(); //will be filled with path points to current target
@@ -588,7 +589,7 @@ function Warden(game) {
 		}
 			 
 	}
-	
+
 }
 
 
