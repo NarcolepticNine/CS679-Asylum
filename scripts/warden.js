@@ -6,13 +6,13 @@ function Warden() {
     this.meshURL = "./obj/demon/demonAnim.js";
     this.textureURL = "./obj/demon/colorMap.png";
     this.flashlight1 = null;
-    
+
     //Animation Variables
-	this.duration = 1500;
-	this.keyframes = 23;
-	this.interpolation = this.duration / this.keyframes;
-	this.lastKeyframe = 0;
-	this.currentKeyframe = 0;
+    this.duration = 1500;
+    this.keyframes = 23;
+    this.interpolation = this.duration / this.keyframes;
+    this.lastKeyframe = 0;
+    this.currentKeyframe = 0;
 
     //Mechanic Variables 
     this.speed = 0.6;
@@ -204,13 +204,13 @@ function Warden() {
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-	if (Y != ry) {
+        if (Y != ry) {
             this.awareness = 0;
         }
-	else {
-	     this.checkPlayer(game, input, playerSound, d);
-	}	    
-	
+        else {
+            this.checkPlayer(game, input, playerSound, d);
+        }
+
         if (game.urgent === 4) {
             this.playFinalScream();
             this.caught = true;
@@ -279,28 +279,28 @@ function Warden() {
                 meshPos.z + this.vZ / this.currSpd * 5
             );
         this.playSounds();
-        
-    	
-	
-		this.time = Date.now() % this.duration;
-	
-		this.keyframe = Math.floor( this.time / this.interpolation );
-	
-		if ( this.keyframe != this.currentKeyframe ) {
-	
-			this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 0;
-			this.mesh.morphTargetInfluences[ this.currentKeyframe ] = 1;
-			this.mesh.morphTargetInfluences[ this.keyframe ] = 0;
-	
-			this.lastKeyframe = this.currentKeyframe;
-			this.currentKeyframe = this.keyframe;
-			
-			//console.log(this.currentKeyframe);
-	
-		}
-	
-		this.mesh.morphTargetInfluences[ this.keyframe ] = ( this.time % this.interpolation ) / this.interpolation;
-		this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 1 - this.mesh.morphTargetInfluences[ this.keyframe ];
+
+
+
+        this.time = Date.now() % this.duration;
+
+        this.keyframe = Math.floor(this.time / this.interpolation);
+
+        if (this.keyframe != this.currentKeyframe) {
+
+            this.mesh.morphTargetInfluences[this.lastKeyframe] = 0;
+            this.mesh.morphTargetInfluences[this.currentKeyframe] = 1;
+            this.mesh.morphTargetInfluences[this.keyframe] = 0;
+
+            this.lastKeyframe = this.currentKeyframe;
+            this.currentKeyframe = this.keyframe;
+
+            //console.log(this.currentKeyframe);
+
+        }
+
+        this.mesh.morphTargetInfluences[this.keyframe] = (this.time % this.interpolation) / this.interpolation;
+        this.mesh.morphTargetInfluences[this.lastKeyframe] = 1 - this.mesh.morphTargetInfluences[this.keyframe];
     }
 
     this.updateLoad = function (game, input) {

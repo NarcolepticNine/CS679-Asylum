@@ -2,8 +2,8 @@
 // Initialize Game
 // ----------------------------------------------------------------------------
 (function initialize() {
-	
-	var canvas = document.getElementById("canvas"),
+
+    var canvas = document.getElementById("canvas"),
         canvasWidth = window.innerWidth,
         canvasHeight = window.innerHeight,
         renderer = new THREE.WebGLRenderer({
@@ -14,8 +14,8 @@
         }),
         inputData = {},
         game = null,
-        debug = false; 
-    	
+        debug = false;
+
     requestFrame = window.requestAnimationFrame
                 || window.webkitRequestAnimationFrame
                 || window.mozRequestAnimationFrame
@@ -34,25 +34,25 @@
     renderer.setSize(canvasWidth, canvasHeight);
     document.getElementById("container").appendChild(renderer.domElement);
 
-	 if( debug ){  
-    	
-    	var stats = new Stats();     
-   	 	stats.setMode(0); 
-   	 	stats.domElement.style.position = 'absolute';
-		stats.domElement.style.left = '0px';
-		stats.domElement.style.top = '0px';
-		document.body.appendChild( stats.domElement );
-		
-		var info = document.createElement( 'div' );
-		info.style.position = 'absolute';
-		info.style.color = "#ffffff";
-		info.style.top   = '50px';
-		info.style.left  = '5px'; 
-		info.style.width = '100%';
-		info.style.textAlign = 'left';
-		info.innerHTML = '';
-		document.body.appendChild( info );
-	}
+    if (debug) {
+
+        var stats = new Stats();
+        stats.setMode(0);
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.body.appendChild(stats.domElement);
+
+        var info = document.createElement('div');
+        info.style.position = 'absolute';
+        info.style.color = "#ffffff";
+        info.style.top = '50px';
+        info.style.left = '5px';
+        info.style.width = '100%';
+        info.style.textAlign = 'left';
+        info.innerHTML = '';
+        document.body.appendChild(info);
+    }
 
 
     // Create Game object
@@ -62,19 +62,19 @@
     setupInput(inputData, game);
 
     // Enter main loop
-    (function mainLoop() {    	
-    	setTimeout( function () {
-	        if( this.debug ) stats.begin();
-	        if (game.update(inputData)) {
-	            game.render(inputData);
-	            if (this.debug) {
-	                updateDebug(info, game);
-	                stats.end()
-	            };
-	        }
-	        requestFrame(mainLoop);
-     	}, 1000/35 );
-     	
+    (function mainLoop() {
+        setTimeout(function () {
+            if (this.debug) stats.begin();
+            if (game.update(inputData)) {
+                game.render(inputData);
+                if (this.debug) {
+                    updateDebug(info, game);
+                    stats.end()
+                };
+            }
+            requestFrame(mainLoop);
+        }, 1000 / 35);
+
     })();
 
     //Deal with resizing
@@ -90,34 +90,34 @@
     }
 })();
 
-function updateDebug( info, game ){
-	
-	if( game != null ){
-		
-		player = game.player;
-		warden = game.warden;  
-		info.innerHTML  = "Player x: " + player.mesh.position.x.toFixed(2); 
-		info.innerHTML += " y: " + player.mesh.position.y.toFixed(2); 
-		info.innerHTML += " z: " + player.mesh.position.z.toFixed(2);  
-		info.innerHTML += " Light: " + player.lightOn; 
-		info.innerHTML += " Current Speed: " + player.currSpd + "<br / >";
-		
-		info.innerHTML += " Sound Level: " + player.sound
-		info.innerHTML += " Key: " + game.key + "<br / ><br />";
-		
-		if( warden.mesh ){
-			info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
-			info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
-			info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
-		}
-		info.innerHTML += " vX: " + warden.vX.toFixed(2) + " vZ: " + warden.vZ.toFixed(2) + "<br />";
-				 
-		info.innerHTML += " currSpd: " + warden.currSpd; 
-		info.innerHTML += " Awareness: " + warden.awareness.toFixed(2);
-		info.innerHTML += " Next Pt: " + warden.nextPt + "<br / >";
-		      
-	}
-	
+function updateDebug(info, game) {
+
+    if (game != null) {
+
+        player = game.player;
+        warden = game.warden;
+        info.innerHTML = "Player x: " + player.mesh.position.x.toFixed(2);
+        info.innerHTML += " y: " + player.mesh.position.y.toFixed(2);
+        info.innerHTML += " z: " + player.mesh.position.z.toFixed(2);
+        info.innerHTML += " Light: " + player.lightOn;
+        info.innerHTML += " Current Speed: " + player.currSpd + "<br / >";
+
+        info.innerHTML += " Sound Level: " + player.sound
+        info.innerHTML += " Key: " + game.key + "<br / ><br />";
+
+        if (warden.mesh) {
+            info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
+            info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
+            info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
+        }
+        info.innerHTML += " vX: " + warden.vX.toFixed(2) + " vZ: " + warden.vZ.toFixed(2) + "<br />";
+
+        info.innerHTML += " currSpd: " + warden.currSpd;
+        info.innerHTML += " Awareness: " + warden.awareness.toFixed(2);
+        info.innerHTML += " Next Pt: " + warden.nextPt + "<br / >";
+
+    }
+
 }
 
 
@@ -127,19 +127,19 @@ function updateDebug( info, game ){
 function setupInput(data, game) {
     // Setup input data structure
     data.viewRay = null;
-    data.mouseX  = canvas.offsetLeft + canvas.width / 2;
-    data.mouseY  = canvas.offsetTop + canvas.height / 2;
-    data.center  = -Math.PI / 2;
-    data.theta   = Math.PI / 2;
-    data.phi     = 0;
-    data.f       = new THREE.Vector3();
-    data.v       = 0;
-    data.hold    = 1;
+    data.mouseX = canvas.offsetLeft + canvas.width / 2;
+    data.mouseY = canvas.offsetTop + canvas.height / 2;
+    data.center = -Math.PI / 2;
+    data.theta = Math.PI / 2;
+    data.phi = 0;
+    data.f = new THREE.Vector3();
+    data.v = 0;
+    data.hold = 1;
     data.click = 0;
     data.X = 0;
     data.Y = 0;
     data.Escape = 0;
-    data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0};
+    data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0 };
 
     // Hookup key input
     document.addEventListener("keydown", function (event) {
@@ -153,9 +153,9 @@ function setupInput(data, game) {
             case 68: data.trigger.D = 1; break;
             case 69: data.Escape = 1; break;
             case 67: data.trigger.crouch = 1; break;
-            case 70: data.trigger.light  = 1; break; 
-            case 16: data.trigger.run = 1; break;  
-            //case 32: data.trigger.Jump = 1; break;
+            case 70: data.trigger.light = 1; break;
+            case 16: data.trigger.run = 1; break;
+                //case 32: data.trigger.Jump = 1; break;
         }
     }, false);
 
@@ -167,9 +167,9 @@ function setupInput(data, game) {
             case 65: data.trigger.A = 0; break;
             case 68: data.trigger.D = 0; break;
             case 67: data.trigger.crouch = 0; break;
-            case 70: data.trigger.light  = 0; break; 
-            case 16: data.trigger.run = 0; break;  
-            //case 32: data.trigger.Jump = 0; break;
+            case 70: data.trigger.light = 0; break;
+            case 16: data.trigger.run = 0; break;
+                //case 32: data.trigger.Jump = 0; break;
         }
     }, false);
 
@@ -178,13 +178,11 @@ function setupInput(data, game) {
             window.location.reload(true);
         }
         if (game.start === 0) {
-
-	 
-		if (event.pageX > 0.16 * canvas.width && event.pageX < 0.28 * canvas.width && event.pageY > 0.28 * canvas.height && event.pageY < 0.36 * canvas.height) {
-		    game.start = 1;
-			}
-	    
-		   
+            if (game.scene.children.length === 1575) {
+                if (event.pageX > 0.16 * canvas.width && event.pageX < 0.28 * canvas.width && event.pageY > 0.28 * canvas.height && event.pageY < 0.36 * canvas.height) {
+                    game.start = 1;
+                }
+            }
         }
         else {
             if (!canvas.pointerLockEnabled) {
