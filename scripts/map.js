@@ -23,7 +23,7 @@ Map[0].push(
 "..fffff........ffffff.\n" +
 "..fffff........ffffff.\n" +
 "..fffffwwiwiwiwffffff.\n" +
-"..sffffffffffffffffff.\n" +
+"..fsfffffffffffffffff.\n" +
 "..fffff\n" +
 ".......");
 

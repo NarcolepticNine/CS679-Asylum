@@ -55,6 +55,7 @@ function Game(renderer, canvas) {
     this.start = 0;
     this.progress = 0;
     this.difficulty = 1;
+    this.otherFloor = false;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -213,12 +214,13 @@ function Game(renderer, canvas) {
         this.maxAwareness = 0;
         this.start = 0;
 	this.progress = 0;
+	this.otherFloor = false;
         // Setup scene
 
 
         //this.scene.add(new THREE.AmbientLight(0xffffff));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
-        this.scene.add(new THREE.AmbientLight(0x0a0a0f));
+        this.scene.add(new THREE.AmbientLight(0x0a0a0a));
 
         // Load the level
         this.level = new Level(this);
@@ -632,14 +634,8 @@ function updatePlayerInformation(game, input) {
 function updateCollisionSet(game) {
     var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-    var ry;
-    if (game.player.crouch) {
-        ry = game.player.mesh.position.y - 2.5;
-    }
-    else {
-        ry = game.player.mesh.position.y - 10;
-    }
-    ry = Math.floor(ry / CELL_SIZE + 0.51);
+    var ry = Math.floor(game.player.mesh.position.y / CELL_SIZE);
+   
     if (rx != game.old.x || ry != game.old.y || rz != game.old.z) {
         game.collisionSet = [];
 
@@ -652,7 +648,6 @@ function updateCollisionSet(game) {
                 if (x < 0 || x >= NUM_CELLS.x) {
                     continue;
                 }
-
 
                 for (var o = 0; o < game.objects[ry][z][x].length; o++) {
                     game.collisionSet.push(game.objects[ry][z][x][o]);
@@ -722,52 +717,65 @@ function updateScene(game) {
     if (need === true) {
         var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-        var ry;
-        if (game.player.crouch) {
-            ry = game.player.mesh.position.y - 2.5;
-        }
-        else {
-            ry = game.player.mesh.position.y - 10;
-        }
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
+        var ry = 0;
         for (var z = 0; z < NUM_CELLS.z; z++) {
-            for (var x = 0; x < NUM_CELLS.x; x++) {
-                var append = false;
-                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
-                    if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2' || game.objects[ry][z][x][o].name === 'stairfloor') {
-                        append = true;
-                    }
-                    game.scene.add(game.objects[ry][z][x][o]);
-                }
+            for (var x = 0; x < NUM_CELLS.x; x++) {              
+                for (var o = 0; o < game.objects[ry][z][x].length; o++) {                   
+		    game.scene.add(game.objects[ry][z][x][o]);
+		}
                 for (var o = 0; o < game.models[ry][z][x].length; o++) {
-                    game.scene.add(game.models[ry][z][x][o]);
-                }
-                if (append === true) {
-                    for (var dx = x - 1; dx <= x + 1; dx++) {
-                        if (dx < 0 || dx >= NUM_CELLS.x) {
-                            continue;
-                        }
-                        for (var dz = z - 1; dz <= z + 1; dz++) {
-                            if (dz < 0 || dz >= NUM_CELLS.z) {
-                                continue;
-                            }
-                            for (var y = ry - 1; y <= ry + 1; y += 2) {
-                                if (y < 0 || y >= NUM_CELLS.y) {
-                                    continue;
-                                }
-                                for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
-                                    game.scene.add(game.objects[y][dz][dx][o]);
-                                }
-
-                                for (var o = 0; o < game.models[y][dz][dx].length; o++) {
-                                    game.scene.add(game.models[y][dz][dx][o]);
-                                }
-                            }
-                        }
-                    }
-                }
+		    game.scene.add(game.models[ry][z][x][o]);
+		}
             }
         }
+
+	for (var dx = 20; dx <= 23; dx++) {
+	    if (dx < 0 || dx >= NUM_CELLS.x) {
+		continue;
+	    }
+	    for (var dz = 6; dz <= 9; dz++) {
+		if (dz < 0 || dz >= NUM_CELLS.z) {
+		    continue;
+		}
+		for (var y = ry - 1; y <= ry + 1; y += 2) {
+		    if (y < 0 || y >= NUM_CELLS.y) {
+			continue;
+		    }
+		  
+		    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+			game.scene.add(game.objects[y][dz][dx][o]);
+		    }
+				    
+		    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+			game.scene.add(game.models[y][dz][dx][o]);
+		    }
+		   
+		}
+	    }
+	}
+	
+	for (var dx = 9; dx <= 12; dx++) {
+	    if (dx < 0 || dx >= NUM_CELLS.x) {
+		continue;
+	    }
+	    for (var dz = 3; dz <= 6; dz++) {
+		if (dz < 0 || dz >= NUM_CELLS.z) {
+		    continue;
+		}
+		for (var y = ry - 1; y <= ry + 1; y += 2) {
+		    if (y < 0 || y >= NUM_CELLS.y) {
+			continue;
+		    }		  
+		    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+			game.scene.add(game.objects[y][dz][dx][o]);
+		    }
+			
+		    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+			game.scene.add(game.models[y][dz][dx][o]);
+		    }		
+		}
+	    }
+	}
         game.old.x = rx;
         game.old.y = ry;
         game.old.z = rz;
@@ -775,15 +783,34 @@ function updateScene(game) {
     else {
         var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-        var ry;
-        if (game.player.crouch) {
-            ry = game.player.mesh.position.y - 2.5;
-        }
-        else {
-            ry = game.player.mesh.position.y - 10;
-        }
-        var ty = ry;
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
+	var ry;
+	if (game.player.crouch) {
+	    ry = game.player.mesh.position.y - 2.5;
+	}
+	else {
+	    ry = game.player.mesh.position.y - 10;
+	}
+	if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
+	    if (rx < 15) {
+		if (rx == 10) {
+		    ry = 1;
+		}
+		else {
+		    ry = 0;
+		}
+	    }
+	    else {
+		if (rz === 7) {
+		    ry = 1;
+		}
+		else {
+		    ry = 0;
+	    }
+	    }
+	}
+	else {
+	    ry = Math.floor(ry / CELL_SIZE + 0.51);
+	}
         var stairRegion = false;
         for (var o = 0; o < game.objects[ry][rz][rx].length; o++) {
             if (game.objects[ry][rz][rx][o].name === 'stair' || game.objects[ry][rz][rx][o].name === 'side' || game.objects[ry][rz][rx][o].name === 'support' || game.objects[ry][rz][rx][o].name === 'ceil2' || game.objects[ry][rz][rx][o].name === 'stairfloor') {
@@ -792,21 +819,123 @@ function updateScene(game) {
             }
         }
         if (stairRegion === false) {
-            game.old.x = rx;
-            game.old.y = ry;
-            game.old.z = rz;
+	    if (game.otherFloor === true) {
+		game.otherFloor = false;
+		game.old.x = rx;
+		game.old.y = ry;
+		game.old.z = rz;
+		if (rx > 15) {
+		    for (var dx = 0; dx <= 23; dx++) {
+			if (dx < 0 || dx >= NUM_CELLS.x) {
+			    continue;
+			}
+			for (var dz = 5; dz <= 12; dz++) {
+			    if (dz < 0 || dz >= NUM_CELLS.z) {
+				continue;
+			    }
+			    for (var y = ry - 1; y <= ry + 1; y += 2) {
+				if (y < 0 || y >= NUM_CELLS.y) {
+				    continue;
+				}
+				if ((dx >= 20 && dx <= 23 && dz >= 6 && dz <= 9)) {
+				}
+				else {
+				    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+					game.scene.remove(game.objects[y][dz][dx][o]);
+				    }
+				    
+				    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+					game.scene.remove(game.models[y][dz][dx][o]);
+				    }
+				}
+			    }
+			}
+		    }
+		}
+		else {
+		    for (var dx = 0; dx <= 18; dx++) {
+			if (dx < 0 || dx >= NUM_CELLS.x) {
+			    continue;
+			}
+			for (var dz = 3; dz <= 9; dz++) {
+			    if (dz < 0 || dz >= NUM_CELLS.z) {
+				continue;
+			    }
+			    for (var y = ry - 1; y <= ry + 1; y += 2) {
+				if (y < 0 || y >= NUM_CELLS.y) {
+				    continue;
+				}
+				if (dx >= 9 && dx <= 12 && dz >= 3 && dz <= 6) {
+				}
+				else {
+				    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+					game.scene.remove(game.objects[y][dz][dx][o]);
+				    }
+			
+				    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+					game.scene.remove(game.models[y][dz][dx][o]);
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }		
             return;
         }
 
+	if (game.otherFloor === false) {
+	    game.otherFloor = true;
+	    if (rx > 15) {
+		for (var dx = 0; dx <= 23; dx++) {
+		    if (dx < 0 || dx >= NUM_CELLS.x) {
+			continue;
 
-        if (ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) > 0.11 && ty / CELL_SIZE - Math.floor(ty / CELL_SIZE) < 0.89) {
-            game.scene.remove(game.box);
-        }
-        else {
-            game.scene.add(game.box);
-        }
+		    }
+		    for (var dz = 5; dz <= 12; dz++) {
+			if (dz < 0 || dz >= NUM_CELLS.z) {
+			    continue;
+			}
+			for (var y = ry - 1; y <= ry + 1; y += 2) {
+			    if (y < 0 || y >= NUM_CELLS.y) {
+				continue;
+			    }
+			    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+				game.scene.add(game.objects[y][dz][dx][o]);
+			    }
 
-
+			    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+				game.scene.add(game.models[y][dz][dx][o]);
+			    }
+			}
+		    }
+		}
+	    }
+	    else {
+		for (var dx = 0; dx <= 18; dx++) {
+		    if (dx < 0 || dx >= NUM_CELLS.x) {
+			continue;
+		    }
+		    for (var dz = 3; dz <= 9; dz++) {
+			if (dz < 0 || dz >= NUM_CELLS.z) {
+			    continue;
+			}
+			for (var y = ry - 1; y <= ry + 1; y += 2) {
+			    if (y < 0 || y >= NUM_CELLS.y) {
+				continue;
+			    }
+			    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+				game.scene.add(game.objects[y][dz][dx][o]);
+			    }
+			
+			    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+				game.scene.add(game.models[y][dz][dx][o]);
+			    }
+			}
+		    }
+		}
+	    }
+	}
 
         if (ry != game.old.y) {
             for (var z = 0; z < NUM_CELLS.z; z++) {
@@ -815,12 +944,16 @@ function updateScene(game) {
                         if (y < 0 || y >= NUM_CELLS.y) {
                             continue;
                         }
-                        for (var o = 0; o < game.objects[y][z][x].length; o++) {
-                            game.scene.remove(game.objects[y][z][x][o]);
-                        }
-                        for (var o = 0; o < game.models[y][z][x].length; o++) {
-                            game.scene.remove(game.models[y][z][x][o]);
-                        }
+			if ((x >= 20 && x <= 23 && z >= 6 && z <= 9) || (dx >= 9 && dx <= 12 && dz >= 3 && dz <= 6)) {
+			}
+			else {
+			    for (var o = 0; o < game.objects[y][z][x].length; o++) {
+				game.scene.remove(game.objects[y][z][x][o]);
+			    }
+			    for (var o = 0; o < game.models[y][z][x].length; o++) {
+				game.scene.remove(game.models[y][z][x][o]);
+			    }
+			}
                     }
                 }
             }
@@ -829,40 +962,63 @@ function updateScene(game) {
                 for (var x = 0; x < NUM_CELLS.x; x++) {
                     var append = false;
                     for (var o = 0; o < game.objects[ry][z][x].length; o++) {
-                        if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2' || game.objects[ry][z][x][o].name === 'stairfloor') {
-                            append = true;
-                        }
                         game.scene.add(game.objects[ry][z][x][o]);
                     }
                     for (var o = 0; o < game.models[ry][z][x].length; o++) {
                         game.scene.add(game.models[ry][z][x][o]);
                     }
-                    if (append === true) {
-                        for (var dx = x - 1; dx <= x + 1; dx++) {
-                            if (dx < 0 || dx >= NUM_CELLS.x) {
-                                continue;
-                            }
-                            for (var dz = z - 1; dz <= z + 1; dz++) {
-                                if (dz < 0 || dz >= NUM_CELLS.z) {
-                                    continue;
-                                }
-                                for (var y = ry - 1; y <= ry + 1; y += 2) {
-                                    if (y < 0 || y >= NUM_CELLS.y) {
-                                        continue;
-                                    }
-                                    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
-                                        game.scene.add(game.objects[y][dz][dx][o]);
-                                    }
-
-                                    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
-                                        game.scene.add(game.models[y][dz][dx][o]);
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             }
+
+	    if (rx > 15) {
+		for (var dx = 0; dx <= 23; dx++) {
+		    if (dx < 0 || dx >= NUM_CELLS.x) {
+			continue;
+
+		    }
+		    for (var dz = 5; dz <= 12; dz++) {
+			if (dz < 0 || dz >= NUM_CELLS.z) {
+			    continue;
+			}
+			for (var y = ry - 1; y <= ry + 1; y += 2) {
+			    if (y < 0 || y >= NUM_CELLS.y) {
+				continue;
+			    }
+			    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+				game.scene.add(game.objects[y][dz][dx][o]);
+			    }
+
+			    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+				game.scene.add(game.models[y][dz][dx][o]);
+			    }
+			}
+		    }
+		}
+	    }
+	    else {
+	    	for (var dx = 0; dx <= 18; dx++) {
+		    if (dx < 0 || dx >= NUM_CELLS.x) {
+			continue;
+		    }
+		    for (var dz = 3; dz <= 9; dz++) {
+			if (dz < 0 || dz >= NUM_CELLS.z) {
+			    continue;
+			}
+			for (var y = ry - 1; y <= ry + 1; y += 2) {
+			    if (y < 0 || y >= NUM_CELLS.y) {
+				continue;
+			    }
+			    for (var o = 0; o < game.objects[y][dz][dx].length; o++) {
+				game.scene.add(game.objects[y][dz][dx][o]);
+			    }
+			
+			    for (var o = 0; o < game.models[y][dz][dx].length; o++) {
+				game.scene.add(game.models[y][dz][dx][o]);
+			    }
+			}
+		    }
+		}
+	    }
         }
         game.old.x = rx;
         game.old.y = ry;
@@ -1012,14 +1168,7 @@ function updateOperation(game, input) {
                     game.scene.remove(collision[0].object.model);
                     var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
                     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
-                    var ry;
-                    if (game.player.crouch) {
-                        ry = game.player.mesh.position.y - 2.5;
-                    }
-                    else {
-                        ry = game.player.mesh.position.y - 10;
-                    }
-                    ry = Math.floor(ry / CELL_SIZE + 0.51);
+                    var ry = Math.floor(game.player.mesh.position.y / CELL_SIZE);
                     for (var z = rz - 1; z <= rz + 1; z++) {
                         for (var x = rx - 1; x <= rx + 1; x++) {
                             for (var m = 0; m < game.models[ry][z][x].length; m++) {
