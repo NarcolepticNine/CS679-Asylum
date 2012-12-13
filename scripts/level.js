@@ -814,7 +814,7 @@ function Level(game) {
     // Generate wall geometry
     // --------------------------------
     WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1, WALL_MATERIAL, { px: false, nx: false, py: false, ny: false, pz: true, nz: true }),
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1, WALL_MATERIAL, { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),
         BOUND_CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
 
 

@@ -179,9 +179,6 @@ function setupInput(data, game) {
             if (game.hintTimer !== null) {
                 clearInterval(game.hintTimer);
             }
-            if (canvas.pointerLockEnabled) {
-                document.exitPointerLock();
-            }
             if (game.warden.caught === 0) {
                 if (game.difficulty < 3) {
                     game.difficulty++;
@@ -196,7 +193,7 @@ function setupInput(data, game) {
             }
         }
         else {
-            if (!canvas.pointerLockEnabled) {
+            if (!document.pointerLockEnabled && game.waitToEvaluate <= 5) {
                 canvas.requestPointerLock();
             }
             data.click = 1;

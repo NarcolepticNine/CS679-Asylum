@@ -323,6 +323,9 @@ function Game(renderer, canvas) {
             }
             ending(this);
             if (this.waitToEvaluate > 5) {
+		if (document.pointerLockEnabled) {
+		    document.exitPointerLock();
+		}
                 return false;
             }
         }
@@ -870,8 +873,8 @@ function updateScene(game) {
 var DOOR_TIMEOUT = 750; // milliseconds between door toggles
 function updateOperation(game, input) {
     if (input.Escape === 1) {
-        if (game.hintIndex < game.textHints.length - 1) {
-            game.hintIndex = game.textHints.length - 1;
+        if (game.hintIndex < game.textHints.length - 2) {
+            game.hintIndex = game.textHints.length - 2;
         }
     }
     if (game.hintIndex === 0) {
