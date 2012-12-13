@@ -450,25 +450,25 @@ function ending(game) {
         Ending.font = '20px Courier';
         Ending.fillStyle = '#ff0000';
         Ending.fillText(Math.floor((game.timer * 100) / 100) + ' seconds', game.endingInfo.width * 0.620, game.endingInfo.height * 0.51);
-        Ending.fillText(Math.floor(game.allVisit / 329 * 100) + ' %', game.endingInfo.width * 0.638, game.endingInfo.height * 0.57);
-        Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);
-        Ending.font = '20px Arial';
-        Ending.fillStyle = '#0000ff';
+        Ending.fillText(Math.floor(game.allVisit / 329 * 100) + ' %', game.endingInfo.width * 0.63, game.endingInfo.height * 0.57);
+        Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.63, game.endingInfo.height * 0.62);
+        Ending.font = '14px Courier';
+        Ending.fillStyle = '#ffffff';
         if (game.warden.caught === 0) {
             if (game.difficulty === 1) {
-                Ending.fillText('Proceed to normal difficulty?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+                Ending.fillText('Click to proceed to normal difficulty.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
             }
             else {
                 if (game.difficulty === 2) {
-                    Ending.fillText('Proceed to hard difficulty?    Yes    No    Return', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+                    Ending.fillText('Click to proceed to hard difficulty.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
                 }
                 else {
-                    Ending.fillText('Try again?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+                    Ending.fillText('Click to try again.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
                 }
             }
         }
         else {
-            Ending.fillText('Try again?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+            Ending.fillText('Click to try again.', game.endingInfo.width * 0.45, game.endingInfo.height * 0.98);
         }
     }
 }
