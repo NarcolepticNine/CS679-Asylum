@@ -143,12 +143,13 @@ function Game(renderer, canvas) {
                       'Good luck!@(Press E to skip tutorial)',
                       'Good luck!@(Press E to skip tutorial)',
                       'Good luck!@(Press E to skip tutorial)',
-                      'Good luck!'];
+                      'Good luck!',
+		      ''];
 
     this.playHints = ['',
                       'Warning!@Turn off your flashlight(Press F) or Crouch(Press C)@Step back',
                       'Warning!@Turn off your flashlight(Press F) and Crouch(Press C)@Step aside and back',
-                      'Dangerous!@Stand up and Run to a safe place',
+                      'Dangerous!@Stand up(Press C) and Run to a safe place',
                       ''];
 
 
@@ -492,7 +493,9 @@ function hintTimerFunc(game) {
         hints(game, game.textHints[game.hintIndex]);
     }
     else {
-        hints(game, game.playHints[game.urgent]);
+	if (game.warden.notSeen === false) {
+	    hints(game, game.playHints[game.urgent]);
+	}
     }
     if ((game.learning.click === 1 && game.hintIndex === 0) ||
         (game.learning.W === 1 && game.hintIndex === 1) ||

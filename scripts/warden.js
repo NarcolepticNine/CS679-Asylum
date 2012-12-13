@@ -52,6 +52,7 @@ function Warden(game) {
     this.pDir = true; //direction of patrol
     this.nextPt = 0;
     this.pt = null;
+    this.notSeen = true;
     this.patrols = new Array();
 
     /*Awareness determines how hard it is to hide from the Warden.  
@@ -130,13 +131,18 @@ function Warden(game) {
 
         if ( this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.z - this.mesh.position.z) === true) {
             //if in line of sight, use urgency
-            cond = game.urgent;
+            this.notSeen =  false;
+	    cond = game.urgent;
 
-        } else if (soundAwareness !== -1){
+        } else {
+	    this.notSeen = true;
+	    if (soundAwareness !== -1){
             //otherwise leave cond = 0, so awareness goes down, and half sound
             //awareness
-            soundAwareness = soundAwareness / 2;
-        }
+	    
+		soundAwareness = soundAwareness / 2;
+	    }
+	}
 
         
     
