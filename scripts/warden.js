@@ -15,7 +15,7 @@ function Warden(game) {
     this.currentKeyframe = 0;
 
     //Mechanic Variables 
-    this.speed = 0.6 + 0.2 * game.difficulty;
+    this.speed = 0.4 + 0.2 * game.difficulty;
     this.currSpd = this.speed;
     this.awareThres = 20;
     this.angerThres = 50;

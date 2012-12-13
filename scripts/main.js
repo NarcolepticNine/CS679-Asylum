@@ -175,15 +175,23 @@ function setupInput(data, game) {
 
     document.addEventListener("mousedown", function (event) {
         if (game.waitToEvaluate > 5) {
-            game.initialized = false;
-            if (game.hintTimer !== null) {
-                clearInterval(game.hintTimer);
-            }
-            if (game.warden.caught === 0) {
-                if (game.difficulty < 3) {
-                    game.difficulty++;
-                }
-            }
+	    if (game.difficulty < 3) {
+		game.initialized = false;
+		if (game.hintTimer !== null) {
+		    clearInterval(game.hintTimer);
+		}
+		if (game.warden.caught === 0) {		 
+		    game.difficulty++;		  
+		}
+	    }
+	    else {
+		if (game.warden.caught === 1) {
+		    game.initialized = false;
+		    if (game.hintTimer !== null) {
+			clearInterval(game.hintTimer);
+		    }
+		}
+	    }		    
         }
         if (game.start === 0) {
             if (game.scene.children.length === 1575 && game.progress === 204) {
