@@ -239,7 +239,7 @@ function Game(renderer, canvas) {
 
         // Initialize warden 
         this.warden = new Warden();
-        this.warden.init(this.scene,
+        this.warden.init( 	this.scene,
         					this.level.wardenPos,
         					this.level.patrolPos,
         					this);

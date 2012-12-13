@@ -50,10 +50,13 @@ function Warden() {
     this.vX = 0;
     this.vZ = 0;
     this.pDir = true; //direction of patrol
-    this.nextPt = 0;
-    this.pt = null;
+    this.nextPatrol = 0;
+    this.currPatrol = null;
     this.patrols = new Array();
 
+	this.lastTarget	= new THREE.Vector3(); 
+	this.Path   	= new Array(); //will be filled with path points to current target
+	this.pathPt     = null; 
     /*Awareness determines how hard it is to hide from the Warden.  
 	 * If the player is heard, or spotted within a certain amount of time,
 	 * awareness goes up.  If the player is able to hide, awareness will drop.
@@ -204,12 +207,12 @@ function Warden() {
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-	if (Y != ry) {
-            this.awareness = 0;
-        }
-	else {
-	     this.checkPlayer(game, input, playerSound, d);
-	}	    
+		if (Y != ry) {
+	            this.awareness = 0;
+	    }
+		else {
+		     this.checkPlayer(game, input, playerSound, d);
+		}	    
 	
         if (game.urgent === 4) {
             this.playFinalScream();
@@ -219,45 +222,56 @@ function Warden() {
 
         if (this.awareness < this.awareThres) {
 
-            if (this.pt == null) {
-                this.pt = this.patrols[this.nextPt];
-                this.nextPt = (++this.nextPt == this.patrols.length) ? 0 : this.nextPt;
+            if (this.currPatrol == null) {
+                this.currPatrol = this.patrols[this.nextPatrol];
+                this.nextPatrol = (++this.nextPatrol == this.patrols.length) ? 0 : this.nextPatrol;
+            	
+            	this.pathfind( this.mesh.position, this.currPatrol );
+            	this.pathPt = this.Path.pop();
             }
 
             //target position
-            var pX = this.pt.x;
-            var pZ = this.pt.z;
-
-            dX = pX - X;
-            dZ = pZ - Z;
-            d = Math.sqrt(dX * dX + dZ * dZ);
-
-            if (d < 10) {
+            var pX = this.currPatrol.x;
+            var pZ = this.currPatrol.z;
+			
+			
+            if( this.Path.length == 0 ) {
                 //select new current point.  
-                this.pt = this.patrols[this.nextPt];
-                this.nextPt = (this.pDir) ? this.nextPt + 1 : this.nextPt - 1;
-                this.pDir = (this.nextPt == 0 || this.nextPt == this.patrols.length - 1) ? !this.pDir : this.pDir;
+                this.currPatrol = this.patrols[this.nextPatrol];
+                this.nextPatrol = (this.pDir) ? this.nextPatrol + 1 : this.nextPatrol - 1;
+                this.pDir = (this.nextPatrol == 0 || this.nextPatrol == this.patrols.length - 1) ? !this.pDir : this.pDir;
 
-            } else {
-                //keep going towards current point
-                this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
-                this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
-                this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
-
+				//console.log( "New Patrol Point: " + this.currPatrol.x + " " + this.currPatrol.z  );
+				this.pathfind( this.mesh.position, this.currPatrol ); 
+				this.pathPt = this.Path.pop(); 
             }
+            
         } else {
-            dX = game.player.mesh.position.x - this.mesh.position.x;
-            dZ = game.player.mesh.position.z - this.mesh.position.z;
-            d = Math.sqrt(dX * dX + dZ * dZ);
-
+            
+            //calculate new path to player if needed
+            this.pathfind( this.mesh.position, game.player.mesh.position ); 
+        	this.pathPt = this.Path.pop();
+        	console.log( this.Path ); 
             //if awareness too high, warden sprints
-
-            this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
-
-            this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
+		    this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
+        }
+		
+		//move towards next path point if available
+		if( this.pathPt ){
+			
+			dX = this.pathPt.x - this.mesh.position.x; 
+			dZ = this.pathPt.z - this.mesh.position.z; 
+			d = Math.sqrt(dX * dX + dZ * dZ);
+			
+			this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
             this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
             this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
-        }
+            
+            if( d < 10 ) this.pathPt = this.Path.pop(); 
+            
+		}
+
+
 
         //update light position and direction
         var meshPos = this.mesh.position;
@@ -392,94 +406,158 @@ function Warden() {
     //  code to play the sounds.   
     this.playSounds = this.soundLoad;
 
-    /* meshPos is a short hand for the warden's mesh
- * targetPos is either the player's position, or a patrol position.
- */
+    /*
+     * return array of 2-d points ( initially ) that show a path from current
+     * point to the end point 
+ 	 * 
+ 	 */
+ 	this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
-        var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
-        var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
-        var ry = Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
+	
+		if( targetPos != this.lastTarget ){
+			// if targetPos is different that last target position pathfind
+			var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
+	        var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
+	        var ry = 0; //Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
+	
+			var tarX = Math.floor(Math.floor(targetPos.x) / CELL_SIZE + 1 / 2);
+			var tarZ = Math.floor(Math.floor(targetPos.z) / CELL_SIZE + 1 / 2);
+			var tarY = 0; //Math.floor(Math.floor(targetPos.y) / CELL_SIZE);
+			
+			this.lastTarget = targetPos; 
+			
+			this.visitCnt = 1; 
+			var iterCount = 500; 
+			var findQueue = new Array(); 
+			var visitedArr = new Array(); 
+			var notFound = true; 
+			
+			// check center, and prime queue
+			this.processCell( rx, ry, rz, 0,  findQueue, visitedArr  );
+			
+			while( notFound && findQueue.length > 0 && ( --iterCount > 0 ) ){
+				var curr = findQueue.shift(); 
+				
+				if( curr.x == tarX && curr.y == tarY && curr.z == tarZ ){
+					//found where we need to be, trace back. 
+					notFound = false;
+					
+					//build up and set path 
+					this.traceBack( visitedArr, curr ); 
+					break;
+					
+				} else {
+					this.processCell( curr.x, curr.y, curr.z, curr.id, findQueue, visitedArr );
+				}
+			}
+		}
+		//else, leave this.lastPath alone
 
-
-        var levelGrid = this.game.level.grid[ry];
-
-        var direction = new Array();
-        for (var i = 0; i < 3; i++) direction[i] = new Array();
-        var center = null;
-        var centerWalls = new Array();
-
-        for (var i = 0; i < 3 ; i++) {
-
-            for (var j = 0; j < 3; j++) {
-                var cell = levelGrid[rz + (j - 1)][rx + (i - 1)];
-                if (i == 1 && j == 1) {
-                    center = cell;
-                } else {
-
-                    for (var o = 0; o < cell.length; o++) {
-
-                        if (cell[o].type.charAt(0) === CELL_TYPES.wall) {
-
-                            switch (cell[o].type.charAt(1)) {
-
-                                //for any direction, set the variable to false for 
-                                // the outer cells
-                                case 'n':
-                                case 's':
-                                case 'e':
-                                case 'w':
-                                    direction[i][j] = true;
-                                    break;
-
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        //check center
-        for (var o = 0; o < center.length; o++) {
-
-            if (center[o].type.charAt(0) === CELL_TYPES.wall) {
-
-                switch (center[o].type.charAt(1)) {
-
-                    case 'n':
-                    case 's':
-                    case 'e':
-                    case 'w':
-                        centerWalls[center[o].type.charAt(1)] = true;
-                        break;
-
-                }
-            }
-        }
-
-        //determine which direction based on target direction. 
-        var ret = new THREE.Vector2();
-        ret.x = meshPos.x, ret.z = meshPos.z;
-        /*
-        if( targetPos.x > meshPos.x ) {
-            
-            
-            ret.x = ( rx + 1 ) * CELL_SIZE ; 
-            
-            
-        } else if ( targetPos.x < meshPos.x ){
-            
-            
-            ret.x = ( rx - 1 ) * CELL_SIZE ;
-            
-             
-        } else{
-            
-            ret.x = targetPos.x;
-             
-        }
-            */
-
-        //return ret;
-        return targetPos;
+        
     }
+
+	
+	this.processCell = function( x, y, z, prev, queue, visitedArr ){
+		
+		var cellArr = this.checkCell( this.game.level.grid[y][z][x] );		
+		var vec3; 
+		
+		if( cellArr['n'] ){
+			vec3 = new THREE.Vector3( x, y, z - 1  );
+			vec3.id   = this.visitCnt++; 
+			vec3.prev = prev;
+			visitedArr[ vec3.id ] = vec3;  
+			queue.push( vec3 );
+			
+		}
+		if( cellArr['s'] ){
+			vec3 = new THREE.Vector3( x, y, z + 1  ); 
+			vec3.id   = this.visitCnt++; 
+			vec3.prev = prev;
+			visitedArr[ vec3.id ] = vec3; 
+			queue.push( vec3 );
+	
+		}
+		if( cellArr['w'] ){
+			vec3 = new THREE.Vector3( x - 1, y, z );
+			vec3.id   = this.visitCnt++; 
+			vec3.prev = prev;
+			visitedArr[ vec3.id ] = vec3; 
+			queue.push( vec3 );
+	
+		}
+		if( cellArr['e'] ){
+			vec3 = new THREE.Vector3( x + 1, y, z )
+			vec3.id   = this.visitCnt++; 
+			vec3.prev = prev;
+			visitedArr[ vec3.id ] = vec3; 
+			queue.push( vec3 );
+	
+		}
+		
+	}
+
+	this.traceBack = function ( visitedArr, end ) {
+		
+		var curr = end; 
+		var path = new Array();
+		var pos  = new THREE.Vector3( curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE );
+		path.push( pos );  
+		
+		// when curr.prev = 0, it should be the node 1 away from the current
+		// node, which works, as we are already in the current node. 
+		while( curr.prev ){ 
+			curr = visitedArr[ curr.prev ]; 
+			pos  = new THREE.Vector3( curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE );
+			path.push( pos ); 		
+			
+		}
+		
+		this.Path = path; 
+				
+	}
+	
+	//return array of booleans for directions that are possible to go from inputted
+	//cell
+	this.checkCell = function( cell ){
+		//TODO store walls data as a part of the cell
+		// ie: cell.walls = ret; 
+		//TODO consider doors
+		var ret = new Array(); 
+		ret['n'] = ret['s'] = ret['w'] = ret['e'] = true; 
+		
+		var evenPossible = false; 
+		
+		for (var o = 0; o < cell.length; o++) {
+	
+			if( cell[o].type.charAt(0) === CELL_TYPES.floor ) {
+				evenPossible = true; 
+			}
+	
+	  		if (cell[o].type.charAt(0) === CELL_TYPES.wall) {
+	
+	     		switch (cell[o].type.charAt(1)) {
+	
+	                case 'n':
+	                case 's':
+	                case 'e':
+	            	case 'w':
+	                	ret[cell[o].type.charAt(1)] = false;
+	            		break;
+	
+	        	}
+	    	}
+		}
+		
+		if( evenPossible ){
+			return ret;
+		} else {
+			ret['n'] = ret['s'] = ret['w'] = ret['e'] = false;
+			return ret; 
+		}
+			 
+	}
+	
 }
+
+
