@@ -390,12 +390,6 @@ function Level(game) {
         var ry = Math.floor(Math.floor(y + scaley * (maxY + minY) / 2) / CELL_SIZE);
         game.models[ry][rz][rx].push(objMesh);
         var boundingBox = null;
-        if (name === 'window-wall') {
-            console.log(minY);
-            console.log(maxY);
-            console.log(scaley * (minY + maxY) / 2);
-            console.log(y + scaley * (minY + maxY) / 2);
-        }
         if (name !== 'mstair') {
             if (name !== 'key') {
                 boundingBox = new THREE.Mesh(new THREE.CubeGeometry(scalex * (maxX - minX), scaley * (maxY - minY), scalez * (maxZ - minZ)), TRANSPARENT_MATERIAL);

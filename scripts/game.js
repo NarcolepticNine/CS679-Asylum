@@ -228,7 +228,7 @@ function Game(renderer, canvas) {
         // set interval handles passing this weird, so you need to make a copy
         var _this = this;
         // update the hint every 5 seconds
-        this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
+	this.hintTimer = null;
 
         // Setup player
         this.player = new Player();
@@ -256,65 +256,65 @@ function Game(renderer, canvas) {
     var once = true;
     this.update = function (input) {
         starting(this);
-        if (this.start === 0) {
-            return false;
-        }
-        else {
-            if (this.initialized === false) {
-                this.init(input);
-            }
-            if (this.end === 0) {
-                this.timer += this.clock.getDelta();
-                this.level.update();
-                this.player.update(input, this.scene, 1);
-                handleCollisions(this, input);
-                if (input.hold === 0 && input.Jump === 0) {
-                    input.Jump = 1;
-                    if (smallDrop(this)) {
-                        while (input.hold === 0) {
-                            var oldW = input.trigger.W;
-                            var oldS = input.trigger.S;
-                            var oldA = input.trigger.A;
-                            var oldD = input.trigger.D;
-                            input.trigger.W = 0;
-                            input.trigger.S = 0;
-                            input.trigger.A = 0;
-                            input.trigger.D = 0;
-                            this.player.update(input, this.scene, 0);
-                            input.trigger.W = oldW;
-                            input.trigger.S = oldS;
-                            input.trigger.A = oldA;
-                            input.trigger.D = oldD;
-                            handleCollisions(this, input);
-                        }
-                    }
-                }
-                updateCollisionSet(this)
-                updateScene(this);
-                this.warden.update(this, input, this.player.mesh.position, this.player.sound);
-                if (this.warden.awareness > this.maxAwareness) {
-                    this.maxAwareness = this.warden.awareness;
-                }
-                updateOperation(this, input);
-                updateDistance(this);
-                updatePlayerInformation(this, input);
-                TWEEN.update();
-            }
-            else {
-                if (this.waitToEvaluate === -1) {
-                    this.clock2.getDelta();
-                    this.waitToEvaluate = 0;
-                }
-                else {
-                    this.waitToEvaluate += this.clock2.getDelta();
-                }
-                ending(this);
-                if (this.waitToEvaluate > 5) {
-                    return false;
-                }
-            }
-            return true;
-        }
+	if (this.start === 1 && this.hintTimer === null) {
+	    this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
+	}
+	if (this.initialized === false) {
+	    this.init(input);
+	}
+	if (this.end === 0) {
+	    this.timer += this.clock.getDelta();
+	    this.level.update();
+	    this.player.update(input, this.scene, 1);
+	    handleCollisions(this, input);
+	    if (input.hold === 0 && input.Jump === 0) {
+		input.Jump = 1;
+		if (smallDrop(this)) {
+		    while (input.hold === 0) {
+			var oldW = input.trigger.W;
+			var oldS = input.trigger.S;
+			var oldA = input.trigger.A;
+			var oldD = input.trigger.D;
+			input.trigger.W = 0;
+			input.trigger.S = 0;
+			input.trigger.A = 0;
+			input.trigger.D = 0;
+			this.player.update(input, this.scene, 0);
+			input.trigger.W = oldW;
+			input.trigger.S = oldS;
+			input.trigger.A = oldA;
+			input.trigger.D = oldD;
+			handleCollisions(this, input);
+		    }
+		}
+	    }
+	    updateCollisionSet(this)
+	    updateScene(this);
+	    this.warden.update(this, input, this.player.mesh.position, this.player.sound);
+	    if (this.warden.awareness > this.maxAwareness) {
+		this.maxAwareness = this.warden.awareness;
+	    }
+	    updateOperation(this, input);
+	    updateDistance(this);
+	    if (this.start === 1) {
+		updatePlayerInformation(this, input);
+	    }
+	    TWEEN.update();
+	}
+	else {
+	    if (this.waitToEvaluate === -1) {
+		this.clock2.getDelta();
+		this.waitToEvaluate = 0;
+	    }
+	    else {
+		this.waitToEvaluate += this.clock2.getDelta();
+	    }
+	    ending(this);
+	    if (this.waitToEvaluate > 5) {
+		return false;
+	    }
+	}
+	return true;        
     };
 
     // Draw the scene as seen through the current camera
