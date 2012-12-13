@@ -243,6 +243,8 @@ function Warden(game) {
         var X = this.mesh.position.x;
         var Z = this.mesh.position.z;
         var Y = Math.floor(Math.floor(this.mesh.position.y) / CELL_SIZE);
+        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
         var ry;
         if (game.player.crouch) {
             ry = game.player.mesh.position.y - 2.5;
@@ -250,7 +252,27 @@ function Warden(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
+        if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
+            if (rx < 15) {
+                if (rx == 10) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+            else {
+                if (rz === 7) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+        }
+        else {
+            ry = Math.floor(ry / CELL_SIZE + 0.5);
+        }
         var dX = playPos.x - X;
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));

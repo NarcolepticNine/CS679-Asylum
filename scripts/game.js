@@ -1205,13 +1205,35 @@ function updateDistance(game) {
         var z1 = game.player.mesh.position.z - game.warden.mesh.position.z;
         var x1 = game.player.mesh.position.x - game.warden.mesh.position.x;
         var ry;
+        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
         if (game.player.crouch) {
             ry = game.player.mesh.position.y - 2.5;
         }
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
+        if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
+            if (rx < 15) {
+                if (rx == 10) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+            else {
+                if (rz === 7) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+        }
+        else {
+            ry = Math.floor(ry / CELL_SIZE + 0.5);
+        }
         var my = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
         if (ry != my) {
             game.urgent = 0;
