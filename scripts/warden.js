@@ -6,13 +6,13 @@ function Warden() {
     this.meshURL = "./obj/demon/demonAnim.js";
     this.textureURL = "./obj/demon/colorMap.png";
     this.flashlight1 = null;
-    
+
     //Animation Variables
-	this.duration = 1500;
-	this.keyframes = 23;
-	this.interpolation = this.duration / this.keyframes;
-	this.lastKeyframe = 0;
-	this.currentKeyframe = 0;
+    this.duration = 1500;
+    this.keyframes = 23;
+    this.interpolation = this.duration / this.keyframes;
+    this.lastKeyframe = 0;
+    this.currentKeyframe = 0;
 
     //Mechanic Variables 
     this.speed = 0.6;
@@ -55,9 +55,9 @@ function Warden() {
     this.patrols = new Array();
 
     /*Awareness determines how hard it is to hide from the Warden.  
-	 * If the player is heard, or spotted within a certain amount of time,
-	 * awareness goes up.  If the player is able to hide, awareness will drop.
-	 */
+     * If the player is heard, or spotted within a certain amount of time,
+     * awareness goes up.  If the player is able to hide, awareness will drop.
+     */
     this.awareness = 0;
 
     //Game Variables
@@ -90,10 +90,10 @@ function Warden() {
         var loader = new THREE.JSONLoader();
         loader.load(this.meshURL, function (geometry) { callback(geometry, 10, 10, 10, this.textureURL); })
 
-        //load warden sounds:
+            //load warden sounds:
 
-        for (var i = 0; i < this.growls.length; i++)
-            this.soundManager.loadSound(this.growls[i]);
+            for (var i = 0; i < this.growls.length; i++)
+                this.soundManager.loadSound(this.growls[i]);
 
         for (var i = 0; i < this.screams.length; i++)
             this.soundManager.loadSound(this.screams[i]);
@@ -125,7 +125,22 @@ function Warden() {
         //sound awareness
         var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
         //light awareness
-        switch (game.urgent) {
+       
+        var cond = 0;
+
+        if ( this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.z - this.mesh.position.z) === true) {
+            //if in line of sight, use urgency
+            cond = game.urgent;
+
+        } else if (soundAwareness !== -1){
+            //otherwise leave cond = 0, so awareness goes down, and half sound
+            //awareness
+            soundAwareness = soundAwareness / 2;
+        }
+
+        
+    
+        switch (cond) {
             case 0: //very far
                 if (soundAwareness === -1) {
                     game.warden.awareness -= 1;
@@ -204,20 +219,20 @@ function Warden() {
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-	if (Y != ry) {
+        if (Y != ry) {
             this.awareness = 0;
         }
-	else {
-	     this.checkPlayer(game, input, playerSound, d);
-	}	    
-	
+        else {
+            this.checkPlayer(game, input, playerSound, d);
+        }	    
+
         if (game.urgent === 4) {
             this.playFinalScream();
             this.caught = true;
             this.game.end = 1;
         }
 
-        if (this.awareness < this.awareThres) {
+        if (this.awareness < this.awareThres || this.inLineOfSight(dX, dZ) === false ) {
 
             if (this.pt == null) {
                 this.pt = this.patrols[this.nextPt];
@@ -263,44 +278,44 @@ function Warden() {
         var meshPos = this.mesh.position;
         this.flashlight1.position.set(meshPos.x, meshPos.y + 15, meshPos.z);
         this.flashlight1.target.position.set(
-               meshPos.x + this.vX / this.currSpd * 5,
-               meshPos.y + 15 - 8,
-               meshPos.z + this.vZ / this.currSpd * 5
-           );
+                meshPos.x + this.vX / this.currSpd * 5,
+                meshPos.y + 15 - 8,
+                meshPos.z + this.vZ / this.currSpd * 5
+                );
         this.flashlight2.position.set(meshPos.x, meshPos.y + 15, meshPos.z);
         this.flashlight2.target.position.set(
-               meshPos.x + this.vX / this.currSpd * 5,
-               meshPos.y + 15 - 3.6,
-               meshPos.z + this.vZ / this.currSpd * 5
-           );
+                meshPos.x + this.vX / this.currSpd * 5,
+                meshPos.y + 15 - 3.6,
+                meshPos.z + this.vZ / this.currSpd * 5
+                );
         this.flashlight3.position.set(
                 meshPos.x + this.vX / this.currSpd * 5,
                 meshPos.y + 20,
                 meshPos.z + this.vZ / this.currSpd * 5
-            );
+                );
         this.playSounds();
-        
-    	
-	
-		this.time = Date.now() % this.duration;
-	
-		this.keyframe = Math.floor( this.time / this.interpolation );
-	
-		if ( this.keyframe != this.currentKeyframe ) {
-	
-			this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 0;
-			this.mesh.morphTargetInfluences[ this.currentKeyframe ] = 1;
-			this.mesh.morphTargetInfluences[ this.keyframe ] = 0;
-	
-			this.lastKeyframe = this.currentKeyframe;
-			this.currentKeyframe = this.keyframe;
-			
-			//console.log(this.currentKeyframe);
-	
-		}
-	
-		this.mesh.morphTargetInfluences[ this.keyframe ] = ( this.time % this.interpolation ) / this.interpolation;
-		this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 1 - this.mesh.morphTargetInfluences[ this.keyframe ];
+
+
+
+        this.time = Date.now() % this.duration;
+
+        this.keyframe = Math.floor( this.time / this.interpolation );
+
+        if ( this.keyframe != this.currentKeyframe ) {
+
+            this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 0;
+            this.mesh.morphTargetInfluences[ this.currentKeyframe ] = 1;
+            this.mesh.morphTargetInfluences[ this.keyframe ] = 0;
+
+            this.lastKeyframe = this.currentKeyframe;
+            this.currentKeyframe = this.keyframe;
+
+            //console.log(this.currentKeyframe);
+
+        }
+
+        this.mesh.morphTargetInfluences[ this.keyframe ] = ( this.time % this.interpolation ) / this.interpolation;
+        this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 1 - this.mesh.morphTargetInfluences[ this.keyframe ];
     }
 
     this.updateLoad = function (game, input) {
@@ -393,8 +408,8 @@ function Warden() {
     this.playSounds = this.soundLoad;
 
     /* meshPos is a short hand for the warden's mesh
- * targetPos is either the player's position, or a patrol position.
- */
+     * targetPos is either the player's position, or a patrol position.
+     */
     this.pathfind = function (meshPos, targetPos) {
         var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
         var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
@@ -460,26 +475,42 @@ function Warden() {
         var ret = new THREE.Vector2();
         ret.x = meshPos.x, ret.z = meshPos.z;
         /*
-        if( targetPos.x > meshPos.x ) {
-            
-            
-            ret.x = ( rx + 1 ) * CELL_SIZE ; 
-            
-            
-        } else if ( targetPos.x < meshPos.x ){
-            
-            
-            ret.x = ( rx - 1 ) * CELL_SIZE ;
-            
-             
-        } else{
-            
-            ret.x = targetPos.x;
-             
-        }
-            */
+           if( targetPos.x > meshPos.x ) {
+
+
+           ret.x = ( rx + 1 ) * CELL_SIZE ; 
+
+
+           } else if ( targetPos.x < meshPos.x ){
+
+
+           ret.x = ( rx - 1 ) * CELL_SIZE ;
+
+
+           } else{
+
+           ret.x = targetPos.x;
+
+           }
+           */
 
         //return ret;
         return targetPos;
+    }
+
+    this.inLineOfSight = function(dX, dZ) {
+        var directionVector = new THREE.Vector3(dX, this.mesh.position.y, dZ);
+        var ray = new THREE.Ray(this.mesh.position,
+                directionVector.clone().normalize());
+        var collisionResults = ray.intersectObjects(this.game.scene.children);
+        if (collisionResults.length > 0 && collisionResults[0].distance < 100) {
+            var selected = collisionResults[0].object;
+            console.log(selected.name);
+            if (selected.name === 'player') {
+                //player is in line of sight
+                return true;
+            }
+        }
+        return false;
     }
 }
