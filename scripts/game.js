@@ -41,6 +41,11 @@ function Game(renderer, canvas) {
     this.ELOSE.src = "images/eval-lose.jpg";
     this.START = new Image();
     this.START.src = "images/start.jpg";
+    this.OK = 0;
+    _this = this;
+    this.START.onload = function () {
+        _this.OK = 1;
+    }
     this.clock = new THREE.Clock();
     this.clock2 = new THREE.Clock();
     this.waitToEvaluate = -1;
@@ -49,6 +54,7 @@ function Game(renderer, canvas) {
     this.maxAwareness = 0;
     this.start = 0;
     this.progress = 0;
+    this.difficulty = 1;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -204,7 +210,7 @@ function Game(renderer, canvas) {
         this.timer = 0;
         this.allVisit = 0;
         this.maxAwareness = 0;
-        this.progress = 0;
+        this.start = 0;
         // Setup scene
 
 
@@ -240,7 +246,7 @@ function Game(renderer, canvas) {
         this.oldplayer.z = this.player.mesh.position.z;
 
         // Initialize warden 
-        this.warden = new Warden();
+        this.warden = new Warden(this);
         this.warden.init(this.scene,
         					this.level.wardenPos,
         					this.level.patrolPos,
@@ -260,13 +266,15 @@ function Game(renderer, canvas) {
         if (this.initialized === false) {
             this.init(input);
         }
-        if (this.start === 1 && this.hintTimer === null && this.initialized) {
+        if (this.start === 1 && this.hintTimer === null && this.initialized && this.difficulty == 1) {
             _this = this;
             this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
         }
         if (this.end === 0) {
             this.timer += this.clock.getDelta();
-            this.level.update();
+            if (this.difficulty === 1) {
+                this.level.update();
+            }
             this.player.update(input, this.scene, 1);
             handleCollisions(this, input);
             if (input.hold === 0 && input.Jump === 0) {
@@ -298,7 +306,7 @@ function Game(renderer, canvas) {
             }
             updateOperation(this, input);
             updateDistance(this);
-            if (this.start === 1) {
+            if (this.start === 1 && this.difficulty === 1) {
                 updatePlayerInformation(this, input);
             }
             TWEEN.update();
@@ -335,30 +343,32 @@ function starting(game) {
     Ending.restore();
     if (game.start === 0) {
         Ending.drawImage(game.START, 0, 0, game.START.width, game.START.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
-        Ending.beginPath();
-        Ending.fillStyle = 'black';
-        Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1, game.endingInfo.height * 0.07);
-        Ending.fill();
-        Ending.beginPath();
-        Ending.fillStyle = 'white';
-        Ending.font = '20px Courier';
-        if (game.scene === null) {
-            Ending.fillText('0%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
-        }
-        else {
-            Ending.fillText(Math.floor(game.scene.children.length * 100 / 1575) + '%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
+        if (game.OK === 1) {
+            Ending.beginPath();
+            Ending.fillStyle = 'black';
+            Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1, game.endingInfo.height * 0.07);
             Ending.fill();
             Ending.beginPath();
-            Ending.fillStyle = 'orange';
-            Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1 * game.scene.children.length / 1575, game.endingInfo.height * 0.07);
-            Ending.fill();
-        }
+            Ending.fillStyle = 'white';
+            Ending.font = '20px Courier';
+            if (game.scene === null) {
+                Ending.fillText('0%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
+            }
+            else {
+                Ending.fillText(Math.floor(game.scene.children.length * 100 / 1575) + '%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
+                Ending.fill();
+                Ending.beginPath();
+                Ending.fillStyle = 'orange';
+                Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1 * game.scene.children.length / 1575, game.endingInfo.height * 0.07);
+                Ending.fill();
+            }
 
-        Ending.beginPath();
-        Ending.strokeStyle = 'white';
-        Ending.lineWidth = 2;
-        Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1, game.endingInfo.height * 0.07);
-        Ending.stroke();
+            Ending.beginPath();
+            Ending.strokeStyle = 'white';
+            Ending.lineWidth = 2;
+            Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1, game.endingInfo.height * 0.07);
+            Ending.stroke();
+        }
     }
 
 }
@@ -435,6 +445,24 @@ function ending(game) {
         Ending.fillText(Math.floor((game.timer * 100) / 100) + ' seconds', game.endingInfo.width * 0.620, game.endingInfo.height * 0.51);
         Ending.fillText(Math.floor(game.allVisit / 329 * 100) + ' %', game.endingInfo.width * 0.638, game.endingInfo.height * 0.57);
         Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);
+        Ending.font = '20px Arial';
+        Ending.fillStyle = '#0000ff';
+        if (game.warden.caught === 0) {
+            if (game.difficulty === 1) {
+                Ending.fillText('Proceed to normal difficulty?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+            }
+            else {
+                if (game.difficulty === 2) {
+                    Ending.fillText('Proceed to hard difficulty?    Yes    No    Return', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+                }
+                else {
+                    Ending.fillText('Try again?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+                }
+            }
+        }
+        else {
+            Ending.fillText('Try again?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+        }
     }
 }
 
@@ -915,7 +943,7 @@ function updateOperation(game, input) {
             switch (collision[0].object.name) {
                 case 'door':
                     if (game.gindex === 0) {
-                        if (game.hintIndex >= 6) {
+                        if (game.hintIndex >= 6 || game.difficulty != 1) {
                             game.gindex++;
                         }
                         else {

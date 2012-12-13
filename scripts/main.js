@@ -175,7 +175,18 @@ function setupInput(data, game) {
 
     document.addEventListener("mousedown", function (event) {
         if (game.waitToEvaluate > 5) {
-            window.location.reload(true);
+            game.initialized = false;
+            if (game.hintTimer !== null) {
+                clearInterval(game.hintTimer);
+            }
+            if (canvas.pointerLockEnabled) {
+                document.exitPointerLock();
+            }
+            if (game.warden.caught === 0) {
+                if (game.difficulty < 3) {
+                    game.difficulty++;
+                }
+            }
         }
         if (game.start === 0) {
             if (game.scene.children.length === 1575) {
