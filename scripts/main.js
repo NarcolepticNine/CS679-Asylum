@@ -181,12 +181,12 @@ function setupInput(data, game) {
                     if (game.hintTimer !== null) {
                         clearInterval(game.hintTimer);
                     }
-                    if (game.warden.caught === 0) {
+                    if (game.warden.caught === false) {
                         game.difficulty++;
                     }
                 }
                 else {
-                    if (game.warden.caught === 1) {
+                    if (game.warden.caught === true) {
                         game.initialized = false;
                         if (game.hintTimer !== null) {
                             clearInterval(game.hintTimer);
