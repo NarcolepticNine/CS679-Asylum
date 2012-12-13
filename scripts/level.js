@@ -351,7 +351,7 @@ function Level(game) {
     };
 
     function createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) {
-        var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap) }));
+        var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap, {}, function() { game.progress++;}) }));
         objMesh.rotation.y = rot;
         objMesh.scale.set(scalex, scaley, scalez);
         var maxX = geometry.vertices[0].x;

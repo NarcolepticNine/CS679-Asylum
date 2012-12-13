@@ -211,6 +211,7 @@ function Game(renderer, canvas) {
         this.allVisit = 0;
         this.maxAwareness = 0;
         this.start = 0;
+	this.progress = 0;
         // Setup scene
 
 
@@ -351,17 +352,17 @@ function starting(game) {
             Ending.beginPath();
             Ending.fillStyle = 'white';
             Ending.font = '20px Courier';
-            if (game.scene === null) {
-                Ending.fillText('0%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
-            }
-            else {
-                Ending.fillText(Math.floor(game.scene.children.length * 100 / 1575) + '%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
-                Ending.fill();
-                Ending.beginPath();
-                Ending.fillStyle = 'orange';
-                Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1 * game.scene.children.length / 1575, game.endingInfo.height * 0.07);
-                Ending.fill();
-            }
+	    var precentage = 0;
+	    if (game.scene !== null) {
+		precentage += game.scene.children.length;
+	    }
+	    precentage += game.progress;
+	    Ending.fillText(Math.floor(precentage * 100 / 1779) + '%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
+	    
+	    Ending.beginPath();
+	    Ending.fillStyle = 'orange';
+	    Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1 * precentage / 1779, game.endingInfo.height * 0.07);
+	    Ending.fill();         
 
             Ending.beginPath();
             Ending.strokeStyle = 'white';
