@@ -1,4 +1,4 @@
-function Warden() {
+function Warden(game) {
     //Warden Definition
     this.game = null;
     this.startPos = null;
@@ -15,7 +15,7 @@ function Warden() {
     this.currentKeyframe = 0;
 
     //Mechanic Variables 
-    this.speed = 0.6;
+    this.speed = 0.6 + 0.2 * game.difficulty;
     this.currSpd = this.speed;
     this.awareThres = 20;
     this.angerThres = 50;
@@ -146,7 +146,12 @@ function Warden() {
                     game.warden.awareness -= 1;
                 }
                 else {
-                    game.warden.awareness += soundAwareness;
+                    if (game.difficulty === 3) {
+                        game.warden.awareness = 100;
+                    }
+                    else {
+                        game.warden.awareness += soundAwareness;
+                    }
                 }
                 break;
             case 1: //closer
@@ -155,15 +160,25 @@ function Warden() {
                         game.warden.awareness -= 1;
                     }
                     else {
-                        game.warden.awareness += soundAwareness;
+                        if (game.difficulty === 3) {
+                            game.warden.awareness = 100;
+                        }
+                        else {
+                            game.warden.awareness += soundAwareness;
+                        }
                     }
                 }
                 else {
-                    if (soundAwareness === -1) {
-                        game.warden.awareness += 0.1;
+                    if (game.difficulty === 3) {
+                        game.warden.awareness = 100;
                     }
                     else {
-                        game.warden.awareness += soundAwareness + 0.1;
+                        if (soundAwareness === -1) {
+                            game.warden.awareness += 0.1;
+                        }
+                        else {
+                            game.warden.awareness += soundAwareness + 0.1;
+                        }
                     }
                 }
                 break;
@@ -172,25 +187,40 @@ function Warden() {
                     if (soundAwareness === -1) {
                         game.warden.awareness -= 1;
                     }
-                    else {
-                        game.warden.awareness += soundAwareness;
+                    else {                        
+                        if (game.difficulty === 3) {
+                            game.warden.awareness = 100;
+                        }
+                        else {
+                            game.warden.awareness += soundAwareness;
+                        }
                     }
                 }
                 else {
-                    if (soundAwareness === -1) {
-                        this.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                    if (game.difficulty === 3) {
+                        game.warden.awareness = 100;
                     }
                     else {
-                        game.warden.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn) + soundAwareness;
+                        if (soundAwareness === -1) {
+                            this.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                        }
+                        else {
+                            game.warden.awareness += 0.1 * (2 - game.player.crouch) * (1 + game.player.lightOn) + soundAwareness;
+                        }
                     }
                 }
                 break;
             case 3: // Too close
-                if (soundAwareness === -1) {
-                    game.warden.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                if (game.difficulty === 3) {
+                    game.warden.awareness = 100;
                 }
                 else {
-                    game.warden.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn) + soundAwareness;
+                    if (soundAwareness === -1) {
+                        game.warden.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn);
+                    }
+                    else {
+                        game.warden.awareness += 0.3 * (2 - game.player.crouch) * (1 + game.player.lightOn) + soundAwareness;
+                    }
                 }
                 break;
         }
@@ -224,7 +254,7 @@ function Warden() {
         }
         else {
             this.checkPlayer(game, input, playerSound, d);
-        }	    
+        }
 
         if (game.urgent === 4) {
             this.playFinalScream();
@@ -306,7 +336,6 @@ function Warden() {
             this.mesh.morphTargetInfluences[ this.lastKeyframe ] = 0;
             this.mesh.morphTargetInfluences[ this.currentKeyframe ] = 1;
             this.mesh.morphTargetInfluences[ this.keyframe ] = 0;
-
             this.lastKeyframe = this.currentKeyframe;
             this.currentKeyframe = this.keyframe;
 
@@ -505,7 +534,6 @@ function Warden() {
         var collisionResults = ray.intersectObjects(this.game.scene.children);
         if (collisionResults.length > 0 && collisionResults[0].distance < 100) {
             var selected = collisionResults[0].object;
-            console.log(selected.name);
             if (selected.name === 'player') {
                 //player is in line of sight
                 return true;

@@ -41,6 +41,11 @@ function Game(renderer, canvas) {
     this.ELOSE.src = "images/eval-lose.jpg";
     this.START = new Image();
     this.START.src = "images/start.jpg";
+    this.OK = 0;
+    _this = this;
+    this.START.onload = function () {
+        _this.OK = 1;
+    }
     this.clock = new THREE.Clock();
     this.clock2 = new THREE.Clock();
     this.waitToEvaluate = -1;
@@ -49,6 +54,7 @@ function Game(renderer, canvas) {
     this.maxAwareness = 0;
     this.start = 0;
     this.progress = 0;
+    this.difficulty = 1;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -204,7 +210,7 @@ function Game(renderer, canvas) {
         this.timer = 0;
         this.allVisit = 0;
         this.maxAwareness = 0;
-	this.progress = 0;
+        this.start = 0;
         // Setup scene
 
 
@@ -230,7 +236,7 @@ function Game(renderer, canvas) {
         // set interval handles passing this weird, so you need to make a copy
         var _this = this;
         // update the hint every 5 seconds
-	this.hintTimer = null;
+        this.hintTimer = null;
 
         // Setup player
         this.player = new Player();
@@ -240,7 +246,7 @@ function Game(renderer, canvas) {
         this.oldplayer.z = this.player.mesh.position.z;
 
         // Initialize warden 
-        this.warden = new Warden();
+        this.warden = new Warden(this);
         this.warden.init(this.scene,
         					this.level.wardenPos,
         					this.level.patrolPos,
@@ -257,66 +263,68 @@ function Game(renderer, canvas) {
     var once = true;
     this.update = function (input) {
         starting(this);
-	if (this.initialized === false) {
-	    this.init(input);
-	}
-	if (this.start === 1 && this.hintTimer === null && this.initialized) {
-	    _this = this;
-	    this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
-	}
-	if (this.end === 0) {
-	    this.timer += this.clock.getDelta();
-	    this.level.update();
-	    this.player.update(input, this.scene, 1);
-	    handleCollisions(this, input);
-	    if (input.hold === 0 && input.Jump === 0) {
-		input.Jump = 1;
-		if (smallDrop(this)) {
-		    while (input.hold === 0) {
-			var oldW = input.trigger.W;
-			var oldS = input.trigger.S;
-			var oldA = input.trigger.A;
-			var oldD = input.trigger.D;
-			input.trigger.W = 0;
-			input.trigger.S = 0;
-			input.trigger.A = 0;
-			input.trigger.D = 0;
-			this.player.update(input, this.scene, 0);
-			input.trigger.W = oldW;
-			input.trigger.S = oldS;
-			input.trigger.A = oldA;
-			input.trigger.D = oldD;
-			handleCollisions(this, input);
-		    }
-		}
-	    }
-	    updateCollisionSet(this)
-	    updateScene(this);
-	    this.warden.update(this, input, this.player.mesh.position, this.player.sound);
-	    if (this.warden.awareness > this.maxAwareness) {
-		this.maxAwareness = this.warden.awareness;
-	    }
-	    updateOperation(this, input);
-	    updateDistance(this);
-	    if (this.start === 1) {
-		updatePlayerInformation(this, input);
-	    }
-	    TWEEN.update();
-	}
-	else {
-	    if (this.waitToEvaluate === -1) {
-		this.clock2.getDelta();
-		this.waitToEvaluate = 0;
-	    }
-	    else {
-		this.waitToEvaluate += this.clock2.getDelta();
-	    }
-	    ending(this);
-	    if (this.waitToEvaluate > 5) {
-		return false;
-	    }
-	}
-	return true;        
+        if (this.initialized === false) {
+            this.init(input);
+        }
+        if (this.start === 1 && this.hintTimer === null && this.initialized && this.difficulty == 1) {
+            _this = this;
+            this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
+        }
+        if (this.end === 0) {
+            this.timer += this.clock.getDelta();
+            if (this.difficulty === 1) {
+                this.level.update();
+            }
+            this.player.update(input, this.scene, 1);
+            handleCollisions(this, input);
+            if (input.hold === 0 && input.Jump === 0) {
+                input.Jump = 1;
+                if (smallDrop(this)) {
+                    while (input.hold === 0) {
+                        var oldW = input.trigger.W;
+                        var oldS = input.trigger.S;
+                        var oldA = input.trigger.A;
+                        var oldD = input.trigger.D;
+                        input.trigger.W = 0;
+                        input.trigger.S = 0;
+                        input.trigger.A = 0;
+                        input.trigger.D = 0;
+                        this.player.update(input, this.scene, 0);
+                        input.trigger.W = oldW;
+                        input.trigger.S = oldS;
+                        input.trigger.A = oldA;
+                        input.trigger.D = oldD;
+                        handleCollisions(this, input);
+                    }
+                }
+            }
+            updateCollisionSet(this)
+            updateScene(this);
+            this.warden.update(this, input, this.player.mesh.position, this.player.sound);
+            if (this.warden.awareness > this.maxAwareness) {
+                this.maxAwareness = this.warden.awareness;
+            }
+            updateOperation(this, input);
+            updateDistance(this);
+            if (this.start === 1 && this.difficulty === 1) {
+                updatePlayerInformation(this, input);
+            }
+            TWEEN.update();
+        }
+        else {
+            if (this.waitToEvaluate === -1) {
+                this.clock2.getDelta();
+                this.waitToEvaluate = 0;
+            }
+            else {
+                this.waitToEvaluate += this.clock2.getDelta();
+            }
+            ending(this);
+            if (this.waitToEvaluate > 5) {
+                return false;
+            }
+        }
+        return true;
     };
 
     // Draw the scene as seen through the current camera
@@ -335,7 +343,34 @@ function starting(game) {
     Ending.restore();
     if (game.start === 0) {
         Ending.drawImage(game.START, 0, 0, game.START.width, game.START.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        if (game.OK === 1) {
+            Ending.beginPath();
+            Ending.fillStyle = 'black';
+            Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1, game.endingInfo.height * 0.07);
+            Ending.fill();
+            Ending.beginPath();
+            Ending.fillStyle = 'white';
+            Ending.font = '20px Courier';
+            if (game.scene === null) {
+                Ending.fillText('0%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
+            }
+            else {
+                Ending.fillText(Math.floor(game.scene.children.length * 100 / 1575) + '%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
+                Ending.fill();
+                Ending.beginPath();
+                Ending.fillStyle = 'orange';
+                Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1 * game.scene.children.length / 1575, game.endingInfo.height * 0.07);
+                Ending.fill();
+            }
+
+            Ending.beginPath();
+            Ending.strokeStyle = 'white';
+            Ending.lineWidth = 2;
+            Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1, game.endingInfo.height * 0.07);
+            Ending.stroke();
+        }
     }
+
 }
 
 function ending(game) {
@@ -409,7 +444,25 @@ function ending(game) {
         Ending.fillStyle = '#ff0000';
         Ending.fillText(Math.floor((game.timer * 100) / 100) + ' seconds', game.endingInfo.width * 0.620, game.endingInfo.height * 0.51);
         Ending.fillText(Math.floor(game.allVisit / 329 * 100) + ' %', game.endingInfo.width * 0.638, game.endingInfo.height * 0.57);
-        Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);        
+        Ending.fillText(Math.floor(game.maxAwareness) + ' %', game.endingInfo.width * 0.635, game.endingInfo.height * 0.62);
+        Ending.font = '20px Arial';
+        Ending.fillStyle = '#0000ff';
+        if (game.warden.caught === 0) {
+            if (game.difficulty === 1) {
+                Ending.fillText('Proceed to normal difficulty?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+            }
+            else {
+                if (game.difficulty === 2) {
+                    Ending.fillText('Proceed to hard difficulty?    Yes    No    Return', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+                }
+                else {
+                    Ending.fillText('Try again?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+                }
+            }
+        }
+        else {
+            Ending.fillText('Try again?    Yes    No', game.endingInfo.width * 0.3, game.endingInfo.height * 0.96);
+        }
     }
 }
 
@@ -890,7 +943,7 @@ function updateOperation(game, input) {
             switch (collision[0].object.name) {
                 case 'door':
                     if (game.gindex === 0) {
-                        if (game.hintIndex >= 6) {
+                        if (game.hintIndex >= 6 || game.difficulty != 1) {
                             game.gindex++;
                         }
                         else {
