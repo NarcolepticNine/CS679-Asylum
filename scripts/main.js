@@ -266,3 +266,4 @@ function setupInput(data, game) {
         data.phi = ((data.mouseX - canvas.offsetLeft) / (canvas.width / 2) - 1) * Math.PI / 2;
     }
 }
+
