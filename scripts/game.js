@@ -48,6 +48,7 @@ function Game(renderer, canvas) {
     this.allVisit = 0;
     this.maxAwareness = 0;
     this.start = 0;
+    this.progress = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -203,6 +204,7 @@ function Game(renderer, canvas) {
         this.timer = 0;
         this.allVisit = 0;
         this.maxAwareness = 0;
+	this.progress = 0;
         // Setup scene
 
 
@@ -243,7 +245,6 @@ function Game(renderer, canvas) {
         					this.level.wardenPos,
         					this.level.patrolPos,
         					this);
-
         // Update the view ray (center of canvas into screen)
         this.player.updateViewRay(input);
     };
@@ -257,7 +258,7 @@ function Game(renderer, canvas) {
     this.update = function (input) {
         starting(this);
 	if (this.start === 1 && this.hintTimer === null) {
-	    this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
+	    this.hintTimer = setInterval(function () { hintTimerFunc(this) }, 1000);
 	}
 	if (this.initialized === false) {
 	    this.init(input);
@@ -658,6 +659,7 @@ function updateScene(game) {
     }
     else {
         game.again = false;
+	game.progress++;
     }
 
     if (need === true) {
