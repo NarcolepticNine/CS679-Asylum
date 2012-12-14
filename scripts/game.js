@@ -1153,9 +1153,11 @@ function updateOperation(game, input) {
     }
 
     if (input.click === 1 || game.firstDoor === 0) {
+        var td = game.firstDoor;
+        game.firstDoor = 1;
         input.click = 0;
         var collision;
-        if (game.firstDoor === 0) {
+        if (td === 0) {
             collision = [];
             for (var o = 0; o < game.objects[0][6][19].length; o++) {
                 if (game.objects[0][6][19][o].name === 'door') {
@@ -1169,7 +1171,7 @@ function updateOperation(game, input) {
         }
         if (collision.length > 0) {
             var object = null;
-            if (game.firstDoor === 0) {
+            if (td === 0) {
                 object = collision[0];
             }
             else {
@@ -1183,11 +1185,8 @@ function updateOperation(game, input) {
                             game.gindex++;
                         }
                         else {
-                            if (game.firstDoor !== 0) {
+                            if (td !== 0) {
                                 break;
-                            }
-                            else {
-                                game.firstDoor = 1;
                             }
                         }
                     }
