@@ -198,6 +198,7 @@ function setupInput(data, game) {
             if (event.pageX > 0.26 * canvas.width && event.pageX < 0.73 * canvas.width && event.pageY > 0.95 * canvas.height) {
                 if (game.difficulty < 3) {
                     game.initialized = false;
+                    game.start = 0;
                     if (game.hintTimer !== null) {
                         clearInterval(game.hintTimer);
                     }
