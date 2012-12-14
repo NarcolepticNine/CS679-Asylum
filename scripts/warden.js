@@ -85,7 +85,6 @@ function Warden(game) {
             var tempMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture("./obj/demon/colorMap.png"), morphTargets: true }));
             tempMesh.scale.set(scalex, scaley, scalez);
             warden.mesh = tempMesh;
-
         }
 
         var loader = new THREE.JSONLoader();
@@ -129,7 +128,7 @@ function Warden(game) {
 
         var cond = 0;
 
-        if (this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.z - this.mesh.position.z) === true) {
+        if (this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.y - (this.mesh.position.y + 15), game.player.mesh.position.z - this.mesh.position.z) === true) {
             //if in line of sight, use urgency
             this.notSeen = false;
             cond = game.urgent;
@@ -290,7 +289,10 @@ function Warden(game) {
             this.game.end = 1;
         }
 
-        if (this.awareness < this.awareThres || this.inLineOfSight(dX, dZ) === false) {
+        //        console.log('BB:' + this.awareness);
+        //        console.log('CC:' + this.currSpd);
+        //        console.log('DD:' + this.notSeen);
+        if (this.awareness < this.awareThres) {
 
             if (this.pt == null) {
                 this.pt = this.patrols[this.nextPt];
@@ -555,9 +557,11 @@ function Warden(game) {
         return targetPos;
     }
 
-    this.inLineOfSight = function (dX, dZ) {
-        var directionVector = new THREE.Vector3(dX, this.mesh.position.y, dZ);
-        var ray = new THREE.Ray(this.mesh.position,
+    this.inLineOfSight = function (dX, dY, dZ) {
+        var directionVector = new THREE.Vector3(dX, dY, dZ);
+        var begin = new THREE.Vector3();
+        begin.add(this.mesh.position, new THREE.Vector3(0, 15, 0));
+        var ray = new THREE.Ray(begin,
                 directionVector.clone().normalize());
         var collisionResults = ray.intersectObjects(this.game.scene.children);
         if (collisionResults.length > 0) {

@@ -54,7 +54,7 @@ function Game(renderer, canvas) {
     this.maxAwareness = 0;
     this.start = 0;
     this.progress = 0;
-    this.difficulty = 1;
+    this.difficulty = 3;
     this.otherFloor = false;
 
     // Create and position the map canvas, then add it to the document
@@ -273,6 +273,10 @@ function Game(renderer, canvas) {
         if (this.initialized === false) {
             this.init(input);
         }
+
+        if (this.objects === null || this.models === null) {
+            return;
+        }
         if (this.start === 1 && this.hintTimer === null && this.initialized && this.difficulty == 1) {
             _this = this;
             this.hintTimer = setInterval(function () { hintTimerFunc(_this) }, 1000);
@@ -459,19 +463,19 @@ function ending(game) {
         Ending.fillStyle = '#ffffff';
         if (game.warden.caught === false) {
             if (game.difficulty === 1) {
-                Ending.fillText('Click to proceed to normal difficulty.', game.endingInfo.width * 0.5, game.endingInfo.height * 0.98);
+                Ending.fillText('Click to proceed to normal difficulty.', game.endingInfo.width * 0.42, game.endingInfo.height * 0.98);
             }
             else {
                 if (game.difficulty === 2) {
-                    Ending.fillText('Click to proceed to hard difficulty.', game.endingInfo.width * 0.5, game.endingInfo.height * 0.98);
+                    Ending.fillText('Click to proceed to hard difficulty.', game.endingInfo.width * 0.42, game.endingInfo.height * 0.98);
                 }
                 else {
-                    Ending.fillText('You\'ve finished all difficulties.', game.endingInfo.width * 0.5, game.endingInfo.height * 0.98);
+                    Ending.fillText('You\'ve finished all difficulties.', game.endingInfo.width * 0.42, game.endingInfo.height * 0.98);
                 }
             }
         }
         else {
-            Ending.fillText('Click to try again.', game.endingInfo.width * 0.5, game.endingInfo.height * 0.98);
+            Ending.fillText('Click to try again.', game.endingInfo.width * 0.42, game.endingInfo.height * 0.98);
         }
     }
 }
