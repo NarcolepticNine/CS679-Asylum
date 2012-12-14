@@ -51,6 +51,7 @@ function Player() {
 		);
 
         this.mesh = standMesh;
+        this.mesh.name = 'player';
 
         this.flashlight = new THREE.SpotLight(0xfffed9, 10, 3 * CELL_SIZE);
         scene.add(this.mesh);

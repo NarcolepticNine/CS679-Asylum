@@ -2,8 +2,8 @@
 // Initialize Game
 // ----------------------------------------------------------------------------
 (function initialize() {
-	
-	var canvas = document.getElementById("canvas"),
+
+    var canvas = document.getElementById("canvas"),
         canvasWidth = window.innerWidth,
         canvasHeight = window.innerHeight,
         renderer = new THREE.WebGLRenderer({
@@ -14,8 +14,8 @@
         }),
         inputData = {},
         game = null,
-        debug = true; 
-    	
+        debug = false;
+
     requestFrame = window.requestAnimationFrame
                 || window.webkitRequestAnimationFrame
                 || window.mozRequestAnimationFrame
@@ -60,7 +60,7 @@
 
     // Setup input handlers and populate input data object
     setupInput(inputData, game);
-	
+
     // Enter main loop
     (function mainLoop() {    	
     	setTimeout( function () {
@@ -146,19 +146,19 @@ function updateDebug( info, game ){
 function setupInput(data, game) {
     // Setup input data structure
     data.viewRay = null;
-    data.mouseX  = canvas.offsetLeft + canvas.width / 2;
-    data.mouseY  = canvas.offsetTop + canvas.height / 2;
-    data.center  = -Math.PI / 2;
-    data.theta   = Math.PI / 2;
-    data.phi     = 0;
-    data.f       = new THREE.Vector3();
-    data.v       = 0;
-    data.hold    = 1;
+    data.mouseX = canvas.offsetLeft + canvas.width / 2;
+    data.mouseY = canvas.offsetTop + canvas.height / 2;
+    data.center = -Math.PI / 2;
+    data.theta = Math.PI / 2;
+    data.phi = 0;
+    data.f = new THREE.Vector3();
+    data.v = 0;
+    data.hold = 1;
     data.click = 0;
     data.X = 0;
     data.Y = 0;
     data.Escape = 0;
-    data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0};
+    data.trigger = { W: 0, S: 0, A: 0, D: 0, Jump: 0, crouch: 0, run: 0, light: 0 };
 
     // Hookup key input
     document.addEventListener("keydown", function (event) {
@@ -193,9 +193,32 @@ function setupInput(data, game) {
     }, false);
 
     document.addEventListener("mousedown", function (event) {
+        if (game.waitToEvaluate > 5) {
+            if (event.pageX > 0.26 * canvas.width && event.pageX < 0.73 * canvas.width && event.pageY > 0.95 * canvas.height) {
+                if (game.difficulty < 3) {
+                    game.initialized = false;
+                    if (game.hintTimer !== null) {
+                        clearInterval(game.hintTimer);
+                    }
+                    if (game.warden.caught === false) {
+                        game.difficulty++;
+                    }
+                }
+                else {
+                    if (game.warden.caught === true) {
+                        game.initialized = false;
+                        if (game.hintTimer !== null) {
+                            clearInterval(game.hintTimer);
+                        }
+                    }
+                }
+            }
+        }
         if (game.start === 0) {
-            if (event.pageX > 0.16 * canvas.width && event.pageX < 0.28 * canvas.width && event.pageY > 0.28 * canvas.height && event.pageY < 0.36 * canvas.height) {
-                game.start = 1;
+            if (game.scene.children.length === 1575 && game.progress === 204) {
+                if (event.pageX > 0.16 * canvas.width && event.pageX < 0.28 * canvas.width && event.pageY > 0.28 * canvas.height && event.pageY < 0.36 * canvas.height) {
+                    game.start = 1;
+                }
             }
         }
         else {
@@ -275,4 +298,3 @@ function setupInput(data, game) {
         data.phi = ((data.mouseX - canvas.offsetLeft) / (canvas.width / 2) - 1) * Math.PI / 2;
     }
 }
-

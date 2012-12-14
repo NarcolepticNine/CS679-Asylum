@@ -1,6 +1,6 @@
 /* Defines an array of strings to use to load game map.
- *
- */
+*
+*/
 
 var numFloors = 2;
 var Map = new Array(numFloors);
@@ -23,7 +23,7 @@ Map[0].push(
 "..fffff........ffffff.\n" +
 "..fffff........ffffff.\n" +
 "..fffffwwiwiwiwffffff.\n" +
-"..sffffffffffffffffff.\n" +
+"..fsfffffffffffffffff.\n" +
 "..fffff\n" +
 ".......");
 

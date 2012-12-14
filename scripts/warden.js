@@ -52,6 +52,7 @@ function Warden(game) {
     this.pDir = true; //direction of patrol
     this.nextPatrol = 0;
     this.currPatrol = null;
+	this.notSeen = true; 
     this.patrols = new Array();
 
 	this.there		= false; 
@@ -226,6 +227,8 @@ function Warden(game) {
         var X = this.mesh.position.x;
         var Z = this.mesh.position.z;
         var Y = Math.floor(Math.floor(this.mesh.position.y) / CELL_SIZE);
+        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
         var ry;
         if (game.player.crouch) {
             ry = game.player.mesh.position.y - 2.5;
@@ -233,26 +236,45 @@ function Warden(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
+        if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
+            if (rx < 15) {
+                if (rx == 10) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+            else {
+                if (rz === 7) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+        }
+        else {
+            ry = Math.floor(ry / CELL_SIZE + 0.5);
+        }
         var dX = playPos.x - X;
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
+        if (Y != ry) {
+            this.awareness = 0;
+        }
+        else {
+            this.checkPlayer(game, input, playerSound, d);
+        }
 
-		if (Y != ry) {
-	            this.awareness = 0;
-	    }
-		else {
-		     this.checkPlayer(game, input, playerSound, d);
-		}	    
-	
         if (game.urgent === 4) {
             this.playFinalScream();
             this.caught = true;
             this.game.end = 1;
         }
 
-        if (this.awareness < this.awareThres) {
+        if (this.awareness < this.awareThres || this.inLineOfSight(dX, dZ) === false) {
 
             if (this.currPatrol == null) {
                 this.currPatrol = this.patrols[ this.nextPatrol ];
@@ -278,7 +300,6 @@ function Warden(game) {
 				this.pathfind( this.mesh.position, this.currPatrol ); 
 				this.pathPt = this.Path.pop(); 
             }
-            
         } else {
             
             //calculate new path to player if needed
@@ -448,8 +469,7 @@ function Warden(game) {
  	 */
  	this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
-
-			
+		
 		var tarX = Math.floor(Math.floor(targetPos.x) / CELL_SIZE + 1 / 2);
 		var tarZ = Math.floor(Math.floor(targetPos.z) / CELL_SIZE + 1 / 2);
 
@@ -464,8 +484,6 @@ function Warden(game) {
 
 
 			var tarY = 0; //Math.floor(Math.floor(targetPos.y) / CELL_SIZE);
-			
-			console.log( "Finding Path to: " + tarX + " " + tarZ );
 			
 			this.targetPt.x = tarX;
 			this.targetPt.z = tarZ; 
@@ -620,6 +638,22 @@ function Warden(game) {
 			 
 	}
 
+	this.inLineOfSight = function(dX, dZ) {
+        var directionVector = new THREE.Vector3(dX, this.mesh.position.y, dZ);
+        var ray = new THREE.Ray(this.mesh.position,
+                directionVector.clone().normalize());
+
+        var collisionResults = ray.intersectObjects(this.game.scene.children);
+        if (collisionResults.length > 0 && collisionResults[0].distance < 100) {
+            var selected = collisionResults[0].object;
+            console.log(selected.name);
+            if (selected.name === 'player') {
+                //player is in line of sight
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
-
-

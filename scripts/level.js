@@ -351,7 +351,7 @@ function Level(game) {
     };
 
     function createGeo(geometry, x, y, z, scalex, scaley, scalez, rot, tmap, name) {
-        var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap) }));
+        var objMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(tmap, {}, function () { game.progress++; }) }));
         objMesh.rotation.y = rot;
         objMesh.scale.set(scalex, scaley, scalez);
         var maxX = geometry.vertices[0].x;
@@ -814,7 +814,7 @@ function Level(game) {
     // Generate wall geometry
     // --------------------------------
     WALL_MATERIAL = new THREE.MeshPhongMaterial({ map: WALL_TEXTURE });
-    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1, WALL_MATERIAL, { px: false, nx: false, py: false, ny: false, pz: true, nz: true }),
+    var CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16, 15, 15, 1, WALL_MATERIAL, { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),
         BOUND_CUBE_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE * 15 / 16, CELL_SIZE, CELL_SIZE / 16);
 
 
@@ -871,7 +871,7 @@ function Level(game) {
 
     COLUMN_MATERIAL = new THREE.MeshPhongMaterial({ map: COLUMN_TEXTURE });
     var COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 12, CELL_SIZE, CELL_SIZE / 12, 1, 16, 1, COLUMN_MATERIAL, { px: true, nx: true, py: false, ny: false, pz: true, nz: true }),
-        BOUND_COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 16, CELL_SIZE, CELL_SIZE / 16);
+        BOUND_COLUMN_GEOMETRY = new THREE.CubeGeometry(CELL_SIZE / 12, CELL_SIZE, CELL_SIZE / 12);
 
 
     this.generateColumnGeometry = function (x, y, z, c) {
@@ -964,7 +964,27 @@ function Level(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
+        if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
+            if (rx < 15) {
+                if (rx == 10) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+            else {
+                if (rz === 7) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+        }
+        else {
+            ry = Math.floor(ry / CELL_SIZE + 0.5);
+        }
         if (game.visited[ry][rz][rx] === 0) {
             game.allVisit++;
             game.visited[ry][rz][rx] = 1;
@@ -1092,6 +1112,8 @@ function Level(game) {
         mapContext.fill();
 
         //draw destination
+        var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
         var ry;
         if (game.player.crouch) {
             ry = game.player.mesh.position.y - 2.5;
@@ -1099,7 +1121,27 @@ function Level(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        ry = Math.floor(ry / CELL_SIZE + 0.51);
+        if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
+            if (rx < 15) {
+                if (rx == 10) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+            else {
+                if (rz === 7) {
+                    ry = 1;
+                }
+                else {
+                    ry = 0;
+                }
+            }
+        }
+        else {
+            ry = Math.floor(ry / CELL_SIZE + 0.5);
+        }
         if (ry === game.nextGoal[game.gindex][0].y) {
             mapContext.moveTo(game.nextGoal[game.gindex][0].x / CELL_SIZE * MAP_CELL_SIZE, game.nextGoal[game.gindex][0].z / CELL_SIZE * MAP_CELL_SIZE);
             mapContext.beginPath();
