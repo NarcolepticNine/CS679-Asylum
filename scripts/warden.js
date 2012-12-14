@@ -55,14 +55,18 @@ function Warden(game) {
     this.notSeen = true;
     this.patrols = new Array();
 
+    this.boundVertices = new Array();
+    this.genVertices = false;
+    this.collisionSet = [];
+
     this.there = false;
     this.targetPt = new THREE.Vector3();
     this.Path = new Array(); //will be filled with path points to current target
     this.pathPt = null;
     /*Awareness determines how hard it is to hide from the Warden.  
-	 * If the player is heard, or spotted within a certain amount of time,
-	 * awareness goes up.  If the player is able to hide, awareness will drop.
-	 */
+     * If the player is heard, or spotted within a certain amount of time,
+     * awareness goes up.  If the player is able to hide, awareness will drop.
+     */
     this.awareness = 0;
 
     //Game Variables
@@ -94,10 +98,10 @@ function Warden(game) {
         var loader = new THREE.JSONLoader();
         loader.load(this.meshURL, function (geometry) { callback(geometry, 10, 10, 10, this.textureURL); })
 
-        //load warden sounds:
+            //load warden sounds:
 
-        for (var i = 0; i < this.growls.length; i++)
-            this.soundManager.loadSound(this.growls[i]);
+            for (var i = 0; i < this.growls.length; i++)
+                this.soundManager.loadSound(this.growls[i]);
 
         for (var i = 0; i < this.screams.length; i++)
             this.soundManager.loadSound(this.screams[i]);
@@ -298,40 +302,41 @@ function Warden(game) {
         if (this.awareness < this.awareThres || this.inLineOfSight(dX, dY, dZ)
                 === false){
 
-            if (this.currPatrol == null) {
-                this.currPatrol = this.patrols[this.nextPatrol];
-                this.nextPatrol = (++this.nextPatrol == this.patrols.length) ? 0 : this.nextPatrol;
+                    if (this.currPatrol == null) {
+                        this.currPatrol = this.patrols[this.nextPatrol];
+                        this.nextPatrol = (++this.nextPatrol == this.patrols.length) ? 0 : this.nextPatrol;
 
-                this.pathfind(this.mesh.position, this.currPatrol);
-                this.pathPt = this.Path.pop();
-            }
+                        this.pathfind(this.mesh.position, this.currPatrol);
+                        this.pathPt = this.Path.pop();
+                    }
 
-            //target position
-            var pX = this.currPatrol.x;
-            var pZ = this.currPatrol.z;
+                    //target position
+                    var pX = this.currPatrol.x;
+                    var pZ = this.currPatrol.z;
 
 
-            if (this.there) {
-                //select new current point.  
-                this.there = false;
-                this.currPatrol = this.patrols[this.nextPatrol];
-                this.nextPatrol = (this.pDir) ? this.nextPatrol + 1 : this.nextPatrol - 1;
-                this.pDir = (this.nextPatrol == 0 || this.nextPatrol == this.patrols.length - 1) ? !this.pDir : this.pDir;
+                    if (this.there) {
+                        //select new current point.  
+                        this.there = false;
+                        this.currPatrol = this.patrols[this.nextPatrol];
+                        this.nextPatrol = (this.pDir) ? this.nextPatrol + 1 : this.nextPatrol - 1;
+                        this.pDir = (this.nextPatrol == 0 || this.nextPatrol == this.patrols.length - 1) ? !this.pDir : this.pDir;
 
-                //console.log( "New Patrol Point: " + this.currPatrol.x + " " + this.currPatrol.z  );
-                this.pathfind(this.mesh.position, this.currPatrol);
-                this.pathPt = this.Path.pop();
-            }
-        } else {
+                        //console.log( "New Patrol Point: " + this.currPatrol.x + " " + this.currPatrol.z  );
+                        this.pathfind(this.mesh.position, this.currPatrol);
+                        this.pathPt = this.Path.pop();
+                    }
+                } else {
 
-            //calculate new path to player if needed
-            if (this.pathfind(this.mesh.position, game.player.mesh.position))
-                this.pathPt = this.Path.pop();
+                    //calculate new path to player if needed
+                    if (this.pathfind(this.mesh.position, game.player.mesh.position))
+                        this.pathPt = this.Path.pop();
 
-            //if awareness too high, warden sprints
-            this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
-        }
+                    //if awareness too high, warden sprints
+                    this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
+                }
 
+        //this.genBoundVertices();
         //move towards next path point if available
         if (this.pathPt) {
 
@@ -353,21 +358,21 @@ function Warden(game) {
         this.flashlight1.position.set(meshPos.x, meshPos.y + 15, meshPos.z);
         this.flashlight1.target.position.set(
 
-               meshPos.x + this.vX / this.currSpd * 5,
-               meshPos.y + 15 - 8,
-               meshPos.z + this.vZ / this.currSpd * 5
-           );
+                meshPos.x + this.vX / this.currSpd * 5,
+                meshPos.y + 15 - 8,
+                meshPos.z + this.vZ / this.currSpd * 5
+                );
         this.flashlight2.position.set(meshPos.x, meshPos.y + 15, meshPos.z);
         this.flashlight2.target.position.set(
-               meshPos.x + this.vX / this.currSpd * 5,
-               meshPos.y + 15 - 3.6,
-               meshPos.z + this.vZ / this.currSpd * 5
-           );
+                meshPos.x + this.vX / this.currSpd * 5,
+                meshPos.y + 15 - 3.6,
+                meshPos.z + this.vZ / this.currSpd * 5
+                );
         this.flashlight3.position.set(
                 meshPos.x + this.vX / this.currSpd * 5,
                 meshPos.y + 20,
                 meshPos.z + this.vZ / this.currSpd * 5
-            );
+                );
 
         this.playSounds();
 
@@ -391,6 +396,197 @@ function Warden(game) {
 
         this.mesh.morphTargetInfluences[this.keyframe] = (this.time % this.interpolation) / this.interpolation;
         this.mesh.morphTargetInfluences[this.lastKeyframe] = 1 - this.mesh.morphTargetInfluences[this.keyframe];
+
+
+        var directionVector;
+        var ray;
+
+        for(var i = 0; i < this.boundVertices.length; i++){
+            directionVector = this.boundVertices[i].clone();
+
+            var begin = THREE.GeometryUtils.middlePoint(this.mesh.geometry);
+            begin.add(this.mesh.position, new THREE.Vector3(0,
+                        THREE.GeometryUtils, 0));
+            ray = new THREE.Ray(begin,
+                    directionVector.clone().normalize());
+            var collisionResults = ray.intersectObjects(this.collisionSet);
+            var g = 0;
+            while (g < collisionResults.length) {
+                if (collisionResults[g].object.name === "door" && collisionResults[g].object.doorState === 'open') {
+                    collisionResults.splice(g, 1);
+                }else if (collisionResults[g].object.name === "door" && collisionResults[g].object.doorState === 'closed'){
+                    
+                    var door = collisionResults[g].object, tween;
+                    var ob = door.model;
+                    if (door.doorState === "closed" && door.canToggle && (!door.special || game.gindex >= 2)) {
+                        var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.beginRot);
+                        var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.beginRot);
+                        tween = new TWEEN.Tween({ rot: door.beginRot })
+                                         .to({ rot: door.endRot }, DOOR_TIMEOUT)
+                                         .easing(TWEEN.Easing.Elastic.Out)
+                                         .onUpdate(function () {
+                                             door.rotation.y = this.rot;
+                                             ob.rotation.y = this.rot;
+                                             door.position.x = ix + door.halfsize * 15 / 16 * Math.sin(this.rot);
+                                             door.position.z = iz + door.halfsize * 15 / 16 * Math.cos(this.rot);
+                                             ob.position.x = door.position.x;
+                                             ob.position.z = door.position.z;
+
+                                         })
+                                         .start();
+
+                        door.doorState = "open";
+                        door.canToggle = false;
+
+                        setTimeout(function () {
+                            door.canToggle = true;
+                        }, DOOR_TIMEOUT);
+                    }
+                }else {
+                    g++;
+                }
+            }
+
+            if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < 15) {
+                var selected = collisionResults[0].object;
+                if (selected.name === 'ceil' || selected.name === 'ceil2' || selected.name === 'wall' || selected.name === 'window-wall' || selected.name === 'side' || selected.name === 'support' ||
+                        selected.name === 'column' || selected.name === 'model' || selected.name === 'key' || selected.name === 'fdoor' || selected.name === 'door') {
+                            this.bumpBack(collisionResults, directionVector, game);
+                        }
+                else {
+                    if (selected.name === 'stair' || selected.name === 'floor' || selected.name === 'stairfloor') {
+                        var newCollide = this.bumpUp(collisionResults, directionVector, game);
+                        if (newCollide !== -1) {
+                            this.bumpBack(collisionResults, directionVector, game);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        game.oldwarden.copy(game.warden.mesh.position);
+        this.updateCollisionSet(this.game);
+    }
+
+
+    this.bumpUp = function (collisionResults, directionVector, game) {
+        var t;
+        for (t = 0.1; t <= 5; t = t + 0.1) {
+            ray = new THREE.Ray(new THREE.Vector3(game.warden.mesh.position.x, game.warden.mesh.position.y + t, game.warden.mesh.position.z), directionVector.clone().normalize());
+            collisionResults = ray.intersectObjects(game.collisionSet);
+            if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() > -1e-6) {
+                break;
+            }
+        }
+
+
+        for (var vertexIndex = 0; vertexIndex < game.warden.mesh.geometry.vertices.length; vertexIndex++) {
+            var allDirectionVector = game.warden.mesh.geometry.vertices[vertexIndex].clone();
+            var ray = new THREE.Ray(new THREE.Vector3(game.warden.mesh.position.x, game.warden.mesh.position.y + t, game.warden.mesh.position.z), allDirectionVector.clone().normalize());
+            var allCollisionResults = ray.intersectObjects(game.collisionSet);
+            if (allCollisionResults.length > 0 && allCollisionResults[0].distance - allDirectionVector.length() < -1e-6) {
+                return vertexIndex;
+            }
+        }
+        game.warden.mesh.position.y += t;
+        return -1;
+    }
+
+    this.bumpBack = function (collisionResults, directionVector, game) {
+        var i = 0;
+        var j = 0;
+        var k = 0;
+        var bumpx = 0;
+        var bumpy = 0;
+        var bumpz = 0;
+        if (game.warden.mesh.position.x - game.oldwarden.x > 0) {
+            bumpx = 0;
+            for (i = 0.1; i <= game.warden.mesh.position.x - game.oldwarden.x; i += 0.1) {
+                ray = new THREE.Ray(new THREE.Vector3(game.oldwarden.x + i, game.oldwarden.y, game.oldwarden.z), directionVector.clone().normalize());
+                collisionResults = ray.intersectObjects(this.collisionSet);
+                if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    bumpx = -1;
+                    break;
+                }
+            }
+
+            i -= 0.1;
+        }
+        if (game.warden.mesh.position.x - game.oldwarden.x < 0) {
+            bumpx = 0;
+            for (i = -0.1; i >= game.warden.mesh.position.x - game.oldwarden.x; i -= 0.1) {
+                ray = new THREE.Ray(new THREE.Vector3(game.oldwarden.x + i, game.oldwarden.y, game.oldwarden.z), directionVector.clone().normalize());
+                collisionResults = ray.intersectObjects(this.collisionSet);
+                if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    bumpx = 1;
+                    break;
+                }
+            }
+
+            i += 0.1;
+
+        }
+
+        if (game.warden.mesh.position.y - game.oldwarden.y > 0) {
+            bumpy = 0;
+            for (j = 0.1; j <= game.warden.mesh.position.y - game.oldwarden.y + 1e-6; j += 0.1) {
+                ray = new THREE.Ray(new THREE.Vector3(game.oldwarden.x + i, game.oldwarden.y + j, game.oldwarden.z), directionVector.clone().normalize());
+                collisionResults = ray.intersectObjects(this.collisionSet);
+                if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    bumpy = -1;
+                    break;
+                }
+            }
+            j -= 0.1;
+
+        }
+        if (game.warden.mesh.position.y - game.oldwarden.y < 0) {
+            bumpy = 0;
+            for (j = -0.1; j >= game.warden.mesh.position.y - game.oldwarden.y - 1e-6; j -= 0.1) {
+                ray = new THREE.Ray(new THREE.Vector3(game.oldwarden.x + i, game.oldwarden.y + j, game.oldwarden.z), directionVector.clone().normalize());
+                collisionResults = ray.intersectObjects(this.collisionSet);
+                if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    bumpy = 1;
+                    break;
+                }
+            }
+
+            j += 0.1;
+
+        }
+
+        if (game.warden.mesh.position.z - game.oldwarden.z > 0) {
+            bumpz = 0;
+            for (k = 0.1; k <= game.warden.mesh.position.z - game.oldwarden.z; k += 0.1) {
+                ray = new THREE.Ray(new THREE.Vector3(game.oldwarden.x + i, game.oldwarden.y + j, game.oldwarden.z + k), directionVector.clone().normalize());
+                collisionResults = ray.intersectObjects(this.collisionSet);
+                if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    bumpz = -1;
+                    break;
+                }
+            }
+
+            k -= 0.1;
+
+        }
+        if (game.warden.mesh.position.z - game.oldwarden.z < 0) {
+            bumpz = 0;
+            for (k = -0.1; k >= game.warden.mesh.position.z - game.oldwarden.z; k -= 0.1) {
+                ray = new THREE.Ray(new THREE.Vector3(game.oldwarden.x + i, game.oldwarden.y + j, game.oldwarden.z + k), directionVector.clone().normalize());
+                collisionResults = ray.intersectObjects(this.collisionSet);
+                if (collisionResults.length > 0 && collisionResults[0].distance - directionVector.length() < -1e-6) {
+                    bumpz = 1;
+                    break;
+                }
+            }
+            if (bumpz === 1) {
+                k += 0.1;
+            }
+        }
+
+        game.warden.mesh.position.add(game.oldwarden, new THREE.Vector3(i, j, k));
+        return bumpy;
     }
 
     this.updateLoad = function (game, input) {
@@ -401,8 +597,104 @@ function Warden(game) {
             this.update = this.updateLoaded;
             this.game.scene.add(this.mesh);
             this.setStartPos(this.startPos);
-
         }
+    }
+
+    this.genBoundVertices = function() {
+        this.boundVertices = new Array(); 
+        this.mesh.geometry.computeBoundingBox();
+        var minMax = ['min','max'];
+        var dims = ['x','y','z'];
+
+        for(var i = 0; i < minMax.length; i++){
+            for(var j = 0; j < dims.length; j++){
+                for(var k = 0; k < minMax.length; k++){
+                    for(var l = 0; l < dims.length; l++){
+                        if ( l === j) continue;
+                        for(var m = 0; m < minMax.length; m++){
+                            for(var n = 0; n < dims.length; n++){
+                                if( n === l || n === j) continue;
+                                var vec = new THREE.Vector3();
+                                vec[dims[j]] =
+                                    this.mesh.geometry.boundingBox[minMax[i]][dims[j]];
+                                vec[dims[l]] =
+                                    this.mesh.geometry.boundingBox[minMax[k]][dims[l]];
+                                vec[dims[n]] =
+                                    this.mesh.geometry.boundingBox[minMax[m]][dims[n]];
+                                this.boundVertices.push(vec);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    this.updateCollisionSet = function (game) {
+        var rx = Math.floor(Math.floor(this.mesh.position.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(this.mesh.position.z) / CELL_SIZE + 1 / 2);
+        var ry = Math.floor(this.mesh.position.y / CELL_SIZE);
+
+        this.collisionSet = [];
+
+        var append = false;
+        for (var z = rz - 1; z <= rz + 1; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
+                continue;
+            }
+            for (var x = rx - 1; x <= rx + 1; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+
+                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                    this.collisionSet.push(game.objects[ry][z][x][o]);
+                    if (game.objects[ry][z][x][o].name === 'stair' || game.objects[ry][z][x][o].name === 'side' || game.objects[ry][z][x][o].name === 'support' || game.objects[ry][z][x][o].name === 'ceil2') {
+                        append = true;
+                    }
+                }
+            }
+        }
+
+        for (var z = rz - 2; z <= rz + 2; z++) {
+            if (z < 0 || z >= NUM_CELLS.z) {
+                continue;
+            }
+            for (var x = rx - 2; x <= rx + 2; x++) {
+                if (x < 0 || x >= NUM_CELLS.x) {
+                    continue;
+                }
+                for (var o = 0; o < game.objects[ry][z][x].length; o++) {
+                    if (game.objects[ry][z][x][o].name === 'door') {
+                        this.collisionSet.push(game.objects[ry][z][x][o]);
+                    }
+                }
+            }
+        }
+
+        if (append === true) {
+            for (var z = rz - 1; z <= rz + 1; z++) {
+                if (z < 0 || z >= NUM_CELLS.z) {
+                    continue;
+                }
+                for (var x = rx - 1; x <= rx + 1; x++) {
+                    if (x < 0 || x >= NUM_CELLS.x) {
+                        continue;
+                    }
+                    for (var y = ry - 1; y <= ry + 1; y += 2) {
+                        if (y < 0 || y >= NUM_CELLS.y) {
+                            continue;
+                        }
+                        for (var o = 0; o < game.objects[y][z][x].length; o++) {
+                            this.collisionSet.push(game.objects[y][z][x][o]);
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     this.playFinalScream = function () {
@@ -484,8 +776,8 @@ function Warden(game) {
     /*
      * return array of 2-d points ( initially ) that show a path from current
      * point to the end point 
- 	 * 
- 	 */
+     * 
+     */
     this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
 
@@ -587,7 +879,7 @@ function Warden(game) {
         }
         if (cellArr['e']) {
             vec3 = new THREE.Vector3(x + 1, y, z)
-            vec3.id = this.visitCnt++;
+                vec3.id = this.visitCnt++;
             vec3.prev = prev;
             visitedArr[vec3.id] = vec3;
             queue.push(vec3);
@@ -598,7 +890,7 @@ function Warden(game) {
 
     this.traceBack = function (targetPos, visitedArr, end) {
 
-		this.Path = [];
+        this.Path = [];
         var curr = end;
         var pos = targetPos;
         this.Path.push(pos);
@@ -614,96 +906,96 @@ function Warden(game) {
 
     }
 
-	
+
 
     //return array of booleans for directions that are possible to go from inputted
     //cell
     this.checkCell = function (game, x, y, z) {
-        
+
         //used to build wall directions and store as an array
         var setWallArray = function( cell ){
-			
-			var wallArray = new Array(); 
-			var floor = false; 
-			wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = false;
-			
-			for (var o = 0; o < cell.length; o++) {
-				
-				switch( cell[o].type.charAt(0) ){
-				
-						case CELL_TYPES.floor:
-							floor = true;
-							break; 
-					
-						case CELL_TYPES.door:
-								switch( cell[o].type.charAt(1) ){
-									
-									case 's':
-									case '1':
-										wallArray['s'] = true;
-										break;
-									
-									case 'n':
-									case '3':
-										wallArray['n'] = true;
-										break;	
-									
-									case 'w':	
-									case '2':
-									case 'z':
-										wallArray['w'] = true;
-										break;
-									
-									case 'e':
-									case 'q':
-									case '4':
-										wallArray['e'] = true;
-										break;
-								}  
-								
-							break; 
-						case CELL_TYPES.wall:
-							wallArray[cell[o].type.charAt(1)] = true;
-							break;
-					} 
-			}
-			
-			if( floor ){
-				cell.walls = wallArray;
-			} else {
-				wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = true;
-				cell.walls = wallArray; 
-			}
-			
-			 
-		}
-        
-        
-        
-      
+
+            var wallArray = new Array(); 
+            var floor = false; 
+            wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = false;
+
+            for (var o = 0; o < cell.length; o++) {
+
+                switch( cell[o].type.charAt(0) ){
+
+                    case CELL_TYPES.floor:
+                        floor = true;
+                        break; 
+
+                    case CELL_TYPES.door:
+                        switch( cell[o].type.charAt(1) ){
+
+                            case 's':
+                            case '1':
+                                wallArray['s'] = true;
+                                break;
+
+                            case 'n':
+                            case '3':
+                                wallArray['n'] = true;
+                                break;	
+
+                            case 'w':	
+                            case '2':
+                            case 'z':
+                                wallArray['w'] = true;
+                                break;
+
+                            case 'e':
+                            case 'q':
+                            case '4':
+                                wallArray['e'] = true;
+                                break;
+                        }  
+
+                        break; 
+                    case CELL_TYPES.wall:
+                        wallArray[cell[o].type.charAt(1)] = true;
+                        break;
+                } 
+            }
+
+            if( floor ){
+                cell.walls = wallArray;
+            } else {
+                wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = true;
+                cell.walls = wallArray; 
+            }
+
+
+        }
+
+
+
+
         var cell = game.level.grid[y][z][x]; 
         var ret = new Array();
         ret['n'] = ret['s'] = ret['w'] = ret['e'] = true;
-        
+
         if( !cell.walls ) setWallArray( cell ); 
-        
+
         var nextCellCheck = function( x, y, z, dir){
-        	
-        	var temp = game.level.grid[y][z][x]; 
-        	
-        	if( !temp.walls ) setWallArray( temp ); 
-        	
-        	return temp.walls[dir]; 
-        	
+
+            var temp = game.level.grid[y][z][x]; 
+
+            if( !temp.walls ) setWallArray( temp ); 
+
+            return temp.walls[dir]; 
+
         }
-                      
+
         ret['n'] = !( cell.walls['n'] || nextCellCheck( x, y, z - 1, 's' ) );
         ret['s'] = !( cell.walls['s'] || nextCellCheck( x, y, z + 1, 'n' ) );
         ret['w'] = !( cell.walls['w'] || nextCellCheck( x - 1, y, z, 'e' ) );
         ret['e'] = !( cell.walls['e'] || nextCellCheck( x + 1, y, z, 'w' ) );
-       
+
         return ret;
-       
+
     }
 
     this.inLineOfSight = function (dX, dY, dZ) {

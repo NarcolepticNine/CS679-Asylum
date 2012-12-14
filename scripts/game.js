@@ -14,6 +14,7 @@ function Game(renderer, canvas) {
     this.skybox = null;
     this.player = null;
     this.oldplayer = null;
+    this.oldwarden = null;
     this.initialized = false;
     this.soundManager = null;
     this.collisionSet = null;
@@ -184,6 +185,7 @@ function Game(renderer, canvas) {
         this.skybox = null;
         this.player = null;
         this.oldplayer = new THREE.Vector3();
+        this.oldwarden = new THREE.Vector3();
         this.warden = null;
         this.soundManager = null;
         this.collisionSet = null;
@@ -263,6 +265,8 @@ function Game(renderer, canvas) {
         					this.level.wardenPos,
         					this.level.patrolPos,
         					this);
+        this.oldwarden = this.level.wardenPos;
+        
         // Update the view ray (center of canvas into screen)
         this.player.updateViewRay(input);
     };
@@ -284,6 +288,10 @@ function Game(renderer, canvas) {
 
         if (this.player === null || this.warden === null || this.player.mesh === null || this.warden.mesh === null) {
             return;
+        }
+        if (this.warden.genVertices === false){
+            this.warden.genBoundVertices();
+            this.warden.genVertices = true;
         }
         if (this.start === 1 && this.hintTimer === null && this.initialized && this.difficulty == 1) {
             _this = this;
