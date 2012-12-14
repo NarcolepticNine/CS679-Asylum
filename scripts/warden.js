@@ -256,6 +256,7 @@ function Warden(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
+        var ty = ry;
         if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
             if (rx < 15) {
                 if (rx == 10) {
@@ -281,9 +282,12 @@ function Warden(game) {
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-       
-        this.checkPlayer(game, input, playerSound, d);
-        
+        if (ty > 0.1) {
+            game.urgent = 0;
+        }
+        else {
+            this.checkPlayer(game, input, playerSound, d);
+        }
 
         if (game.urgent === 4) {
             this.playFinalScream();
