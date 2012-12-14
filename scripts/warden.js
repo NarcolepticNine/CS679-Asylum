@@ -634,7 +634,31 @@ function Warden(game) {
 							break; 
 					
 						case CELL_TYPES.door:
-							//console.log( "Door " + cell[o].type ) ; 
+								switch( cell[o].type.charAt(1) ){
+									
+									case 's':
+									case '1':
+										wallArray['s'] = true;
+										break;
+									
+									case 'n':
+									case '3':
+										wallArray['n'] = true;
+										break;	
+									
+									case 'w':	
+									case '2':
+									case 'z':
+										wallArray['w'] = true;
+										break;
+									
+									case 'e':
+									case 'q':
+									case '4':
+										wallArray['e'] = true;
+										break;
+								}  
+								
 							break; 
 						case CELL_TYPES.wall:
 							wallArray[cell[o].type.charAt(1)] = true;
@@ -654,7 +678,7 @@ function Warden(game) {
         
         
         
-        //TODO consider doors and their state.
+      
         var cell = game.level.grid[y][z][x]; 
         var ret = new Array();
         ret['n'] = ret['s'] = ret['w'] = ret['e'] = true;
