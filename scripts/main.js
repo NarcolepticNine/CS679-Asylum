@@ -194,6 +194,7 @@ function setupInput(data, game) {
 
     document.addEventListener("mousedown", function (event) {
         if (game.waitToEvaluate > 5) {
+            game.first = false;
             if (event.pageX > 0.26 * canvas.width && event.pageX < 0.73 * canvas.width && event.pageY > 0.95 * canvas.height) {
                 if (game.difficulty < 3) {
                     game.initialized = false;
@@ -218,11 +219,12 @@ function setupInput(data, game) {
             if (game.scene.children.length === 1575 && game.progress === 204) {
                 if (event.pageX > 0.16 * canvas.width && event.pageX < 0.28 * canvas.width && event.pageY > 0.28 * canvas.height && event.pageY < 0.36 * canvas.height) {
                     game.start = 1;
+                    game.clock.getDelta();
                 }
             }
         }
         else {
-            if (!canvas.pointerLockEnabled) {
+            if (!document.pointerLockEnabled && game.waitToEvaluate <= 5) {
                 canvas.requestPointerLock();
             }
             data.click = 1;

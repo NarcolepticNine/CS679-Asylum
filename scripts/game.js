@@ -41,10 +41,17 @@ function Game(renderer, canvas) {
     this.ELOSE.src = "images/eval-lose.jpg";
     this.START = new Image();
     this.START.src = "images/start.jpg";
+    this.CONTINUE = new Image();
+    this.CONTINUE.src = "images/between.jpg";
     this.OK = 0;
+    this.OK2 = 0;
+    this.first = true;
     _this = this;
     this.START.onload = function () {
         _this.OK = 1;
+    }
+    this.CONTINUE.onload = function () {
+        _this.OK2 = 1;
     }
     this.clock = new THREE.Clock();
     this.clock2 = new THREE.Clock();
@@ -208,19 +215,20 @@ function Game(renderer, canvas) {
         this.stairPosition[1].x = 0;
         this.stairPosition[1].y = 0;
         this.waitToEvaluate = -1;
-        this.clock.getDelta();
         this.timer = 0;
         this.allVisit = 0;
         this.maxAwareness = 0;
         this.start = 0;
         this.progress = 0;
         this.otherFloor = false;
+        input.Escape = 0;
+        input.click = 0;
         // Setup scene
 
 
         //this.scene.add(new THREE.AmbientLight(0xffffff));
         //this.scene.add(new THREE.AmbientLight(0x06080e));
-        this.scene.add(new THREE.AmbientLight(0x0f0f0f));
+        this.scene.add(new THREE.AmbientLight(0x171717));
 
         // Load the level
         this.level = new Level(this);
@@ -267,7 +275,7 @@ function Game(renderer, canvas) {
     var once = true;
     this.update = function (input) {
         starting(this);
-        if (this.OK === 0) {
+        if (this.OK === 0 || this.OK2 === 0) {
             return;
         }
         if (this.initialized === false) {
@@ -356,8 +364,13 @@ function starting(game) {
     Ending.clearRect(0, 0, game.endingInfo.width, game.endingInfo.height);
     Ending.restore();
     if (game.start === 0) {
-        Ending.drawImage(game.START, 0, 0, game.START.width, game.START.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
-        if (game.OK === 1) {
+        if (game.first) {
+            Ending.drawImage(game.START, 0, 0, game.START.width, game.START.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        }
+        else {
+            Ending.drawImage(game.CONTINUE, 0, 0, game.CONTINUE.width, game.CONTINUE.height, 0, 0, game.endingInfo.width, game.endingInfo.height);
+        }
+        if (game.OK === 1 && game.OK2 === 1) {
             Ending.beginPath();
             Ending.fillStyle = 'black';
             Ending.rect(game.endingInfo.width * 0.30, game.endingInfo.height * 0.285, game.endingInfo.width * 0.1, game.endingInfo.height * 0.07);
@@ -1043,6 +1056,7 @@ function updateOperation(game, input) {
         if (game.hintIndex < game.textHints.length - 2) {
             game.hintIndex = game.textHints.length - 2;
         }
+        input.Escape = 0;
     }
     if (game.hintIndex === 0) {
         if (input.click === 1) {
