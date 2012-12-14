@@ -223,7 +223,7 @@ function setupInput(data, game) {
             }
         }
         else {
-            if (!canvas.pointerLockEnabled) {
+            if (!document.pointerLockEnabled && game.waitToEvaluate <= 5) {
                 canvas.requestPointerLock();
             }
             data.click = 1;
