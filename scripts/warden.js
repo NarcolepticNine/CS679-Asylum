@@ -238,7 +238,6 @@ function Warden(game) {
         }
 
         this.awareness = (this.awareness < 0) ? 0 : ((this.awareness > 100) ? 100 : this.awareness);
-        console.log( this.awareness ); 
     }
 
     this.updateLoaded = function (game, input, playPos, playerSound) {
@@ -739,6 +738,9 @@ function Warden(game) {
 
                         break;
                     case CELL_TYPES.wall:
+                        wallArray[cell[o].type.charAt(1)] = true;
+                        break;
+                    case CELL_TYPES.window:
                         wallArray[cell[o].type.charAt(1)] = true;
                         break;
                 }

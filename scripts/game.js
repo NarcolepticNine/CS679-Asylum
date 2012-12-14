@@ -345,6 +345,7 @@ function Game(renderer, canvas) {
                 this.waitToEvaluate += this.clock2.getDelta();
             }
             ending(this);
+            this.hintIndex = this.textHints.length - 1;
             if (this.waitToEvaluate > 5) {
                 if (document.pointerLockEnabled) {
                     document.exitPointerLock();
@@ -1180,12 +1181,14 @@ function updateOperation(game, input) {
             switch (object.name) {
                 case 'door':
                     game.doorChanged = 1;
-                    if (game.gindex === 0) {
-                        if (game.hintIndex >= 6 || game.difficulty != 1) {
-                            game.gindex++;
-                        }
-                        else {
-                            if (td !== 0) {
+                    if (td == 0) {
+                    }
+                    else {
+                        if (game.gindex === 0) {
+                            if (game.hintIndex >= 6 || game.difficulty != 1) {
+                                game.gindex++;
+                            }
+                            else {
                                 break;
                             }
                         }
@@ -1218,7 +1221,14 @@ function updateOperation(game, input) {
                     } else if (door.doorState === "open" && door.canToggle && (!door.special || game.gindex >= 2)) {
                         var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.endRot);
                         var iz = door.position.z - door.halfsize * 15 / 16 * Math.cos(door.endRot);
-                        tween = new TWEEN.Tween({ rot: door.endRot })
+                        var dirx = door.position.x - ix;
+                        var dirz = door.position.z - iz;
+                        var dx = game.player.mesh.position.x - ix;
+                        var dz = game.player.mesh.position.z - iz;
+                        var dotProduct = dx * dirx + dz * dirz;
+                        var lengthDir = Math.sqrt(dirx * dirx + dirz * dirz);
+                        if (dotProduct / lengthDir > 3.7 || dotProduct / lengthDir < -3.7) {
+                            tween = new TWEEN.Tween({ rot: door.endRot })
                             .to({ rot: door.beginRot }, DOOR_TIMEOUT)
                             .easing(TWEEN.Easing.Elastic.Out)
                             .onUpdate(function () {
@@ -1232,13 +1242,14 @@ function updateOperation(game, input) {
                             })
                             .start();
 
-                        door.doorState = "closed";
-                        game.level.state[door.py][door.pz][door.px] = 0;
-                        door.canToggle = false;
+                            door.doorState = "closed";
+                            game.level.state[door.py][door.pz][door.px] = 0;
+                            door.canToggle = false;
 
-                        setTimeout(function () {
-                            door.canToggle = true;
-                        }, DOOR_TIMEOUT);
+                            setTimeout(function () {
+                                door.canToggle = true;
+                            }, DOOR_TIMEOUT);
+                        }
                     }
                     break;
                 case 'key':
