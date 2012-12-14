@@ -556,7 +556,7 @@ function Warden(game) {
 
     this.processCell = function (x, y, z, prev, queue, visitedArr) {
 
-        var cellArr = this.checkCell(this.game.level.grid[y][z][x]);
+        var cellArr = this.checkCell( this.game, x, y, z);
         var vec3;
 
         if (cellArr['n']) {
@@ -596,9 +596,7 @@ function Warden(game) {
 
     this.traceBack = function (targetPos, visitedArr, end) {
 
-
-
-        this.Path = [];
+		this.Path = [];
         var curr = end;
         var pos = targetPos;
         this.Path.push(pos);
@@ -614,45 +612,72 @@ function Warden(game) {
 
     }
 
+	
+
     //return array of booleans for directions that are possible to go from inputted
     //cell
-    this.checkCell = function (cell) {
-        //TODO store walls data as a part of the cell
-        // ie: cell.walls = ret; 
-        //TODO consider doors
+    this.checkCell = function (game, x, y, z) {
+        
+        //used to build wall directions and store as an array
+        var setWallArray = function( cell ){
+			
+			var wallArray = new Array(); 
+			var floor = false; 
+			wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = false;
+			
+			for (var o = 0; o < cell.length; o++) {
+				
+				switch( cell[o].type.charAt(0) ){
+				
+						case CELL_TYPES.floor:
+							floor = true;
+							break; 
+					
+						case CELL_TYPES.door:
+							//console.log( "Door " + cell[o].type ) ; 
+							break; 
+						case CELL_TYPES.wall:
+							wallArray[cell[o].type.charAt(1)] = true;
+							break;
+					} 
+			}
+			
+			if( floor ){
+				cell.walls = wallArray;
+			} else {
+				wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = true;
+				cell.walls = wallArray; 
+			}
+			
+			 
+		}
+        
+        
+        
+        //TODO consider doors and their state.
+        var cell = game.level.grid[y][z][x]; 
         var ret = new Array();
         ret['n'] = ret['s'] = ret['w'] = ret['e'] = true;
-
-        var evenPossible = false;
-
-        for (var o = 0; o < cell.length; o++) {
-
-            if (cell[o].type.charAt(0) === CELL_TYPES.floor) {
-                evenPossible = true;
-            }
-
-            if (cell[o].type.charAt(0) === CELL_TYPES.wall) {
-
-                switch (cell[o].type.charAt(1)) {
-
-                    case 'n':
-                    case 's':
-                    case 'e':
-                    case 'w':
-                        ret[cell[o].type.charAt(1)] = false;
-                        break;
-
-                }
-            }
+        
+        if( !cell.walls ) setWallArray( cell ); 
+        
+        var nextCellCheck = function( x, y, z, dir){
+        	
+        	var temp = game.level.grid[y][z][x]; 
+        	
+        	if( !temp.walls ) setWallArray( temp ); 
+        	
+        	return temp.walls[dir]; 
+        	
         }
-
-        if (evenPossible) {
-            return ret;
-        } else {
-            ret['n'] = ret['s'] = ret['w'] = ret['e'] = false;
-            return ret;
-        }
-
+                      
+        ret['n'] = !( cell.walls['n'] || nextCellCheck( x, y, z - 1, 's' ) );
+        ret['s'] = !( cell.walls['s'] || nextCellCheck( x, y, z + 1, 'n' ) );
+        ret['w'] = !( cell.walls['w'] || nextCellCheck( x - 1, y, z, 'e' ) );
+        ret['e'] = !( cell.walls['e'] || nextCellCheck( x + 1, y, z, 'w' ) );
+       
+        return ret;
+       
     }
 
     this.inLineOfSight = function (dX, dY, dZ) {
