@@ -215,7 +215,6 @@ function Game(renderer, canvas) {
         this.stairPosition[1].x = 0;
         this.stairPosition[1].y = 0;
         this.waitToEvaluate = -1;
-        this.clock.getDelta();
         this.timer = 0;
         this.allVisit = 0;
         this.maxAwareness = 0;
