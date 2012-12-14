@@ -222,6 +222,8 @@ function Game(renderer, canvas) {
         this.start = 0;
         this.progress = 0;
         this.otherFloor = false;
+        input.Escape = 0;
+        input.click = 0;
         // Setup scene
 
 
@@ -1055,6 +1057,7 @@ function updateOperation(game, input) {
         if (game.hintIndex < game.textHints.length - 2) {
             game.hintIndex = game.textHints.length - 2;
         }
+        input.Escape = 0;
     }
     if (game.hintIndex === 0) {
         if (input.click === 1) {
