@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 function Warden(game) {
     //Warden Definition
     this.game = null;
