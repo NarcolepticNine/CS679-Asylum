@@ -1470,4 +1470,3 @@ function handleCollisions(game, input) {
         game.oldplayer.copy(game.player.mesh.position);
     }
 }
-
