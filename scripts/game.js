@@ -63,6 +63,7 @@ function Game(renderer, canvas) {
     this.progress = 0;
     this.difficulty = 1;
     this.otherFloor = false;
+    this.firstDoor = 0;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -223,6 +224,7 @@ function Game(renderer, canvas) {
         this.otherFloor = false;
         input.Escape = 0;
         input.click = 0;
+        this.firstDoor = 0;
         // Setup scene
 
 
@@ -1143,25 +1145,45 @@ function updateOperation(game, input) {
         }
     }
 
-
-
-
-    if (input.click === 1) {
+    if (input.click === 1 || game.firstDoor === 0) {
         input.click = 0;
-
-        var collision = input.viewRay.intersectObjects(game.collisionSet);
+        var collision;
+        if (game.firstDoor === 0) {
+            collision = [];
+            for (var o = 0; o < game.objects[0][6][19].length; o++) {
+                if (game.objects[0][6][19][o].name === 'door') {
+                    collision.push(game.objects[0][6][19][o]);
+                    break;
+                }
+            }
+        }
+        else {
+            collision = input.viewRay.intersectObjects(game.collisionSet);
+        }
         if (collision.length > 0) {
-            switch (collision[0].object.name) {
+            var object = null;
+            if (game.firstDoor === 0) {
+                object = collision[0];
+            }
+            else {
+                object = collision[0].object;
+            }
+            switch (object.name) {
                 case 'door':
                     if (game.gindex === 0) {
                         if (game.hintIndex >= 6 || game.difficulty != 1) {
                             game.gindex++;
                         }
                         else {
-                            break;
+                            if (game.firstDoor !== 0) {
+                                break;
+                            }
+                            else {
+                                game.firstDoor = 1;
+                            }
                         }
                     }
-                    var door = collision[0].object, tween;
+                    var door = object, tween;
                     var ob = door.model;
                     if (door.doorState === "closed" && door.canToggle && (!door.special || game.gindex >= 2)) {
                         var ix = door.position.x - door.halfsize * 15 / 16 * Math.sin(door.beginRot);
@@ -1179,8 +1201,8 @@ function updateOperation(game, input) {
 
                                          })
                                          .start();
-
                         door.doorState = "open";
+                        game.level.state[door.py][door.pz][door.px] = 1;
                         door.canToggle = false;
 
                         setTimeout(function () {
@@ -1204,6 +1226,7 @@ function updateOperation(game, input) {
                             .start();
 
                         door.doorState = "closed";
+                        game.level.state[door.py][door.pz][door.px] = 0;
                         door.canToggle = false;
 
                         setTimeout(function () {
@@ -1212,22 +1235,22 @@ function updateOperation(game, input) {
                     }
                     break;
                 case 'key':
-                    game.scene.remove(collision[0].object);
-                    game.scene.remove(collision[0].object.model);
+                    game.scene.remove(object);
+                    game.scene.remove(object.model);
                     var rx = Math.floor(Math.floor(game.player.mesh.position.x) / CELL_SIZE + 1 / 2);
                     var rz = Math.floor(Math.floor(game.player.mesh.position.z) / CELL_SIZE + 1 / 2);
                     var ry = Math.floor(game.player.mesh.position.y / CELL_SIZE);
                     for (var z = rz - 1; z <= rz + 1; z++) {
                         for (var x = rx - 1; x <= rx + 1; x++) {
                             for (var m = 0; m < game.models[ry][z][x].length; m++) {
-                                if (game.models[ry][z][x][m] === collision[0].object.model) {
+                                if (game.models[ry][z][x][m] === object.model) {
                                     game.models[ry][z][x].splice(m, 1);
                                     break;
                                 }
                             }
 
                             for (var o = 0; o < game.objects[ry][z][x].length; o++) {
-                                if (game.objects[ry][z][x][o] === collision[0].object) {
+                                if (game.objects[ry][z][x][o] === object) {
                                     game.objects[ry][z][x].splice(o, 1);
                                     break;
                                 }

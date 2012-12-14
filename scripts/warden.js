@@ -28,6 +28,7 @@ function Warden(game) {
     this.lastVoice = 0;
     this.timeout = 0;
     this.lastSource = null; //used to cut off a scream if changing to loseScream.mp3 
+    this.notFound = true;
 
     //screams played on random interval greater than 5 seconds while warden is
     // agrivated
@@ -128,13 +129,14 @@ function Warden(game) {
     this.checkPlayer = function (game, input, playerSound, d) {
 
         //sound awareness
-        var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
+        var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0 && playerSound !== false) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
         //light awareness
         var cond = 0;
 
         if (this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.y - (this.mesh.position.y + 15), game.player.mesh.position.z - this.mesh.position.z) === true) {
             //if in line of sight, use urgency
             this.notSeen = false;
+
             cond = game.urgent;
 
         } else {
@@ -146,8 +148,6 @@ function Warden(game) {
                 soundAwareness = soundAwareness / 2;
             }
         }
-
-
 
         switch (cond) {
             case 0: //very far
@@ -282,7 +282,6 @@ function Warden(game) {
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
         if (Y != ry) {
-            this.awareness = 0;
         }
         else {
             this.checkPlayer(game, input, playerSound, d);
@@ -293,21 +292,12 @@ function Warden(game) {
             this.caught = true;
             this.game.end = 1;
         }
-
         if (this.awareness < this.awareThres) {
 
             if (this.currPatrol == null) {
                 this.currPatrol = this.patrols[this.nextPatrol];
                 this.nextPatrol = (++this.nextPatrol == this.patrols.length) ? 0 : this.nextPatrol;
-
-                this.pathfind(this.mesh.position, this.currPatrol);
-                this.pathPt = this.Path.pop();
             }
-
-            //target position
-            var pX = this.currPatrol.x;
-            var pZ = this.currPatrol.z;
-
 
             if (this.there) {
                 //select new current point.  
@@ -315,24 +305,30 @@ function Warden(game) {
                 this.currPatrol = this.patrols[this.nextPatrol];
                 this.nextPatrol = (this.pDir) ? this.nextPatrol + 1 : this.nextPatrol - 1;
                 this.pDir = (this.nextPatrol == 0 || this.nextPatrol == this.patrols.length - 1) ? !this.pDir : this.pDir;
+            }
 
-                //console.log( "New Patrol Point: " + this.currPatrol.x + " " + this.currPatrol.z  );
-                this.pathfind(this.mesh.position, this.currPatrol);
+            //console.log( "New Patrol Point: " + this.currPatrol.x + " " + this.currPatrol.z  );
+            if (this.pathfind(this.mesh.position, this.currPatrol)) {
                 this.pathPt = this.Path.pop();
             }
+            else {
+                this.pathPt = null;
+            }
+            this.currSpd = this.speed;
         } else {
-
             //calculate new path to player if needed
-            if (this.pathfind(this.mesh.position, game.player.mesh.position))
+            if (this.pathfind(this.mesh.position, game.player.mesh.position)) {
                 this.pathPt = this.Path.pop();
-
+            }
+            else {
+                this.pathPt = null;
+            }
             //if awareness too high, warden sprints
             this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
         }
 
         //move towards next path point if available
         if (this.pathPt) {
-
             dX = this.pathPt.x - this.mesh.position.x;
             dZ = this.pathPt.z - this.mesh.position.z;
             d = Math.sqrt(dX * dX + dZ * dZ);
@@ -340,12 +336,19 @@ function Warden(game) {
             this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
             this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
             this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
-
-            if (d < 10) {
+            if (d < 5) {
                 this.pathPt = this.Path.pop();
                 if (!this.pathPt) this.there = true;
             }
         }
+        else {
+            if (this.awareness > this.awareThres) {
+                dX = game.player.mesh.position.x - this.mesh.position.x;
+                dZ = game.player.mesh.position.z - this.mesh.position.z;
+                this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
+            }
+        }
+
         //update light position and direction
         var meshPos = this.mesh.position;
         this.flashlight1.position.set(meshPos.x, meshPos.y + 15, meshPos.z);
@@ -492,61 +495,91 @@ function Warden(game) {
 
 
 
-        if (this.targetPt.x != tarX || this.targetPt.z != tarZ) {
-
-            // if targetPos is different that last target position pathfind
-            var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
-            var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
-            var ry = 0; //Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
 
 
-            var tarY = 0; //Math.floor(Math.floor(targetPos.y) / CELL_SIZE);
+        // if targetPos is different that last target position pathfind
+        var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
+        var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
+        var ry = 0; //Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
 
-            this.targetPt.x = tarX;
-            this.targetPt.z = tarZ;
 
-            this.visitCnt = 1;
-            var iterCount = 1000;
-            var findQueue = new Array();
-            var visitedArr = new Array();
-            var visitedGrid = new Array();
-
-            var markVisit = function (x, y, z) {
-
-                if (visitedGrid[x]) {
-                    visitedGrid[x][z] = true;
-                } else {
-                    visitedGrid[x] = new Array();
-                    visitedGrid[x][z] = true;
+        var tarY;
+        if (game.player.crouch) {
+            tarY = targetPos.y - 2.5;
+        }
+        else {
+            tarY = targetPos.y - 10;
+        }
+        if (tarY > 0.49 * CELL_SIZE && tarY < 0.51 * CELL_SIZE) {
+            if (tarX < 15) {
+                if (tarX == 10) {
+                    tarY = 1;
                 }
-
-            }
-
-            var notFound = true;
-
-            // check center, and prime queue
-            this.processCell(rx, ry, rz, 0, findQueue, visitedArr);
-
-            while (notFound && findQueue.length > 0 && (--iterCount > 0)) {
-                var curr = findQueue.shift();
-
-                if (curr.x == tarX && curr.z == tarZ) {
-                    //found where we need to be, trace back. 
-                    notFound = false;
-
-                    //build up and set path 
-                    this.traceBack(targetPos, visitedArr, curr);
-                    return true;
-
-
-                } else if (!(visitedGrid[curr.x] && visitedGrid[curr.x][curr.z])) {
-                    markVisit(curr.x, 0, curr.z);
-                    this.processCell(curr.x, curr.y, curr.z, curr.id, findQueue, visitedArr);
+                else {
+                    tarY = 0;
                 }
             }
+            else {
+                if (tarZ === 7) {
+                    tarY = 1;
+                }
+                else {
+                    tarY = 0;
+                }
+            }
+        }
+        else {
+            tarY = Math.floor(tarY / CELL_SIZE + 0.5);
+        }
+        if (ry !== tarY) {
+            return false;
+        }
 
+
+
+        this.targetPt.x = tarX;
+        this.targetPt.z = tarZ;
+
+        this.visitCnt = 1;
+        var iterCount = 1000;
+        var findQueue = new Array();
+        var visitedArr = new Array();
+        var visitedGrid = new Array();
+
+        var markVisit = function (x, y, z) {
+
+            if (visitedGrid[x]) {
+                visitedGrid[x][z] = true;
+            } else {
+                visitedGrid[x] = new Array();
+                visitedGrid[x][z] = true;
+            }
 
         }
+
+        this.notFound = true;
+
+        // check center, and prime queue
+        this.processCell(rx, ry, rz, 0, findQueue, visitedArr);
+
+        while (this.notFound && findQueue.length > 0 && (--iterCount > 0)) {
+            var curr = findQueue.shift();
+
+            if (curr.x == tarX && curr.z == tarZ) {
+                //found where we need to be, trace back. 
+                this.notFound = false;
+
+                //build up and set path 
+                this.traceBack(targetPos, visitedArr, curr, meshPos);
+                return true;
+
+
+            } else if (!(visitedGrid[curr.x] && visitedGrid[curr.x][curr.z])) {
+                markVisit(curr.x, 0, curr.z);
+                this.processCell(curr.x, curr.y, curr.z, curr.id, findQueue, visitedArr);
+            }
+        }
+
         //else, leave this.lastPath alone
 
         return false;
@@ -556,7 +589,7 @@ function Warden(game) {
 
     this.processCell = function (x, y, z, prev, queue, visitedArr) {
 
-        var cellArr = this.checkCell( this.game, x, y, z);
+        var cellArr = this.checkCell(this.game, x, y, z);
         var vec3;
 
         if (cellArr['n']) {
@@ -594,114 +627,140 @@ function Warden(game) {
 
     }
 
-    this.traceBack = function (targetPos, visitedArr, end) {
-
-		this.Path = [];
+    this.traceBack = function (targetPos, visitedArr, end, meshPos) {
+        this.Path = [];
         var curr = end;
         var pos = targetPos;
         this.Path.push(pos);
-
-        // when curr.prev = 0, it should be the node 1 away from the current
-        // node, which works, as we are already in the current node. 
-        while (curr.prev) {
-            curr = visitedArr[curr.prev];
-            pos = new THREE.Vector3(curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE);
-            this.Path.push(pos);
-
+        if (curr.prev === 0) {
+            return;
         }
 
-    }
+        var startPos = pos;
+        var endPos = pos;
+        curr = visitedArr[curr.prev];
 
-	
+        pos = new THREE.Vector3(curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE);
+        while (curr.prev) {
+            if (!this.noBlock(startPos.x - pos.x, startPos.z - pos.z)) {
+                this.Path.push(endPos);
+                startPos = endPos;
+            }
+            endPos = pos;
+            curr = visitedArr[curr.prev];
+            pos = new THREE.Vector3(curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE);
+        }
+        if (!this.noBlock(startPos.x - pos.x, startPos.z - pos.z)) {
+            this.Path.push(endPos);
+            startPos = endPos;
+        }
+        endPos = pos;
+        pos = meshPos;
+        if (!this.noBlock(startPos.x - pos.x, startPos.z - pos.z)) {
+            this.Path.push(endPos);
+            startPos = endPos;
+        }
+    }
 
     //return array of booleans for directions that are possible to go from inputted
     //cell
     this.checkCell = function (game, x, y, z) {
-        
         //used to build wall directions and store as an array
-        var setWallArray = function( cell ){
-			
-			var wallArray = new Array(); 
-			var floor = false; 
-			wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = false;
-			
-			for (var o = 0; o < cell.length; o++) {
-				
-				switch( cell[o].type.charAt(0) ){
-				
-						case CELL_TYPES.floor:
-							floor = true;
-							break; 
-					
-						case CELL_TYPES.door:
-								switch( cell[o].type.charAt(1) ){
-									
-									case 's':
-									case '1':
-										wallArray['s'] = true;
-										break;
-									
-									case 'n':
-									case '3':
-										wallArray['n'] = true;
-										break;	
-									
-									case 'w':	
-									case '2':
-									case 'z':
-										wallArray['w'] = true;
-										break;
-									
-									case 'e':
-									case 'q':
-									case '4':
-										wallArray['e'] = true;
-										break;
-								}  
-								
-							break; 
-						case CELL_TYPES.wall:
-							wallArray[cell[o].type.charAt(1)] = true;
-							break;
-					} 
-			}
-			
-			if( floor ){
-				cell.walls = wallArray;
-			} else {
-				wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = true;
-				cell.walls = wallArray; 
-			}
-			
-			 
-		}
-        
-        
-        
-      
-        var cell = game.level.grid[y][z][x]; 
+        var setWallArray = function (cell) {
+            var wallArray = new Array();
+            var floor = false;
+            wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = false;
+
+            for (var o = 0; o < cell.length; o++) {
+
+                switch (cell[o].type.charAt(0)) {
+
+
+                    case CELL_TYPES.floor:
+                        floor = true;
+                        break;
+
+                    case CELL_TYPES.door:
+                        switch (cell[o].type.charAt(1)) {
+
+                            case 's':
+                            case '2':
+                            case 'z':
+
+                                if (game.level.state[cell[o].y][cell[o].z][cell[o].x] === 0) {
+                                    wallArray['s'] = true;
+                                }
+                                break;
+
+                            case 'n':
+                            case '4':
+                                if (game.level.state[cell[o].y][cell[o].z][cell[o].x] === 0) {
+                                    wallArray['n'] = true;
+                                }
+                                break;
+
+                            case 'w':
+                            case '3':
+                                if (game.level.state[cell[o].y][cell[o].z][cell[o].x] === 0) {
+                                    wallArray['w'] = true;
+                                }
+                                break;
+
+                            case 'e':
+                            case '1':
+                                if (game.level.state[cell[o].y][cell[o].z][cell[o].x] === 0) {
+                                    wallArray['e'] = true;
+                                }
+                                break;
+                            case 'q':
+                                if (game.level.state[cell[o].y][cell[o].z][cell[o].x] === 0) {
+                                    wallArray['e'] = true;
+                                }
+                                break;
+                        }
+
+                        break;
+                    case CELL_TYPES.wall:
+                        wallArray[cell[o].type.charAt(1)] = true;
+                        break;
+                }
+            }
+
+            if (floor) {
+                cell.walls = wallArray;
+            } else {
+                wallArray['n'] = wallArray['s'] = wallArray['w'] = wallArray['e'] = true;
+                cell.walls = wallArray;
+            }
+        }
+
+
+
+        var cell = game.level.grid[y][z][x];
         var ret = new Array();
         ret['n'] = ret['s'] = ret['w'] = ret['e'] = true;
-        
-        if( !cell.walls ) setWallArray( cell ); 
-        
-        var nextCellCheck = function( x, y, z, dir){
-        	
-        	var temp = game.level.grid[y][z][x]; 
-        	
-        	if( !temp.walls ) setWallArray( temp ); 
-        	
-        	return temp.walls[dir]; 
-        	
+
+        setWallArray(cell);
+
+
+        var nextCellCheck = function (x, y, z, dir) {
+
+            var temp = game.level.grid[y][z][x];
+
+            setWallArray(temp);
+
+
+            return temp.walls[dir];
+
         }
-                      
-        ret['n'] = !( cell.walls['n'] || nextCellCheck( x, y, z - 1, 's' ) );
-        ret['s'] = !( cell.walls['s'] || nextCellCheck( x, y, z + 1, 'n' ) );
-        ret['w'] = !( cell.walls['w'] || nextCellCheck( x - 1, y, z, 'e' ) );
-        ret['e'] = !( cell.walls['e'] || nextCellCheck( x + 1, y, z, 'w' ) );
-       
+
+        ret['n'] = !(cell.walls['n'] || nextCellCheck(x, y, z - 1, 's'));
+        ret['s'] = !(cell.walls['s'] || nextCellCheck(x, y, z + 1, 'n'));
+        ret['w'] = !(cell.walls['w'] || nextCellCheck(x - 1, y, z, 'e'));
+        ret['e'] = !(cell.walls['e'] || nextCellCheck(x + 1, y, z, 'w'));
+
         return ret;
-       
+
     }
 
     this.inLineOfSight = function (dX, dY, dZ) {
@@ -712,6 +771,26 @@ function Warden(game) {
                 directionVector.clone().normalize());
         var collisionResults = ray.intersectObjects(this.game.scene.children);
         if (collisionResults.length > 0) {
+            var selected = collisionResults[0].object;
+            if (selected.name === 'player') {
+                //player is in line of sight
+                return true;
+            }
+        }
+        return false;
+    }
+
+    this.noBlock = function (dX, dZ) {
+        var directionVector = new THREE.Vector3(dX, 0, dZ);
+        var begin = new THREE.Vector3();
+        begin.add(this.mesh.position, new THREE.Vector3(0, 15, 0));
+        var ray = new THREE.Ray(begin,
+                directionVector.clone().normalize(), 0, Math.sqrt(dX * dX + dZ * dZ));
+        var collisionResults = ray.intersectObjects(this.game.scene.children);
+        if (collisionResults.length === 0) {
+            return true;
+        }
+        else {
             var selected = collisionResults[0].object;
             if (selected.name === 'player') {
                 //player is in line of sight
