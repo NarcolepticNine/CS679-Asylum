@@ -85,13 +85,15 @@ function Player() {
     this.soundLoaded = function (distance, movement, speed) {
 
         var start = new Date().getTime();
-
+		var ry = this.mesh.position.y;
+        
+        ry = ( ry > CELL_SIZE ) ? 1 : 0 ;
+        
         //heartbeat
         //base rate of .5 seconds, and can go as high as 5 seconds
         var timeout = 500 + (distance * 5);
-        timeout = (timeout > 5000) ? 5000 : timeout;
-
-        if (start - this.lastbeat > timeout) {
+        timeout = ( ry == 1 || timeout > 5000) ? 5000 : timeout;
+		if (start - this.lastbeat > timeout) {
             this.soundManager.playSound(this.heartbeat, 0);
             this.lastbeat = start;
         }
