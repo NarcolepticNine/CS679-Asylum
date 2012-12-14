@@ -194,6 +194,7 @@ function setupInput(data, game) {
 
     document.addEventListener("mousedown", function (event) {
         if (game.waitToEvaluate > 5) {
+            game.first = false;
             if (event.pageX > 0.26 * canvas.width && event.pageX < 0.73 * canvas.width && event.pageY > 0.95 * canvas.height) {
                 if (game.difficulty < 3) {
                     game.initialized = false;
