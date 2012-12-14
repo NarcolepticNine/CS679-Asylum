@@ -279,6 +279,7 @@ function Warden(game) {
         }
         var dX = playPos.x - X;
         var dZ = playPos.z - Z;
+        var dY = playPos.y - (Y + 15);
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
         if (Y != ry) {
@@ -294,7 +295,8 @@ function Warden(game) {
             this.game.end = 1;
         }
 
-        if (this.awareness < this.awareThres) {
+        if (this.awareness < this.awareThres || this.inLineOfSight(dX, dY, dZ)
+                === false){
 
             if (this.currPatrol == null) {
                 this.currPatrol = this.patrols[this.nextPatrol];
