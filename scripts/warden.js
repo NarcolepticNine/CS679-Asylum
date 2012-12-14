@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 function Warden(game) {
     //Warden Definition
     this.game = null;
@@ -291,7 +290,6 @@ function Warden(game) {
             this.caught = true;
             this.game.end = 1;
         }
-        console.log(this.awareness+':'+game.urgent);
         if (this.awareness < this.awareThres) {
 
             if (this.currPatrol == null) {
@@ -493,7 +491,7 @@ function Warden(game) {
  	 */
     this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
-       
+
 
         var tarX = Math.floor(Math.floor(targetPos.x) / CELL_SIZE + 1 / 2);
         var tarZ = Math.floor(Math.floor(targetPos.z) / CELL_SIZE + 1 / 2);

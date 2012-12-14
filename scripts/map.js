@@ -258,7 +258,7 @@ Map[1].push(
 "..fffff\n" +
 "..fffff\n" +
 "..fffff\n" +
-"..f97+4597ffff\n" +
+"..fffff\n" +
 ".......");
 
 Map[1].push(
