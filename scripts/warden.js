@@ -61,9 +61,9 @@ function Warden(game) {
     this.Path = new Array(); //will be filled with path points to current target
     this.pathPt = null;
     /*Awareness determines how hard it is to hide from the Warden.  
-	 * If the player is heard, or spotted within a certain amount of time,
-	 * awareness goes up.  If the player is able to hide, awareness will drop.
-	 */
+    * If the player is heard, or spotted within a certain amount of time,
+    * awareness goes up.  If the player is able to hide, awareness will drop.
+    */
     this.awareness = 0;
 
     //Game Variables
@@ -118,7 +118,7 @@ function Warden(game) {
 
         console.log("Patrol Points: ");
 
-        for (var i = 0; i < this.patrols.length ; i++) {
+        for (var i = 0; i < this.patrols.length; i++) {
             console.log(this.patrols[i].x + " " + this.patrols[i].z);
         }
 
@@ -129,6 +129,7 @@ function Warden(game) {
     this.checkPlayer = function (game, input, playerSound, d) {
 
         //sound awareness
+
         var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0 && playerSound !== false) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
         //light awareness
         var cond = 0;
@@ -256,7 +257,7 @@ function Warden(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        var ty = ry;
+
         if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
             if (rx < 15) {
                 if (rx == 10) {
@@ -282,12 +283,9 @@ function Warden(game) {
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-        if (ty > 0.1) {
-            game.urgent = 0;
-        }
-        else {
-            this.checkPlayer(game, input, playerSound, d);
-        }
+
+        this.checkPlayer(game, input, playerSound, d);
+
 
         if (game.urgent === 4) {
             this.playFinalScream();
@@ -489,10 +487,10 @@ function Warden(game) {
     //  code to play the sounds.   
     this.playSounds = this.soundLoad;
     /*
-     * return array of 2-d points ( initially ) that show a path from current
-     * point to the end point 
- 	 * 
- 	 */
+    * return array of 2-d points ( initially ) that show a path from current
+    * point to the end point 
+    * 
+    */
     this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
 
