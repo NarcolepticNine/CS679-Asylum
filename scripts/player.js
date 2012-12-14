@@ -174,9 +174,6 @@ function Player() {
             }
         }
 
-        this.sound = this.sound * this.currSpd;
-        this.sound = this.sound * 100;
-
         this.updateViewRay(input);
         this.updateLight(input.trigger.light, input.viewRay.direction);
     }
