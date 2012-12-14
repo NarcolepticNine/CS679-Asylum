@@ -129,7 +129,9 @@ function Warden(game) {
     this.checkPlayer = function (game, input, playerSound, d) {
 
         //sound awareness
-        var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0 && playerSound !== false) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
+        var ry = this.mesh.position.y;
+        ry = ( ry > CELL_SIZE ) ? 1 : 0 ;
+        var soundAwareness = ( ry == 0 && d < 5 * CELL_SIZE && game.player.crouch === 0 && playerSound !== false) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
         //light awareness
         var cond = 0;
 
