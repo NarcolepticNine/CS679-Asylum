@@ -118,7 +118,7 @@ function Warden(game) {
 
         console.log("Patrol Points: ");
 
-        for (var i = 0; i < this.patrols.length ; i++) {
+        for (var i = 0; i < this.patrols.length; i++) {
             console.log(this.patrols[i].x + " " + this.patrols[i].z);
         }
 
@@ -129,7 +129,7 @@ function Warden(game) {
     this.checkPlayer = function (game, input, playerSound, d) {
 
         //sound awareness
-        var ry = this.mesh.position.y;
+        var ry = game.player.mesh.position.y;
         ry = ( ry > CELL_SIZE ) ? 1 : 0 ;
         var soundAwareness = ( ry == 0 && d < 5 * CELL_SIZE && game.player.crouch === 0 && playerSound !== false) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
         //light awareness
@@ -238,6 +238,7 @@ function Warden(game) {
         }
 
         this.awareness = (this.awareness < 0) ? 0 : ((this.awareness > 100) ? 100 : this.awareness);
+        console.log( this.awareness ); 
     }
 
     this.updateLoaded = function (game, input, playPos, playerSound) {
@@ -258,7 +259,7 @@ function Warden(game) {
         else {
             ry = game.player.mesh.position.y - 10;
         }
-        var ty = ry;
+
         if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
             if (rx < 15) {
                 if (rx == 10) {
@@ -284,12 +285,9 @@ function Warden(game) {
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-        if (ty > 0.1) {
-            game.urgent = 0;
-        }
-        else {
-            this.checkPlayer(game, input, playerSound, d);
-        }
+
+        this.checkPlayer(game, input, playerSound, d);
+
 
         if (game.urgent === 4) {
             this.playFinalScream();
