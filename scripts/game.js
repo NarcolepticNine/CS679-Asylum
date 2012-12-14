@@ -384,12 +384,15 @@ function starting(game) {
             Ending.beginPath();
             Ending.fillStyle = 'white';
             Ending.font = '20px Courier';
+            Ending.textAlign = 'center';
+            Ending.textBaseline = 'middle';
+
             var precentage = 0;
             if (game.scene !== null) {
                 precentage += game.scene.children.length;
             }
             precentage += game.progress;
-            Ending.fillText(Math.floor(precentage * 100 / 1779) + '%', game.endingInfo.width * 0.41, game.endingInfo.height * 0.33);
+            Ending.fillText(Math.floor(precentage * 100 / 1779) + '%', game.endingInfo.width * 0.43, game.endingInfo.height * 0.32);
 
             Ending.beginPath();
             Ending.fillStyle = 'orange';
