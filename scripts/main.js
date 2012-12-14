@@ -64,14 +64,19 @@
     // Enter main loop
     (function mainLoop() {
         setTimeout(function () {
-            if (this.debug) stats.begin();
+            if (debug) stats.begin();
+
             if (game.update(inputData)) {
                 game.render(inputData);
-                if (this.debug) {
+
+
+                if (debug) {
                     updateDebug(info, game);
                     stats.end()
                 };
+
             }
+
             requestFrame(mainLoop);
         }, 1000 / 35);
 
@@ -109,12 +114,26 @@ function updateDebug(info, game) {
             info.innerHTML += "Warden x: " + warden.mesh.position.x.toFixed(2);
             info.innerHTML += " y: " + warden.mesh.position.y.toFixed(2);
             info.innerHTML += " z: " + warden.mesh.position.z.toFixed(2);
+            info.innerHTML += " vX: " + warden.vX.toFixed(2) + " vZ: " + warden.vZ.toFixed(2) + "<br />";
+
+            info.innerHTML += "Path Length: " + warden.Path.length + "<br />";
+            if (warden.pathPt) {
+                info.innerHTML += " Next path pt x: " + warden.pathPt.x;
+                info.innerHTML += " y: " + warden.pathPt.y;
+                info.innerHTML += " z: " + warden.pathPt.z + "<br />";
+            }
+
+            if (warden.currPatrol) {
+                info.innerHTML += " Current Patrol X: " + warden.currPatrol.x;
+                info.innerHTML += " Y: " + warden.currPatrol.y;
+                info.innerHTML += " Z: " + warden.currPatrol.z + "<br />";
+            }
         }
-        info.innerHTML += " vX: " + warden.vX.toFixed(2) + " vZ: " + warden.vZ.toFixed(2) + "<br />";
+
 
         info.innerHTML += " currSpd: " + warden.currSpd;
         info.innerHTML += " Awareness: " + warden.awareness.toFixed(2);
-        info.innerHTML += " Next Pt: " + warden.nextPt + "<br / >";
+        info.innerHTML += " Next Patrol: " + warden.nextPatrol + "<br / >";
 
     }
 
@@ -155,7 +174,7 @@ function setupInput(data, game) {
             case 67: data.trigger.crouch = 1; break;
             case 70: data.trigger.light = 1; break;
             case 16: data.trigger.run = 1; break;
-            //case 32: data.trigger.Jump = 1; break; 
+                //case 32: data.trigger.Jump = 1; break;
         }
     }, false);
 
@@ -169,7 +188,7 @@ function setupInput(data, game) {
             case 67: data.trigger.crouch = 0; break;
             case 70: data.trigger.light = 0; break;
             case 16: data.trigger.run = 0; break;
-            //case 32: data.trigger.Jump = 0; break; 
+                //case 32: data.trigger.Jump = 0; break;
         }
     }, false);
 
@@ -203,7 +222,7 @@ function setupInput(data, game) {
             }
         }
         else {
-            if (!document.pointerLockEnabled && game.waitToEvaluate <= 5) {
+            if (!canvas.pointerLockEnabled) {
                 canvas.requestPointerLock();
             }
             data.click = 1;

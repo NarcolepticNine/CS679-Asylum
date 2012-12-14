@@ -54,7 +54,7 @@ function Game(renderer, canvas) {
     this.maxAwareness = 0;
     this.start = 0;
     this.progress = 0;
-    this.difficulty = 3;
+    this.difficulty = 1;
     this.otherFloor = false;
 
     // Create and position the map canvas, then add it to the document
@@ -1474,4 +1474,3 @@ function handleCollisions(game, input) {
         game.oldplayer.copy(game.player.mesh.position);
     }
 }
-

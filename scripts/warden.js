@@ -50,15 +50,19 @@ function Warden(game) {
     this.vX = 0;
     this.vZ = 0;
     this.pDir = true; //direction of patrol
-    this.nextPt = 0;
-    this.pt = null;
+    this.nextPatrol = 0;
+    this.currPatrol = null;
     this.notSeen = true;
     this.patrols = new Array();
 
+    this.there = false;
+    this.targetPt = new THREE.Vector3();
+    this.Path = new Array(); //will be filled with path points to current target
+    this.pathPt = null;
     /*Awareness determines how hard it is to hide from the Warden.  
-    * If the player is heard, or spotted within a certain amount of time,
-    * awareness goes up.  If the player is able to hide, awareness will drop.
-    */
+	 * If the player is heard, or spotted within a certain amount of time,
+	 * awareness goes up.  If the player is able to hide, awareness will drop.
+	 */
     this.awareness = 0;
 
     //Game Variables
@@ -112,7 +116,8 @@ function Warden(game) {
         this.patrols = patrolArr;
 
         console.log("Patrol Points: ");
-        for (var i = 0; i < this.patrols.length; i++) {
+
+        for (var i = 0; i < this.patrols.length ; i++) {
             console.log(this.patrols[i].x + " " + this.patrols[i].z);
         }
 
@@ -125,7 +130,6 @@ function Warden(game) {
         //sound awareness
         var soundAwareness = (d < 5 * CELL_SIZE && game.player.crouch === 0) ? (input.run ? 5 * (CELL_SIZE / d) : 2.5 * (CELL_SIZE / d)) : -1;
         //light awareness
-
         var cond = 0;
 
         if (this.inLineOfSight(game.player.mesh.position.x - this.mesh.position.x, game.player.mesh.position.y - (this.mesh.position.y + 15), game.player.mesh.position.z - this.mesh.position.z) === true) {
@@ -192,6 +196,7 @@ function Warden(game) {
                     if (soundAwareness === -1) {
                         game.warden.awareness -= 1;
                     }
+
                     else {
                         if (game.difficulty === 3) {
                             game.warden.awareness = 100;
@@ -289,70 +294,79 @@ function Warden(game) {
             this.game.end = 1;
         }
 
-        //        console.log('BB:' + this.awareness);
-        //        console.log('CC:' + this.currSpd);
-        //        console.log('DD:' + this.notSeen);
         if (this.awareness < this.awareThres) {
 
-            if (this.pt == null) {
-                this.pt = this.patrols[this.nextPt];
-                this.nextPt = (++this.nextPt == this.patrols.length) ? 0 : this.nextPt;
+            if (this.currPatrol == null) {
+                this.currPatrol = this.patrols[this.nextPatrol];
+                this.nextPatrol = (++this.nextPatrol == this.patrols.length) ? 0 : this.nextPatrol;
+
+                this.pathfind(this.mesh.position, this.currPatrol);
+                this.pathPt = this.Path.pop();
             }
 
             //target position
-            var pX = this.pt.x;
-            var pZ = this.pt.z;
+            var pX = this.currPatrol.x;
+            var pZ = this.currPatrol.z;
 
-            dX = pX - X;
-            dZ = pZ - Z;
-            d = Math.sqrt(dX * dX + dZ * dZ);
 
-            if (d < 10) {
+            if (this.there) {
                 //select new current point.  
-                this.pt = this.patrols[this.nextPt];
-                this.nextPt = (this.pDir) ? this.nextPt + 1 : this.nextPt - 1;
-                this.pDir = (this.nextPt == 0 || this.nextPt == this.patrols.length - 1) ? !this.pDir : this.pDir;
+                this.there = false;
+                this.currPatrol = this.patrols[this.nextPatrol];
+                this.nextPatrol = (this.pDir) ? this.nextPatrol + 1 : this.nextPatrol - 1;
+                this.pDir = (this.nextPatrol == 0 || this.nextPatrol == this.patrols.length - 1) ? !this.pDir : this.pDir;
 
-            } else {
-                //keep going towards current point
-                this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
-                this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
-                this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
-
+                //console.log( "New Patrol Point: " + this.currPatrol.x + " " + this.currPatrol.z  );
+                this.pathfind(this.mesh.position, this.currPatrol);
+                this.pathPt = this.Path.pop();
             }
         } else {
-            dX = game.player.mesh.position.x - this.mesh.position.x;
-            dZ = game.player.mesh.position.z - this.mesh.position.z;
-            d = Math.sqrt(dX * dX + dZ * dZ);
+
+            //calculate new path to player if needed
+            if (this.pathfind(this.mesh.position, game.player.mesh.position))
+                this.pathPt = this.Path.pop();
 
             //if awareness too high, warden sprints
-
             this.currSpd = (this.awareness > this.angerThres) ? (1 + 0.02 * this.awareness) * this.speed : this.speed;
+        }
+
+        //move towards next path point if available
+        if (this.pathPt) {
+
+            dX = this.pathPt.x - this.mesh.position.x;
+            dZ = this.pathPt.z - this.mesh.position.z;
+            d = Math.sqrt(dX * dX + dZ * dZ);
 
             this.mesh.position.x += (this.vX = (this.currSpd * (dX / d)));
             this.mesh.position.z += (this.vZ = (this.currSpd * (dZ / d)));
             this.mesh.rotation.y = -Math.atan2(dZ, dX) + Math.PI / 2;
-        }
 
+            if (d < 10) {
+                this.pathPt = this.Path.pop();
+                if (!this.pathPt) this.there = true;
+            }
+        }
         //update light position and direction
         var meshPos = this.mesh.position;
         this.flashlight1.position.set(meshPos.x, meshPos.y + 15, meshPos.z);
         this.flashlight1.target.position.set(
-                meshPos.x + this.vX / this.currSpd * 5,
-                meshPos.y + 15 - 8,
-                meshPos.z + this.vZ / this.currSpd * 5
-                );
+
+               meshPos.x + this.vX / this.currSpd * 5,
+               meshPos.y + 15 - 8,
+               meshPos.z + this.vZ / this.currSpd * 5
+           );
         this.flashlight2.position.set(meshPos.x, meshPos.y + 15, meshPos.z);
         this.flashlight2.target.position.set(
-                meshPos.x + this.vX / this.currSpd * 5,
-                meshPos.y + 15 - 3.6,
-                meshPos.z + this.vZ / this.currSpd * 5
-                );
+               meshPos.x + this.vX / this.currSpd * 5,
+               meshPos.y + 15 - 3.6,
+               meshPos.z + this.vZ / this.currSpd * 5
+           );
         this.flashlight3.position.set(
                 meshPos.x + this.vX / this.currSpd * 5,
                 meshPos.y + 20,
                 meshPos.z + this.vZ / this.currSpd * 5
-                );
+            );
+
         this.playSounds();
 
 
@@ -465,96 +479,180 @@ function Warden(game) {
     //  soundLoad has done its thing, it switches to soundLoaded, which has the
     //  code to play the sounds.   
     this.playSounds = this.soundLoad;
-
-    /* meshPos is a short hand for the warden's mesh
-    * targetPos is either the player's position, or a patrol position.
-    */
+    /*
+     * return array of 2-d points ( initially ) that show a path from current
+     * point to the end point 
+ 	 * 
+ 	 */
+    this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
-        var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
-        var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
-        var ry = Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
+
+        var tarX = Math.floor(Math.floor(targetPos.x) / CELL_SIZE + 1 / 2);
+        var tarZ = Math.floor(Math.floor(targetPos.z) / CELL_SIZE + 1 / 2);
 
 
-        var levelGrid = this.game.level.grid[ry];
 
-        var direction = new Array();
-        for (var i = 0; i < 3; i++) direction[i] = new Array();
-        var center = null;
-        var centerWalls = new Array();
+        if (this.targetPt.x != tarX || this.targetPt.z != tarZ) {
 
-        for (var i = 0; i < 3; i++) {
+            // if targetPos is different that last target position pathfind
+            var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
+            var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
+            var ry = 0; //Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
 
-            for (var j = 0; j < 3; j++) {
-                var cell = levelGrid[rz + (j - 1)][rx + (i - 1)];
-                if (i == 1 && j == 1) {
-                    center = cell;
+
+            var tarY = 0; //Math.floor(Math.floor(targetPos.y) / CELL_SIZE);
+
+            this.targetPt.x = tarX;
+            this.targetPt.z = tarZ;
+
+            this.visitCnt = 1;
+            var iterCount = 1000;
+            var findQueue = new Array();
+            var visitedArr = new Array();
+            var visitedGrid = new Array();
+
+            var markVisit = function (x, y, z) {
+
+                if (visitedGrid[x]) {
+                    visitedGrid[x][z] = true;
                 } else {
+                    visitedGrid[x] = new Array();
+                    visitedGrid[x][z] = true;
+                }
 
-                    for (var o = 0; o < cell.length; o++) {
+            }
 
-                        if (cell[o].type.charAt(0) === CELL_TYPES.wall) {
+            var notFound = true;
 
-                            switch (cell[o].type.charAt(1)) {
+            // check center, and prime queue
+            this.processCell(rx, ry, rz, 0, findQueue, visitedArr);
 
-                                //for any direction, set the variable to false for  
-                                // the outer cells 
-                                case 'n':
-                                case 's':
-                                case 'e':
-                                case 'w':
-                                    direction[i][j] = true;
-                                    break;
+            while (notFound && findQueue.length > 0 && (--iterCount > 0)) {
+                var curr = findQueue.shift();
 
-                            }
-                        }
-                    }
+                if (curr.x == tarX && curr.z == tarZ) {
+                    //found where we need to be, trace back. 
+                    notFound = false;
+
+                    //build up and set path 
+                    this.traceBack(targetPos, visitedArr, curr);
+                    return true;
+
+
+                } else if (!(visitedGrid[curr.x] && visitedGrid[curr.x][curr.z])) {
+                    markVisit(curr.x, 0, curr.z);
+                    this.processCell(curr.x, curr.y, curr.z, curr.id, findQueue, visitedArr);
                 }
             }
+
+
+        }
+        //else, leave this.lastPath alone
+
+        return false;
+
+    }
+
+
+    this.processCell = function (x, y, z, prev, queue, visitedArr) {
+
+        var cellArr = this.checkCell(this.game.level.grid[y][z][x]);
+        var vec3;
+
+        if (cellArr['n']) {
+            vec3 = new THREE.Vector3(x, y, z - 1);
+            vec3.id = this.visitCnt++;
+            vec3.prev = prev;
+            visitedArr[vec3.id] = vec3;
+            queue.push(vec3);
+
+        }
+        if (cellArr['s']) {
+            vec3 = new THREE.Vector3(x, y, z + 1);
+            vec3.id = this.visitCnt++;
+            vec3.prev = prev;
+            visitedArr[vec3.id] = vec3;
+            queue.push(vec3);
+
+        }
+        if (cellArr['w']) {
+            vec3 = new THREE.Vector3(x - 1, y, z);
+            vec3.id = this.visitCnt++;
+            vec3.prev = prev;
+            visitedArr[vec3.id] = vec3;
+            queue.push(vec3);
+
+        }
+        if (cellArr['e']) {
+            vec3 = new THREE.Vector3(x + 1, y, z)
+            vec3.id = this.visitCnt++;
+            vec3.prev = prev;
+            visitedArr[vec3.id] = vec3;
+            queue.push(vec3);
+
         }
 
-        //check center
-        for (var o = 0; o < center.length; o++) {
+    }
 
-            if (center[o].type.charAt(0) === CELL_TYPES.wall) {
+    this.traceBack = function (targetPos, visitedArr, end) {
 
-                switch (center[o].type.charAt(1)) {
+
+
+        this.Path = [];
+        var curr = end;
+        var pos = targetPos;
+        this.Path.push(pos);
+
+        // when curr.prev = 0, it should be the node 1 away from the current
+        // node, which works, as we are already in the current node. 
+        while (curr.prev) {
+            curr = visitedArr[curr.prev];
+            pos = new THREE.Vector3(curr.x * CELL_SIZE, 0, curr.z * CELL_SIZE);
+            this.Path.push(pos);
+
+        }
+
+    }
+
+    //return array of booleans for directions that are possible to go from inputted
+    //cell
+    this.checkCell = function (cell) {
+        //TODO store walls data as a part of the cell
+        // ie: cell.walls = ret; 
+        //TODO consider doors
+        var ret = new Array();
+        ret['n'] = ret['s'] = ret['w'] = ret['e'] = true;
+
+        var evenPossible = false;
+
+        for (var o = 0; o < cell.length; o++) {
+
+            if (cell[o].type.charAt(0) === CELL_TYPES.floor) {
+                evenPossible = true;
+            }
+
+            if (cell[o].type.charAt(0) === CELL_TYPES.wall) {
+
+                switch (cell[o].type.charAt(1)) {
 
                     case 'n':
                     case 's':
                     case 'e':
                     case 'w':
-                        centerWalls[center[o].type.charAt(1)] = true;
+                        ret[cell[o].type.charAt(1)] = false;
                         break;
 
                 }
             }
         }
 
-        //determine which direction based on target direction. 
-        var ret = new THREE.Vector2();
-        ret.x = meshPos.x, ret.z = meshPos.z;
-        /*
-        if( targetPos.x > meshPos.x ) {
-
-
-        ret.x = ( rx + 1 ) * CELL_SIZE ; 
-
-
-        } else if ( targetPos.x < meshPos.x ){
-
-
-        ret.x = ( rx - 1 ) * CELL_SIZE ;
-
-
-        } else{
-
-        ret.x = targetPos.x;
-
+        if (evenPossible) {
+            return ret;
+        } else {
+            ret['n'] = ret['s'] = ret['w'] = ret['e'] = false;
+            return ret;
         }
-        */
 
-        //return ret;
-        return targetPos;
     }
 
     this.inLineOfSight = function (dX, dY, dZ) {

@@ -6,7 +6,7 @@ function Skybox(game) {
                 './images/skybox/px.png', './images/skybox/nx.png',
                 './images/skybox/py.png', './images/skybox/ny.png',
                 './images/skybox/pz.png', './images/skybox/nz.png'
-        ]);
+    ]);
     var shader = THREE.ShaderUtils.lib["cube"];
     shader.uniforms["tCube"].value = game.skybox;
 
