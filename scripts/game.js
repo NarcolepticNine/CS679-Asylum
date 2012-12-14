@@ -1290,7 +1290,7 @@ function updateDistance(game) {
             ry = game.player.mesh.position.y - 10;
         }
         var ty = false;
-        if (ry > 0) {
+        if (ry > 0.2) {
             ty = true;
         }
         if (ry > 0.49 * CELL_SIZE && ry < 0.51 * CELL_SIZE) {
@@ -1314,7 +1314,7 @@ function updateDistance(game) {
         else {
             ry = Math.floor(ry / CELL_SIZE + 0.5);
         }
-        var my = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
+        var my = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE)
         if (ty) {
             game.urgent = 0;
         }
