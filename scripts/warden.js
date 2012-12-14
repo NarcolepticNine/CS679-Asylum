@@ -281,17 +281,16 @@ function Warden(game) {
         var dZ = playPos.z - Z;
         var d = Math.sqrt((dX * dX) + (dZ * dZ));
 
-        if (Y != ry) {
-        }
-        else {
-            this.checkPlayer(game, input, playerSound, d);
-        }
+       
+        this.checkPlayer(game, input, playerSound, d);
+        
 
         if (game.urgent === 4) {
             this.playFinalScream();
             this.caught = true;
             this.game.end = 1;
         }
+        console.log(this.awareness+':'+game.urgent);
         if (this.awareness < this.awareThres) {
 
             if (this.currPatrol == null) {
@@ -309,7 +308,9 @@ function Warden(game) {
 
             //console.log( "New Patrol Point: " + this.currPatrol.x + " " + this.currPatrol.z  );
             if (this.pathfind(this.mesh.position, this.currPatrol)) {
-                this.pathPt = this.Path.pop();
+                if (game.oldPathResult === 0) {
+                    this.pathPt = this.Path.pop();
+                }
             }
             else {
                 this.pathPt = null;
@@ -318,7 +319,9 @@ function Warden(game) {
         } else {
             //calculate new path to player if needed
             if (this.pathfind(this.mesh.position, game.player.mesh.position)) {
-                this.pathPt = this.Path.pop();
+                if (game.oldPathResult === 0) {
+                    this.pathPt = this.Path.pop();
+                }
             }
             else {
                 this.pathPt = null;
@@ -489,101 +492,113 @@ function Warden(game) {
  	 */
     this.visitCnt;
     this.pathfind = function (meshPos, targetPos) {
+       
 
         var tarX = Math.floor(Math.floor(targetPos.x) / CELL_SIZE + 1 / 2);
         var tarZ = Math.floor(Math.floor(targetPos.z) / CELL_SIZE + 1 / 2);
+        if (this.targetPt.x != tarX || this.targetPt.z != tarZ || game.doorChanged === 1) {
+
+            this.targetPt.x = tarX;
+            this.targetPt.z = tarZ;
+            game.doorChanged = 0;
+
+            // if targetPos is different that last target position pathfind
+            var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
+            var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
+            var ry = 0; //Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
 
 
-
-
-
-        // if targetPos is different that last target position pathfind
-        var rx = Math.floor(Math.floor(meshPos.x) / CELL_SIZE + 1 / 2);
-        var rz = Math.floor(Math.floor(meshPos.z) / CELL_SIZE + 1 / 2);
-        var ry = 0; //Math.floor(Math.floor(meshPos.y) / CELL_SIZE);
-
-
-        var tarY;
-        if (game.player.crouch) {
-            tarY = targetPos.y - 2.5;
-        }
-        else {
-            tarY = targetPos.y - 10;
-        }
-        if (tarY > 0.49 * CELL_SIZE && tarY < 0.51 * CELL_SIZE) {
-            if (tarX < 15) {
-                if (tarX == 10) {
-                    tarY = 1;
+            var tarY;
+            if (game.player.crouch) {
+                tarY = targetPos.y - 2.5;
+            }
+            else {
+                tarY = targetPos.y - 10;
+            }
+            if (tarY > 0.49 * CELL_SIZE && tarY < 0.51 * CELL_SIZE) {
+                if (tarX < 15) {
+                    if (tarX == 10) {
+                        tarY = 1;
+                    }
+                    else {
+                        tarY = 0;
+                    }
                 }
                 else {
-                    tarY = 0;
+                    if (tarZ === 7) {
+                        tarY = 1;
+                    }
+                    else {
+                        tarY = 0;
+                    }
                 }
             }
             else {
-                if (tarZ === 7) {
-                    tarY = 1;
+                tarY = Math.floor(tarY / CELL_SIZE + 0.5);
+            }
+            if (ry !== tarY) {
+                game.oldPathResult = -1;
+                return false;
+            }
+
+
+
+
+
+            this.visitCnt = 1;
+            var iterCount = 1000;
+            var findQueue = new Array();
+            var visitedArr = new Array();
+            var visitedGrid = new Array();
+
+            var markVisit = function (x, y, z) {
+
+                if (visitedGrid[x]) {
+                    visitedGrid[x][z] = true;
+                } else {
+                    visitedGrid[x] = new Array();
+                    visitedGrid[x][z] = true;
                 }
-                else {
-                    tarY = 0;
+
+            }
+
+            this.notFound = true;
+            // check center, and prime queue
+            this.processCell(rx, ry, rz, 0, findQueue, visitedArr);
+
+            while (this.notFound && findQueue.length > 0 && (--iterCount > 0)) {
+                var curr = findQueue.shift();
+
+                if (curr.x == tarX && curr.z == tarZ) {
+                    //found where we need to be, trace back. 
+                    this.notFound = false;
+
+                    //build up and set path 
+                    this.traceBack(targetPos, visitedArr, curr, meshPos);
+                    game.oldPathResult = 0;
+                    return true;
+
+
+                } else if (!(visitedGrid[curr.x] && visitedGrid[curr.x][curr.z])) {
+                    markVisit(curr.x, 0, curr.z);
+                    this.processCell(curr.x, curr.y, curr.z, curr.id, findQueue, visitedArr);
                 }
             }
+
+            //else, leave this.lastPath alone
+            game.oldPathResult = -1;
+            return false;
+
         }
         else {
-            tarY = Math.floor(tarY / CELL_SIZE + 0.5);
-        }
-        if (ry !== tarY) {
-            return false;
-        }
-
-
-
-        this.targetPt.x = tarX;
-        this.targetPt.z = tarZ;
-
-        this.visitCnt = 1;
-        var iterCount = 1000;
-        var findQueue = new Array();
-        var visitedArr = new Array();
-        var visitedGrid = new Array();
-
-        var markVisit = function (x, y, z) {
-
-            if (visitedGrid[x]) {
-                visitedGrid[x][z] = true;
-            } else {
-                visitedGrid[x] = new Array();
-                visitedGrid[x][z] = true;
-            }
-
-        }
-
-        this.notFound = true;
-
-        // check center, and prime queue
-        this.processCell(rx, ry, rz, 0, findQueue, visitedArr);
-
-        while (this.notFound && findQueue.length > 0 && (--iterCount > 0)) {
-            var curr = findQueue.shift();
-
-            if (curr.x == tarX && curr.z == tarZ) {
-                //found where we need to be, trace back. 
-                this.notFound = false;
-
-                //build up and set path 
-                this.traceBack(targetPos, visitedArr, curr, meshPos);
+            if (game.oldPathResult === 0 || game.oldPathResult === 1) {
+                game.oldPathResult = 1;
                 return true;
-
-
-            } else if (!(visitedGrid[curr.x] && visitedGrid[curr.x][curr.z])) {
-                markVisit(curr.x, 0, curr.z);
-                this.processCell(curr.x, curr.y, curr.z, curr.id, findQueue, visitedArr);
+            }
+            else {
+                return false;
             }
         }
-
-        //else, leave this.lastPath alone
-
-        return false;
-
     }
 
 

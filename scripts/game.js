@@ -64,6 +64,8 @@ function Game(renderer, canvas) {
     this.difficulty = 1;
     this.otherFloor = false;
     this.firstDoor = 0;
+    this.doorChanged = 0;
+    this.oldPathResult = true;
 
     // Create and position the map canvas, then add it to the document
     this.mainCanvas = document.getElementById("canvas");
@@ -225,6 +227,8 @@ function Game(renderer, canvas) {
         input.Escape = 0;
         input.click = 0;
         this.firstDoor = 0;
+        this.doorChanged = 0;
+        this.oldPathResult = true;
         // Setup scene
 
 
@@ -1170,6 +1174,7 @@ function updateOperation(game, input) {
             }
             switch (object.name) {
                 case 'door':
+                    game.doorChanged = 1;
                     if (game.gindex === 0) {
                         if (game.hintIndex >= 6 || game.difficulty != 1) {
                             game.gindex++;
@@ -1306,7 +1311,7 @@ function updateDistance(game) {
             ry = Math.floor(ry / CELL_SIZE + 0.5);
         }
         var my = Math.floor(Math.floor(game.warden.mesh.position.y) / CELL_SIZE);
-        if (ry != my) {
+        if (game.warden.notFound) {
             game.urgent = 0;
         }
         else {
